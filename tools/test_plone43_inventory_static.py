@@ -37,10 +37,6 @@ def main():
     assert 'callable(schema_method)' in schema_source
     assert 'schema_method()' in schema_source
 
-    # Plone 4.3 deployments can expose either of these launcher shapes:
-    #   [script, args...]
-    #   [script, '-c', args...]
-    # and some wrappers expose ['-c', script, args...].
     namespace = {'os': os}
     selected = [node for node in tree.body
                 if isinstance(node, ast.FunctionDef)
@@ -51,35 +47,35 @@ def main():
     exec(code, namespace)
 
     parser = namespace['parse_inventory_args']
+    expected = '/plone/instance/src'
     assert parser(['src/plone43_inventory.py', '--output-dir=/plone/instance/src'],
-                  'src/plone43_inventory.py') == '/plone/instance/src'
+                  'src/plone43_inventory.py') == expected
     assert parser(['src/plone43_inventory.py', '-c', '--output-dir=/plone/instance/src'],
-                  'src/plone43_inventory.py') == '/plone/instance/src'
+                  'src/plone43_inventory.py') == expected
     assert parser(['-c', 'src/plone43_inventory.py', '--output-dir=/plone/instance/src'],
-                  'src/plone43_inventory.py') == '/plone/instance/src'
+                  'src/plone43_inventory.py') == expected
+    # Actual shape observed from the user's Plone 4.3 bin/instance wrapper:
+    assert parser(['src/plone43_inventory.py', 'src/plone43_inventory.py',
+                    '--output-dir=/plone/instance/src'],
+                  'src/plone43_inventory.py') == expected
+    assert parser(['src/plone43_inventory.py', 'src/plone43_inventory.py',
+                    '-c', '--output-dir=/plone/instance/src'],
+                  'src/plone43_inventory.py') == expected
     assert parser(['src/plone43_inventory.py', '-c', '--output-dir', '/tmp/out'],
                   'src/plone43_inventory.py') == '/tmp/out'
 
-    try:
-        parser(['src/plone43_inventory.py', '-c'], 'src/plone43_inventory.py')
-    except SystemExit:
-        pass
-    else:
-        raise AssertionError('A genuine -c inventory option must not be silently ignored')
-
-    try:
-        parser(['-c', 'other.py', '--output-dir=/tmp/out'], 'src/plone43_inventory.py')
-    except SystemExit:
-        pass
-    else:
-        raise AssertionError('An unrelated script after -c must be rejected')
-
-    try:
-        parser(['src/plone43_inventory.py', '--bogus'], 'src/plone43_inventory.py')
-    except SystemExit:
-        pass
-    else:
-        raise AssertionError('Unknown inventory options must be rejected')
+    for argv in (
+        ['src/plone43_inventory.py', '-c'],
+        ['src/plone43_inventory.py', '--bogus'],
+        ['-c', 'other.py', '--output-dir=/tmp/out'],
+        ['src/plone43_inventory.py', 'other.py', '--output-dir=/tmp/out'],
+    ):
+        try:
+            parser(argv, 'src/plone43_inventory.py')
+        except SystemExit:
+            pass
+        else:
+            raise AssertionError('Invalid argv was silently accepted: %r' % (argv,))
 
     print('plone43_inventory.py static/argv compatibility checks: OK')
 
