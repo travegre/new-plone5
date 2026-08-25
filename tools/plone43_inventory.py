@@ -7,7 +7,8 @@ from __future__ import print_function
 import datetime,json,os,sys,traceback
 from collections import Counter,defaultdict
 from Acquisition import aq_base
-from OFS.interfaces import IFolderish
+# Plone 4.3 / Zope 2.13 exposes IFolderish from CMFCore, not OFS.
+from Products.CMFCore.interfaces import IFolderish
 from zope.interface import providedBy,implementedBy
 
 SITES=(('portal','/portal','IMI imenik'),('dezurstva','/dezurstva','Dežurstva'),('kiestra','/kiestra','Kiestra'),('preiskave','/preiskave','Preiskave'),('nadomescanja','/nadomescanja','Nadomeščanja'))
