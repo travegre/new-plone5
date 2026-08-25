@@ -37,25 +37,27 @@ def main():
     assert 'callable(schema_method)' in schema_source
     assert 'schema_method()' in schema_source
 
-    # This is the problematic deployed Plone 4.3 shape: Python's -c launcher
-    # remains in argv ahead of the script name. It must be consumed only in
-    # that exact launcher position.
+    # Plone 4.3 deployments can expose either of these launcher shapes:
+    #   [script, args...]
+    #   [script, '-c', args...]
+    # and some wrappers expose ['-c', script, args...].
     namespace = {'os': os}
     selected = [node for node in tree.body
                 if isinstance(node, ast.FunctionDef)
                 and node.name in ('parse_inventory_args', 'parse_output_dir')]
     module = ast.Module(body=selected)
-    if hasattr(ast, 'fix_missing_locations'):
-        ast.fix_missing_locations(module)
+    ast.fix_missing_locations(module)
     code = compile(module, SOURCE, 'exec')
     exec(code, namespace)
 
     parser = namespace['parse_inventory_args']
     assert parser(['src/plone43_inventory.py', '--output-dir=/plone/instance/src'],
                   'src/plone43_inventory.py') == '/plone/instance/src'
+    assert parser(['src/plone43_inventory.py', '-c', '--output-dir=/plone/instance/src'],
+                  'src/plone43_inventory.py') == '/plone/instance/src'
     assert parser(['-c', 'src/plone43_inventory.py', '--output-dir=/plone/instance/src'],
                   'src/plone43_inventory.py') == '/plone/instance/src'
-    assert parser(['-c', 'src/plone43_inventory.py', '--output-dir', '/tmp/out'],
+    assert parser(['src/plone43_inventory.py', '-c', '--output-dir', '/tmp/out'],
                   'src/plone43_inventory.py') == '/tmp/out'
 
     try:
