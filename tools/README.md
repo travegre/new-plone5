@@ -27,16 +27,27 @@ The inventory itself does not commit a transaction. Do not run it against a data
 
 ## `bin/instance run` argument handling
 
-The Plone 4.3-era `plone.recipe.zope2instance` `run` command launches the script through a Python `-c` command which creates `app` and then executes the script. Its implementation normally removes Python's `-c` marker before setting `sys.argv[0]` to the script, but deployed 4.3-era wrappers can leave the marker visible to the executed script. The inventory therefore accepts exactly these two runtime shapes:
+Plone 4.3 documentation defines the normal scripting environment as `sys.argv[0] == script name` and subsequent entries as script arguments. citeturn0search0 The extended `plone.recipe.zope2instance` control script implements `run` on top of the Zope/Python launcher. In the affected deployment, the Python `-c` launcher marker is visible to the executed script immediately after the script name, producing this shape:
 
 ```text
-[script, inventory-arguments...]
+[script, '-c', inventory-arguments...]
+```
+
+The inventory also accepts the other legacy shape:
+
+```text
 ['-c', script, inventory-arguments...]
 ```
 
-It removes `-c` only in the second, unambiguous launcher position. An arbitrary `-c`, unknown option, or different script name is still rejected. This is intentional: the parser does not simply discard unknown arguments.
+and the documented clean shape:
 
-Both of these are valid:
+```text
+[script, inventory-arguments...]
+```
+
+It removes `-c` **only in those exact launcher positions** and only when the surrounding script name matches the inventory script. An arbitrary `-c`, unknown option, or different script name is still rejected. The parser therefore does not simply discard unknown arguments.
+
+Both option syntaxes are valid:
 
 ```sh
 bin/instance run src/plone43_inventory.py --output-dir=/plone/instance/src
