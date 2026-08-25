@@ -23,12 +23,14 @@ def main():
     assert ('OFS.interfaces', ['IFolderish']) not in imports
     assert ('Products.CMFCore.interfaces', ['IFolderish']) in imports
 
-    functions = dict((node.name, node) for node in tree.body if isinstance(node, ast.FunctionDef))
+    functions = dict((node.name, node) for node in tree.body
+                     if isinstance(node, ast.FunctionDef))
     for name in ('archetypes_schema', 'schema', 'field_values', 'binaries',
-                 'parse_inventory_args', 'parse_output_dir'):
+                 '_script_basename', 'parse_inventory_args', 'parse_output_dir'):
         assert name in functions
 
-    schema_source = ast.get_source_segment(text, functions['archetypes_schema']) if hasattr(ast, 'get_source_segment') else ''
+    schema_source = (ast.get_source_segment(text, functions['archetypes_schema'])
+                     if hasattr(ast, 'get_source_segment') else '')
     if not schema_source:
         start = text.index('def archetypes_schema')
         end = text.index('\ndef schema_field', start)
@@ -40,7 +42,8 @@ def main():
     namespace = {'os': os}
     selected = [node for node in tree.body
                 if isinstance(node, ast.FunctionDef)
-                and node.name in ('parse_inventory_args', 'parse_output_dir')]
+                and node.name in ('_script_basename', 'parse_inventory_args',
+                                  'parse_output_dir')]
     module = ast.Module(body=selected)
     ast.fix_missing_locations(module)
     code = compile(module, SOURCE, 'exec')
@@ -48,18 +51,21 @@ def main():
 
     parser = namespace['parse_inventory_args']
     expected = '/plone/instance/src'
-    assert parser(['src/plone43_inventory.py', '--output-dir=/plone/instance/src'],
+    assert parser(['src/plone43_inventory.py',
+                   '--output-dir=/plone/instance/src'],
                   'src/plone43_inventory.py') == expected
-    assert parser(['src/plone43_inventory.py', '-c', '--output-dir=/plone/instance/src'],
+    assert parser(['src/plone43_inventory.py', '-c',
+                   '--output-dir=/plone/instance/src'],
                   'src/plone43_inventory.py') == expected
-    assert parser(['-c', 'src/plone43_inventory.py', '--output-dir=/plone/instance/src'],
+    assert parser(['-c', 'src/plone43_inventory.py',
+                   '--output-dir=/plone/instance/src'],
                   'src/plone43_inventory.py') == expected
-    # Actual shape observed from the user's Plone 4.3 bin/instance wrapper:
+    # Shape observed from the user's real Plone 4.3 bin/instance wrapper.
     assert parser(['src/plone43_inventory.py', 'src/plone43_inventory.py',
-                    '--output-dir=/plone/instance/src'],
+                   '--output-dir=/plone/instance/src'],
                   'src/plone43_inventory.py') == expected
     assert parser(['src/plone43_inventory.py', 'src/plone43_inventory.py',
-                    '-c', '--output-dir=/plone/instance/src'],
+                   '-c', '--output-dir=/plone/instance/src'],
                   'src/plone43_inventory.py') == expected
     assert parser(['src/plone43_inventory.py', '-c', '--output-dir', '/tmp/out'],
                   'src/plone43_inventory.py') == '/tmp/out'
