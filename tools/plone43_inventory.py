@@ -4,6 +4,13 @@
 
 Run inside the real Plone 4.3 environment, for example:
     bin/instance run tools/plone43_inventory.py --output-dir /tmp/plone43-inventory
+
+``bin/instance run`` in the Plone 4.3 generation of
+``plone.recipe.zope2instance`` executes the script through Python's ``-c``
+launcher.  Depending on the exact 4.3-era recipe/instance wrapper, that
+launcher marker can remain at the front of ``sys.argv``.  ``parse_inventory_args``
+recognizes that specific launcher shape; it does not silently discard arbitrary
+unknown options.
 """
 from __future__ import print_function
 import datetime
@@ -683,18 +690,52 @@ def markdown(data):
     return '\n'.join(lines) + '\n'
 
 
+def parse_inventory_args(argv, script_name):
+    """Return only arguments intended for this inventory script.
+
+    The documented Plone/Zope ``run`` interface says argv[0] is the script
+    name.  The Plone 4.3-era control-script implementation normally removes
+    Python's ``-c`` marker before execfile(), but some deployed 4.3 wrappers
+    leave the marker in argv.  We accept only these two concrete shapes:
+
+        [script_name, script_args...]
+        ['-c', script_name, script_args...]
+
+    A ``-c`` appearing elsewhere is not silently ignored and therefore still
+    produces an invocation error.  This is deliberately narrower than
+    filtering unknown options.
+    """
+    argv = list(argv)
+    if not argv:
+        raise SystemExit('Unable to determine inventory script arguments.')
+
+    basename = os.path.basename(script_name)
+    first = os.path.basename(argv[0])
+    if first == basename:
+        args = argv[1:]
+    elif argv[0] == '-c' and len(argv) > 1 and os.path.basename(argv[1]) == basename:
+        args = argv[2:]
+    else:
+        raise SystemExit('Unexpected Plone/Zope run argv shape: %r' % argv)
+    return parse_output_dir(args)
+
+
 def parse_output_dir(args):
+    """Parse inventory options; reject all unknown options."""
     if not args:
         return '/tmp/plone43-inventory'
+    if len(args) == 1 and args[0].startswith('--output-dir='):
+        value = args[0].split('=', 1)[1]
+        if not value:
+            raise SystemExit('--output-dir requires a directory.')
+        return value
     if args[0] == '--output-dir':
         if len(args) != 2 or args[1].startswith('-'):
             raise SystemExit('Usage: bin/instance run tools/plone43_inventory.py --output-dir /path')
         return args[1]
     if args[0].startswith('-'):
         raise SystemExit('Unexpected option %s. Use --output-dir /path.' % args[0])
-    if len(args) != 1:
-        raise SystemExit('Usage: bin/instance run tools/plone43_inventory.py [--output-dir /path]')
-    return args[0]
+    raise SystemExit('Unexpected inventory argument %s. Use --output-dir /path.' % args[0])
 
 
 def run(app, outdir):
@@ -737,4 +778,4 @@ def run(app, outdir):
 
 if 'app' not in globals():
     raise SystemExit('Use the Plone 4.3 bin/instance run command; do not execute with system Python.')
-run(app, parse_output_dir(sys.argv[1:]))
+run(app, parse_inventory_args(sys.argv, globals().get('__file__', 'plone43_inventory.py')))
