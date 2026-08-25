@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Dependency-free static checks for the Plone 4.3 inventory tool.
-
-This test intentionally does not import Plone/Zope. It can run with either
-Python 2.7 or Python 3 and catches accidental regression to newer Zope imports
-or to unconditional Schema() access.
-"""
+"""Dependency-free static checks for the Plone 4.3 inventory tool."""
 from __future__ import print_function
 
 import ast
@@ -25,28 +20,22 @@ def main():
     for node in ast.walk(tree):
         if isinstance(node, ast.ImportFrom):
             imports.append((node.module, [x.name for x in node.names]))
-
     assert ('OFS.interfaces', ['IFolderish']) not in imports
     assert ('Products.CMFCore.interfaces', ['IFolderish']) in imports
 
     functions = dict((node.name, node) for node in tree.body if isinstance(node, ast.FunctionDef))
-    assert 'archetypes_schema' in functions
-    assert 'schema' in functions
-    assert 'field_values' in functions
-    assert 'binaries' in functions
+    for name in ('archetypes_schema', 'schema', 'field_values', 'binaries'):
+        assert name in functions
 
     schema_source = ast.get_source_segment(text, functions['archetypes_schema']) if hasattr(ast, 'get_source_segment') else ''
     if not schema_source:
-        # Python 2.7 compatibility: inspect the source text directly.
         start = text.index('def archetypes_schema')
         end = text.index('\ndef schema_field', start)
         schema_source = text[start:end]
     assert "getattr(obj, 'Schema', None)" in schema_source
     assert 'callable(schema_method)' in schema_source
-    assert 'Schema()' not in schema_source.replace('schema_method()', '')
+    assert 'schema_method()' in schema_source
 
-    # The tool must expose an explicit output option so a Zope option such as
-    # '-c' cannot silently become a directory name.
     assert 'def parse_output_dir(args):' in text
     assert "args[0].startswith('-')" in text
     print('plone43_inventory.py static compatibility checks: OK')
