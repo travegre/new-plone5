@@ -6,25 +6,19 @@ Run inside the real Plone 4.3 environment, for example:
     bin/instance run tools/plone43_inventory.py --output-dir /tmp/plone43-inventory
 """
 from __future__ import print_function
-
 import datetime
 import json
 import os
 import sys
 import traceback
 from collections import Counter, defaultdict
-
 from Acquisition import aq_base
 from Products.CMFCore.interfaces import IFolderish
 from zope.interface import providedBy, implementedBy
 
-SITES = (
-    ('portal', '/portal', 'IMI imenik'),
-    ('dezurstva', '/dezurstva', 'Dežurstva'),
-    ('kiestra', '/kiestra', 'Kiestra'),
-    ('preiskave', '/preiskave', 'Preiskave'),
-    ('nadomescanja', '/nadomescanja', 'Nadomeščanja'),
-)
+SITES = (('portal', '/portal', 'IMI imenik'), ('dezurstva', '/dezurstva', 'Dežurstva'),
+         ('kiestra', '/kiestra', 'Kiestra'), ('preiskave', '/preiskave', 'Preiskave'),
+         ('nadomescanja', '/nadomescanja', 'Nadomeščanja'))
 MAX_SAMPLES = 5
 MAX_FIELDS = 100
 MAX_VALUE = 1500
@@ -42,16 +36,23 @@ class InventoryContext(object):
         self.errors = []
 
     def error(self, operation, obj=None, message=None, exception=None, field=None):
-        item = {
-            'site': self.site,
-            'path': path(obj) if obj is not None else None,
-            'portal_type': ptype(obj) if obj is not None else None,
-            'class': dotted(obj) if obj is not None else None,
-            'operation': operation,
-            'field': field,
-            'exception_type': exception.__class__.__name__ if exception is not None else None,
-            'message': text(exception if exception is not None else message),
-        }
+        item = {'site': self.site, 'path': None, 'portal_type': None, 'class': None,
+                'operation': operation, 'field': field,
+                'exception_type': exception.__class__.__name__ if exception is not None else None,
+                'message': text(exception if exception is not None else message)}
+        if obj is not None:
+            try:
+                item['path'] = path(obj)
+            except Exception:
+                pass
+            try:
+                item['portal_type'] = ptype(obj)
+            except Exception:
+                pass
+            try:
+                item['class'] = dotted(obj)
+            except Exception:
+                pass
         self.errors.append(item)
         return item
 
@@ -126,8 +127,11 @@ def path(obj):
         for _ in range(100):
             if current is None:
                 break
-            parts.append(getattr(current, 'id', ''))
-            current = getattr(current, 'aq_parent', None)
+            try:
+                parts.append(getattr(current, 'id', ''))
+                current = getattr(current, 'aq_parent', None)
+            except Exception:
+                break
         return '/' + '/'.join(reversed([p for p in parts if p]))
 
 
@@ -157,12 +161,7 @@ def field_name(field, ctx, obj=None):
 
 
 def archetypes_schema(obj, ctx):
-    """Inspect AT only when the runtime object actually exposes Schema().
-
-    This is a capability test, not a class-name test. Objects without a
-    callable Schema method are normal inventory subjects and are explicitly
-    marked as non-Archetypes rather than treated as failures.
-    """
+    """Inspect AT only when the runtime object actually exposes Schema()."""
     try:
         schema_method = getattr(obj, 'Schema', None)
     except Exception as exc:
@@ -185,17 +184,14 @@ def archetypes_schema(obj, ctx):
         return {'archetypes': True, 'available': False,
                 'reason': 'Schema.fields() raised an exception', 'fields': []}
     fields = [schema_field(field, obj, ctx) for field in list(field_list)[:MAX_FIELDS]]
-    return {'archetypes': True, 'available': True,
-            'schema_class': dotted(schema_obj), 'fields': fields}
+    return {'archetypes': True, 'available': True, 'schema_class': dotted(schema_obj), 'fields': fields}
 
 
 def schema_field(field, obj, ctx):
     name = field_name(field, ctx, obj)
-    result = {'name': name, 'class': dotted(field),
-              'field_type': getattr(field.__class__, '__name__', None),
-              'required': None, 'multivalued': None, 'searchable': None,
-              'index': None, 'storage': None, 'default': None,
-              'default_factory': None, 'vocabulary': {}, 'errors': []}
+    result = {'name': name, 'class': dotted(field), 'field_type': getattr(field.__class__, '__name__', None),
+              'required': None, 'multivalued': None, 'searchable': None, 'index': None, 'storage': None,
+              'default': None, 'default_factory': None, 'vocabulary': {}, 'errors': []}
     for attr in ('required', 'multiValued', 'searchable', 'index'):
         key = 'multivalued' if attr == 'multiValued' else attr
         try:
@@ -409,7 +405,6 @@ def references(obj, reference_catalog, ctx):
 
 
 def stored(obj, ctx):
-    """Persistent attributes not necessarily represented by AT fields."""
     result = {}
     try:
         values = getattr(aq_base(obj), '__dict__', {})
@@ -427,20 +422,17 @@ def stored(obj, ctx):
 
 def summary(obj, wf, reference_catalog, ctx):
     at_schema = schema(obj, ctx)
-    return {
-        'path': safe_call(ctx, 'object.path', lambda: path(obj), obj=obj),
-        'id': safe_call(ctx, 'object.id', lambda: obj.getId(), obj=obj, default=getattr(obj, 'id', None)),
-        'title': safe_call(ctx, 'object.title', lambda: obj.Title(), obj=obj,
-                           default=safe_call(ctx, 'object.title_attribute', lambda: obj.title, obj=obj)),
-        'portal_type': ptype(obj), 'class': dotted(obj),
-        'class_hierarchy': hierarchy(obj), 'interfaces': interfaces(obj),
-        'archetypes_schema': at_schema, 'field_values': field_values(obj, at_schema, ctx),
-        'stored_attributes': stored(obj, ctx), 'workflow': workflow(obj, wf, ctx),
-        'local_roles': local_roles(obj, ctx), 'permissions': permissions(obj, ctx),
-        'references': references(obj, reference_catalog, ctx),
-        'binaries': binaries(obj, at_schema, ctx),
-        'folderish': safe_call(ctx, 'object.folderish', lambda: IFolderish.providedBy(obj), obj=obj, default=False),
-    }
+    return {'path': safe_call(ctx, 'object.path', lambda: path(obj), obj=obj),
+            'id': safe_call(ctx, 'object.id', lambda: obj.getId(), obj=obj, default=getattr(obj, 'id', None)),
+            'title': safe_call(ctx, 'object.title', lambda: obj.Title(), obj=obj,
+                               default=safe_call(ctx, 'object.title_attribute', lambda: obj.title, obj=obj)),
+            'portal_type': ptype(obj), 'class': dotted(obj), 'class_hierarchy': hierarchy(obj),
+            'interfaces': interfaces(obj), 'archetypes_schema': at_schema,
+            'field_values': field_values(obj, at_schema, ctx), 'stored_attributes': stored(obj, ctx),
+            'workflow': workflow(obj, wf, ctx), 'local_roles': local_roles(obj, ctx),
+            'permissions': permissions(obj, ctx), 'references': references(obj, reference_catalog, ctx),
+            'binaries': binaries(obj, at_schema, ctx),
+            'folderish': safe_call(ctx, 'object.folderish', lambda: IFolderish.providedBy(obj), obj=obj, default=False)}
 
 
 def walk(root, ctx):
@@ -470,17 +462,15 @@ def type_definition(site, portal_type, ctx):
         return None
     if type_info is None:
         return None
-    result = {
-        'id': portal_type, 'title': text(getattr(type_info, 'title', None)),
-        'factory': text(getattr(type_info, 'factory', None)), 'klass': text(getattr(type_info, 'klass', None)),
-        'allowed_content_types': list(getattr(type_info, 'allowed_content_types', ()) or ()),
-        'global_allow': bool(getattr(type_info, 'global_allow', False)),
-        'filter_content_types': bool(getattr(type_info, 'filter_content_types', False)),
-        'default_view': text(getattr(type_info, 'default_view', None)),
-        'immediate_view': text(getattr(type_info, 'immediate_view', None)),
-        'aliases': dict(getattr(type_info, 'aliases', {}) or {}),
-        'actions': [], 'workflow_chain': [], 'permissions': {},
-    }
+    result = {'id': portal_type, 'title': text(getattr(type_info, 'title', None)),
+              'factory': text(getattr(type_info, 'factory', None)), 'klass': text(getattr(type_info, 'klass', None)),
+              'allowed_content_types': list(getattr(type_info, 'allowed_content_types', ()) or ()),
+              'global_allow': bool(getattr(type_info, 'global_allow', False)),
+              'filter_content_types': bool(getattr(type_info, 'filter_content_types', False)),
+              'default_view': text(getattr(type_info, 'default_view', None)),
+              'immediate_view': text(getattr(type_info, 'immediate_view', None)),
+              'aliases': dict(getattr(type_info, 'aliases', {}) or {}), 'actions': [],
+              'workflow_chain': [], 'permissions': {}}
     try:
         result['actions'] = [scalar(a) for a in type_info.listActions()]
     except Exception as exc:
@@ -498,14 +488,12 @@ def type_definition(site, portal_type, ctx):
 
 def pfg(obj, ctx, depth=0):
     at_schema = schema(obj, ctx)
-    result = {
-        'path': safe_call(ctx, 'pfg.path', lambda: path(obj), obj=obj),
-        'id': safe_call(ctx, 'pfg.id', lambda: obj.getId(), obj=obj, default=getattr(obj, 'id', None)),
-        'title': safe_call(ctx, 'pfg.title', lambda: obj.Title(), obj=obj),
-        'class': dotted(obj), 'portal_type': ptype(obj), 'interfaces': interfaces(obj),
-        'stored_attributes': stored(obj, ctx), 'archetypes_schema': at_schema,
-        'field_values': field_values(obj, at_schema, ctx), 'children': [],
-    }
+    result = {'path': safe_call(ctx, 'pfg.path', lambda: path(obj), obj=obj),
+              'id': safe_call(ctx, 'pfg.id', lambda: obj.getId(), obj=obj, default=getattr(obj, 'id', None)),
+              'title': safe_call(ctx, 'pfg.title', lambda: obj.Title(), obj=obj),
+              'class': dotted(obj), 'portal_type': ptype(obj), 'interfaces': interfaces(obj),
+              'stored_attributes': stored(obj, ctx), 'archetypes_schema': at_schema,
+              'field_values': field_values(obj, at_schema, ctx), 'children': []}
     if depth < MAX_DEPTH:
         try:
             is_folderish = IFolderish.providedBy(obj)
@@ -584,26 +572,21 @@ def site_inventory(site, name, label, global_errors):
                 ctx.error('local_roles.aggregate', obj=obj, exception=exc)
     except Exception as exc:
         ctx.error('site.walk', obj=site, exception=exc)
-
     types = {}
     for portal_type in sorted(counts):
-        types[portal_type] = {
-            'count': counts[portal_type], 'classes': sorted(x for x in classes[portal_type] if x),
-            'definition': type_definition(site, portal_type, ctx),
-            'workflow_assignments': dict(workflow_assignments[portal_type]),
-            'samples': samples[portal_type],
-        }
+        types[portal_type] = {'count': counts[portal_type], 'classes': sorted(x for x in classes[portal_type] if x),
+                              'definition': type_definition(site, portal_type, ctx),
+                              'workflow_assignments': dict(workflow_assignments[portal_type]),
+                              'samples': samples[portal_type]}
     global_errors.extend(ctx.errors)
-    return {
-        'site': name, 'path': safe_call(ctx, 'site.path', lambda: site.absolute_url_path(), obj=site),
-        'title': label, 'objects_walked': total, 'portal_types': types,
-        'pfg_objects': pfg_objects, 'unknown_objects': unknown,
-        'binary_summary': {'counts': dict(binary_counts), 'bytes': dict(binary_bytes),
-                           'note': 'Binary details are complete for representative samples; aggregate counts are not inferred for unsampled objects.'},
-        'objects_with_local_roles': dict(local_role_counts), 'class': dotted(site),
-        'class_hierarchy': hierarchy(site), 'interfaces': interfaces(site),
-        'inspection_errors': len(ctx.errors),
-    }
+    return {'site': name, 'path': safe_call(ctx, 'site.path', lambda: site.absolute_url_path(), obj=site),
+            'title': label, 'objects_walked': total, 'portal_types': types, 'pfg_objects': pfg_objects,
+            'unknown_objects': unknown,
+            'binary_summary': {'counts': dict(binary_counts), 'bytes': dict(binary_bytes),
+                               'note': 'Binary details are complete for representative samples; aggregate counts are not inferred for unsampled objects.'},
+            'objects_with_local_roles': dict(local_role_counts), 'class': dotted(site),
+            'class_hierarchy': hierarchy(site), 'interfaces': interfaces(site),
+            'inspection_errors': len(ctx.errors)}
 
 
 def global_inventory(app, errors):
@@ -625,8 +608,8 @@ def global_inventory(app, errors):
                                                'klass': text(getattr(type_info, 'klass', None))})
             except Exception as exc:
                 errors.append({'site': None, 'path': '/portal_types', 'portal_type': None,
-                               'class': dotted(type_info), 'operation': 'global.portal_type',
-                               'field': None, 'exception_type': exc.__class__.__name__, 'message': text(exc)})
+                               'class': dotted(type_info), 'operation': 'global.portal_type', 'field': None,
+                               'exception_type': exc.__class__.__name__, 'message': text(exc)})
     except Exception as exc:
         errors.append({'site': None, 'path': '/', 'portal_type': None, 'class': dotted(app),
                        'operation': 'global.portal_types', 'field': None,
