@@ -1,0 +1,62 @@
+name: Fix inventory argv parser
+on:
+  push:
+    paths:
+      - .github/workflows/fix-inventory-argv.yml
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch parser and test
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('tools/plone43_inventory.py')
+          s = p.read_text()
+          start = s.index('def parse_inventory_args(argv, script_name):')
+          end = s.index('\ndef parse_output_dir(args):', start)
+          replacement = '''def parse_inventory_args(argv, script_name):
+    """Parse argv exposed by the Plone 4.3/Zope 2.13 instance-run wrapper."""
+    argv = list(argv)
+    if not argv:
+        raise SystemExit('Unable to determine inventory script arguments.')
+    expected = _script_basename(script_name)
+
+    # Normal documented run context: [script, script_args...].
+    if _script_basename(argv[0]) == expected:
+        args = argv[1:]
+        # Some Plone 4.3 launchers retain the script name and/or Python -c.
+        if args and _script_basename(args[0]) == expected:
+            args = args[1:]
+        if args and args[0] == '-c':
+            args = args[1:]
+        if args and _script_basename(args[0]) == expected:
+            args = args[1:]
+        return parse_output_dir(args)
+
+    # Full launcher context: [interpreter, -c, script, script_args...].
+    if (len(argv) >= 3 and argv[1] == '-c' and
+            _script_basename(argv[2]) == expected):
+        return parse_output_dir(argv[3:])
+
+    # Direct Python -c context: [-c, script, script_args...].
+    if (argv[0] == '-c' and len(argv) >= 2 and
+            _script_basename(argv[1]) == expected):
+        return parse_output_dir(argv[2:])
+
+    raise SystemExit('Unexpected Plone/Zope run argv shape: %r' % argv)
+'''
+          p.write_text(s[:start] + replacement + s[end:])
+          PY
+          python3 -m py_compile tools/plone43_inventory.py
+          python3 tools/test_plone43_inventory_static.py
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tools/plone43_inventory.py tools/test_plone43_inventory_static.py
+          git commit -m 'Fix Plone 4.3 instance run argv parsing'
+          git rm .github/workflows/fix-inventory-argv.yml
+          git commit -m 'Remove temporary inventory fix workflow'
+          git push
