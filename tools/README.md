@@ -25,6 +25,26 @@ Individual object, field, schema, vocabulary, reference, workflow, and similar i
 
 The inventory itself does not commit a transaction. Do not run it against a database that is simultaneously serving requests.
 
+## `bin/instance run` argument handling
+
+The Plone 4.3-era `plone.recipe.zope2instance` `run` command launches the script through a Python `-c` command which creates `app` and then executes the script. Its implementation normally removes Python's `-c` marker before setting `sys.argv[0]` to the script, but deployed 4.3-era wrappers can leave the marker visible to the executed script. The inventory therefore accepts exactly these two runtime shapes:
+
+```text
+[script, inventory-arguments...]
+['-c', script, inventory-arguments...]
+```
+
+It removes `-c` only in the second, unambiguous launcher position. An arbitrary `-c`, unknown option, or different script name is still rejected. This is intentional: the parser does not simply discard unknown arguments.
+
+Both of these are valid:
+
+```sh
+bin/instance run src/plone43_inventory.py --output-dir=/plone/instance/src
+bin/instance run src/plone43_inventory.py --output-dir /plone/instance/src
+```
+
+The first form is recommended because it is a single explicit option/value argument.
+
 ## Exact procedure with the source Docker setup
 
 The source repository's Compose service is named `instance`, is built from the source `Dockerfile`, and mounts:
@@ -67,29 +87,38 @@ tar -C var -czf /safe/backup/plone43-blobstorage-$(date +%Y%m%d-%H%M%S).tar.gz b
 
 Do not perform this backup while Zope is running.
 
-### 3. Put the target-repository tooling somewhere the source container can read
+### 3. Run it inside the existing Plone 4.3 container
 
-Do **not** copy the tool into `src/` of the source repository and do not commit it there. Mount the target checkout read-only instead. For example, if the target checkout is `/work/new-plone5` on the Docker host, use:
+If the target checkout is mounted into the container so that its `tools` directory is available, the exact requested command is:
 
 ```sh
-mkdir -p inventory-output
+bin/instance run src/plone43_inventory.py --output-dir=/plone/instance/src
 ```
 
-### 4. Run the one-shot inventory container
+The script writes:
 
-Use the explicit `--output-dir` form. This avoids accidentally treating Zope/console options such as `-c` as the inventory output path:
+```text
+/plone/instance/src/plone43_inventory.json
+/plone/instance/src/plone43_inventory.md
+```
+
+If `src/plone43_inventory.py` is the copy from `travegre/new-plone5`, use that exact file; do not modify the source application's packages.
+
+### 4. One-shot Docker invocation when the target checkout is not mounted
+
+From the **source repository checkout**:
 
 ```sh
 docker compose run --rm --no-deps \
   -v /work/new-plone5/tools:/migration-tools:ro \
   -v "$PWD/inventory-output:/inventory-output" \
   instance \
-  bin/instance run /migration-tools/plone43_inventory.py --output-dir /inventory-output
+  bin/instance run /migration-tools/plone43_inventory.py --output-dir=/inventory-output
 ```
 
 Replace `/work/new-plone5` with the absolute path of the **target** `travegre/new-plone5` checkout.
 
-The command uses the already-built Plone 4.3 image. It does not start the Compose service's normal long-running `console` command. The source `var/filestorage` and `var/blobstorage` mounts remain the same as the normal service, so the script sees the real source database.
+The command uses the already-built Plone 4.3 image and does not start the Compose service's normal long-running command. The source `var/filestorage` and `var/blobstorage` mounts remain the same as the normal service, so the script sees the real source database.
 
 The output will be on the host in:
 
@@ -115,7 +144,7 @@ The JSON is the machine-readable authority for later migration tooling. The Mark
 - objects reported as `Unknown` or with no portal type;
 - the total and per-site inspection-error counts.
 
-A representative object now contains `archetypes_schema.archetypes` and `archetypes_schema.available`. For a non-Archetypes runtime object this is false/false with a reason such as `No callable Archetypes Schema method`; that object still has its runtime class, interfaces, persistent attributes, workflow, roles, references, etc. For an Archetypes object, the actual runtime `Schema()` and its fields are recorded.
+A representative object contains `archetypes_schema.archetypes` and `archetypes_schema.available`. For a non-Archetypes runtime object this is false/false with a reason such as `No callable Archetypes Schema method`; that object still has its runtime class, interfaces, persistent attributes, workflow, roles, references, etc. For an Archetypes object, the actual runtime `Schema()` and its fields are recorded.
 
 ### 6. Restart the source site only after the inventory is finished
 
