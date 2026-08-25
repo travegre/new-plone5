@@ -40,7 +40,7 @@ def main():
     # This is the problematic deployed Plone 4.3 shape: Python's -c launcher
     # remains in argv ahead of the script name. It must be consumed only in
     # that exact launcher position.
-    namespace = {}
+    namespace = {'os': os}
     selected = [node for node in tree.body
                 if isinstance(node, ast.FunctionDef)
                 and node.name in ('parse_inventory_args', 'parse_output_dir')]
