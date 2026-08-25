@@ -10,7 +10,7 @@ It inventories these five sites:
 - `/preiskave` — Preiskave
 - `/nadomescanja` — Nadomeščanja
 
-It walks the actual ZODB objects rather than relying only on the catalog. For each portal type it records aggregate counts, runtime classes, type/factory configuration, representative objects, AT schema fields, field values, storage/indexing/searchability/default/vocabulary information, interfaces, workflows, local roles, permissions and references. It also detects PFG objects, records their nested structure/configuration, reports File/Image field counts and sizes, and flags objects without a recognizable portal type.
+It walks actual ZODB objects rather than relying only on catalog indexes. It records portal-type counts, runtime classes and inheritance, interfaces, actual Archetypes schema where the object exposes a callable `Schema()` method, field properties, storage/indexing/searchability/default/vocabulary information, representative values, persistent attributes, workflows/states, local roles, permissions, references, PFG structures, and File/Image information. Objects without an Archetypes schema are explicitly represented as non-Archetypes; they are not discarded.
 
 ## Safety model
 
@@ -18,6 +18,8 @@ The script contains no calls to `invokeFactory`, `manage_addProduct`, `setWorkfl
 
 - `plone43_inventory.json`
 - `plone43_inventory.md`
+
+Individual object, field, schema, vocabulary, reference, workflow, and similar inspection failures are recorded in the JSON `errors` array with site, path, portal type, runtime class, operation, field, exception type, and message. The inventory continues rather than aborting a site because of one unusual object.
 
 **Important:** `bin/instance run` starts a Zope application process and therefore the normal Plone process must not be running against the same `Data.fs`. The safest operational procedure is to stop the source container first, then run a one-shot container using the same image and mounted database volume. This avoids `Data.fs.lock` contention and prevents two Zope processes from opening the storage concurrently.
 
@@ -49,8 +51,6 @@ docker compose ps
 
 The `instance` service should not be running. Do not use `kill -9` as the normal shutdown procedure; allow Zope to close its ZODB cleanly.
 
-If the installation is managed by another supervisor rather than Compose, stop that supervisor-managed Zope process instead. The requirement is that no process has the source `Data.fs` open when the inventory starts.
-
 ### 2. Make a filesystem backup before the first inventory run
 
 The inventory is intended to be read-only, but because this is the real production-era database, make a backup before opening it with a different process:
@@ -77,14 +77,14 @@ mkdir -p inventory-output
 
 ### 4. Run the one-shot inventory container
 
-From the source repository checkout:
+Use the explicit `--output-dir` form. This avoids accidentally treating Zope/console options such as `-c` as the inventory output path:
 
 ```sh
 docker compose run --rm --no-deps \
   -v /work/new-plone5/tools:/migration-tools:ro \
   -v "$PWD/inventory-output:/inventory-output" \
   instance \
-  bin/instance run /migration-tools/plone43_inventory.py /inventory-output
+  bin/instance run /migration-tools/plone43_inventory.py --output-dir /inventory-output
 ```
 
 Replace `/work/new-plone5` with the absolute path of the **target** `travegre/new-plone5` checkout.
@@ -106,14 +106,16 @@ The JSON is the machine-readable authority for later migration tooling. The Mark
 - runtime class lists for each type;
 - `imipreiskava` samples/classes/schema;
 - all `produkti` and `dezurstvo` implementations separately;
-- `laboratorij`;
+- `laboratorij`, `seznam_zaposlenih`, and `uvoz`;
 - all PFG objects and their nested children/configuration;
 - workflow chains and actual states;
 - local-role objects;
 - reference/broken-reference sections;
-- File/Image field counts and byte totals;
+- File/Image field information;
 - objects reported as `Unknown` or with no portal type;
-- any errors recorded for individual sites.
+- the total and per-site inspection-error counts.
+
+A representative object now contains `archetypes_schema.archetypes` and `archetypes_schema.available`. For a non-Archetypes runtime object this is false/false with a reason such as `No callable Archetypes Schema method`; that object still has its runtime class, interfaces, persistent attributes, workflow, roles, references, etc. For an Archetypes object, the actual runtime `Schema()` and its fields are recorded.
 
 ### 6. Restart the source site only after the inventory is finished
 
@@ -137,6 +139,6 @@ The tool must not be added to `buildout.cfg`, `configure.zcml`, `profiles`, or a
 
 ## Output characteristics
 
-The inventory intentionally does **not** export all 10,000+ objects. It records complete schema/configuration information available at runtime and up to five representative objects per portal type. Field values are bounded in size. PFG structures are recursively represented to a bounded depth. Binary fields are represented by field type, filename and size, not by their binary contents.
+The inventory intentionally does **not** export all 10,000+ objects. It records complete schema/configuration information for sampled objects and up to five representative objects per portal type. Field values are bounded in size. PFG structures are recursively represented to a bounded depth. Binary fields are represented by field type, filename and size, not by their binary contents.
 
 The script reads both declared/type configuration and actual runtime object classes. Therefore a database object whose runtime class differs from the source repository's expected class will show up in the inventory and can be compared against `MIGRATION_AUDIT.md` before any Dexterity work begins.
