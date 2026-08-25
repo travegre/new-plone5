@@ -17,8 +17,8 @@ def main():
     tree = ast.parse(text, SOURCE)
     functions = dict((node.name, node) for node in tree.body
                      if isinstance(node, ast.FunctionDef))
-    for name in ('_base', '_normalize'):
-        assert name in functions
+    assert '_base' in functions
+    assert '_normalize' in functions
 
     selected = [node for node in tree.body
                 if isinstance(node, ast.FunctionDef)
@@ -29,33 +29,26 @@ def main():
     exec(compile(module, SOURCE, 'exec'), namespace)
     normalize = namespace['_normalize']
     script = 'src/plone43_inventory.py'
-    expected = 'src/plone43_inventory.py'
+    output = '--output-dir=/plone/instance/src'
 
     cases = [
-        ([script, '--output-dir=/plone/instance/src'], expected),
-        ([script, script, '--output-dir=/plone/instance/src'], expected),
-        ([script, '-c', script, '--output-dir=/plone/instance/src'], expected),
-        (['/plone/instance/parts/instance/bin/interpreter', '-c', script,
-          '--output-dir=/plone/instance/src'], expected),
-        (['-c', script, '--output-dir=/plone/instance/src'], expected),
+        [script, output],
+        [script, script, output],
+        [script, '-c', script, output],
+        ['/plone/instance/parts/instance/bin/interpreter', '-c', script,
+         output],
+        ['-c', script, output],
     ]
-    for argv, first in cases:
+    for argv in cases:
         result = normalize(argv)
-        assert os.path.basename(result[0]) == os.path.basename(first)
-        assert result[1:] == ['--output-dir=/plone/instance/src']
+        assert os.path.basename(result[0]) == 'plone43_inventory_original.py'
+        assert result[1:] == [output]
 
-    for argv in (
-        [script, '--bogus'],
-        [script, '-c'],
-        [script, 'other.py', '--output-dir=/tmp/out'],
-        ['-c', 'other.py', '--output-dir=/tmp/out'],
-    ):
-        try:
-            normalize(argv)
-        except SystemExit:
-            pass
-        else:
-            raise AssertionError('Invalid argv was silently accepted: %r' % (argv,))
+    # Normalization must not hide genuine inventory arguments.  The original
+    # implementation's parse_output_dir() remains responsible for rejecting
+    # these after launcher bookkeeping has been removed.
+    assert normalize([script, '--bogus'])[1:] == ['--bogus']
+    assert normalize([script, 'other.py'])[1:] == ['other.py']
 
     print('plone43_inventory.py argv compatibility checks: OK')
 
