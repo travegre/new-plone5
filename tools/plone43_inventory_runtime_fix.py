@@ -7,7 +7,7 @@ module import time. Importing it normally therefore cannot be used to patch
 runtime-only issues first.
 
 The wrapper loads only the definitions from plone43_inventory.py, patches the
-two issues discovered against the real Plone 4.3 ZODB, and then runs the
+runtime issues discovered against the real Plone 4.3 ZODB, and then runs the
 inventory exactly once with the ``app`` supplied by ``bin/instance run``.
 
 Run with::
@@ -56,7 +56,7 @@ def wrapper_output_dir(argv, parse_output_dir):
         interpreter -c src/plone43_inventory_runtime_fix.py --output-dir=...
 
     The ``-c`` belongs to the generated instance interpreter and appears
-    before the wrapper path.  We intentionally ignore everything before the
+    before the wrapper path. We intentionally ignore everything before the
     wrapper and strictly parse only arguments after it.
     """
     argv = list(argv)
@@ -152,9 +152,28 @@ def is_pfg(obj):
     return False
 
 
+def utf8_json_dump(obj, handle, **kwargs):
+    """Mirror the working Markdown strategy: encode Unicode before writing.
+
+    Python 2's json.dump writes Unicode chunks to a byte-oriented file handle,
+    which makes the file object attempt implicit ASCII encoding.  Render the
+    complete JSON document first, then explicitly encode it as UTF-8 before
+    writing, just as the Markdown path already does.
+    """
+    rendered = namespace['json_dumps_original'](obj, **kwargs)
+    if isinstance(rendered, namespace['text_type']):
+        rendered = rendered.encode('utf-8')
+    handle.write(rendered)
+
+
 # Patch the exact global names used by site_inventory()/inspect_object().
 namespace['local_roles'] = local_roles
 namespace['is_pfg'] = is_pfg
+
+# Preserve json.dumps before replacing json.dump.  run() uses json.dump for the
+# machine-readable file; markdown() continues to use json.dumps normally.
+namespace['json_dumps_original'] = namespace['json'].dumps
+namespace['json'].dump = utf8_json_dump
 
 # Run exactly once using the Plone/Zope ``app`` supplied to this wrapper.
 outdir = wrapper_output_dir(sys.argv, namespace['parse_output_dir'])
