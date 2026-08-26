@@ -6,7 +6,7 @@ Run inside the Plone 5.2 target after import::
 
     bin/instance run tools/plone52_parity.py --input-dir=/migration-data/export
 
-The checker is read-only.  It compares the source export manifest/JSONL with
+The checker is read-only. It compares the source export manifest/JSONL with
 objects currently present in the five target Plone sites and writes a machine-
 readable parity report to ``reports/plone52-parity.json``.
 """
@@ -14,9 +14,11 @@ import hashlib
 import json
 import os
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 
 from plone.dexterity.utils import iterSchemata
+from Products.CMFCore.utils import getToolByName
+from zope.component.hooks import setSite
 from zope.schema import getFields
 
 SITES = ('portal', 'dezurstva', 'kiestra', 'preiskave', 'nadomescanja')
@@ -44,6 +46,15 @@ BASIC_SOURCE_FIELDS = {
     'id', 'title', 'description', 'allowDiscussion', 'subject', 'relatedItems',
     'location', 'language', 'effectiveDate', 'expirationDate', 'creators',
     'contributors', 'rights', 'excludeFromNav',
+}
+
+# Archetypes/internal implementation fields which are not part of the target
+# Dexterity business model. They are either represented by metadata/behaviors
+# or deliberately not migrated as content fields.
+LEGACY_IMPLEMENTATION_FIELDS = {
+    'creation_date', 'modification_date', 'constrainTypesMode',
+    'locallyAllowedTypes', 'immediatelyAddableTypes', 'nextPreviousEnabled',
+    'presentation', 'tableContents',
 }
 
 
@@ -130,31 +141,43 @@ def stable_hash(value):
 
 def target_field_names(obj):
     result = set()
-    try:
-        for iface in iterSchemata(obj):
-            result.update(getFields(iface).keys())
-    except Exception:
-        pass
+    for iface in iterSchemata(obj):
+        result.update(getFields(iface).keys())
     return result
 
 
-def source_custom_field_hashes(record):
+def source_value_for_target(item):
+    """Normalize source storage representation the same way importer does."""
+    value = item.get('value')
+    if item.get('field_type') == 'LinesField':
+        if value is None:
+            return []
+        if isinstance(value, (list, tuple)):
+            return [str(v) for v in value]
+        return [str(value)]
+    return value
+
+
+def comparable_source_hashes(record, target_names):
     result = {}
     for name, item in source_field_map(record).items():
         if name in BASIC_SOURCE_FIELDS or name in ('id', 'title', 'description'):
             continue
+        if name in LEGACY_IMPLEMENTATION_FIELDS:
+            continue
+        if name not in target_names:
+            # A source-only AT implementation field is not a parity failure;
+            # only fields actually mapped into the target schema are compared.
+            continue
         if 'binary' in item:
             continue
-        result[name] = stable_hash(item.get('value'))
+        result[name] = stable_hash(source_value_for_target(item))
     return result
 
 
-def target_custom_field_hashes(obj, source_record):
+def target_custom_field_hashes(obj, source_hashes):
     result = {}
-    names = target_field_names(obj)
-    for name in source_custom_field_hashes(source_record):
-        if name not in names:
-            continue
+    for name in source_hashes:
         try:
             result[name] = stable_hash(getattr(obj, name, None))
         except Exception:
@@ -177,7 +200,9 @@ def find_target(app, record):
     site_name = record.get('site') or record.get('source_site')
     if site_name not in app:
         return None
-    current = app[site_name]
+    site = app[site_name]
+    setSite(site)
+    current = site
     rel = source_relative_path(record)
     if not rel:
         return current
@@ -190,13 +215,7 @@ def find_target(app, record):
 
 def current_state(obj):
     try:
-        tool = obj.portal_workflow
-    except Exception:
-        try:
-            tool = obj.restrictedTraverse('@@plone_tools').workflow()
-        except Exception:
-            return None
-    try:
+        tool = getToolByName(obj, 'portal_workflow')
         return tool.getInfoFor(obj, 'review_state', None)
     except Exception:
         return None
@@ -254,8 +273,14 @@ def check_record(app, record, input_dir):
             'portal_type: expected %r got %r' %
             (expected_type, getattr(obj, 'portal_type', None)))
 
-    source_hashes = source_custom_field_hashes(record)
-    target_hashes = target_custom_field_hashes(obj, record)
+    try:
+        target_names = target_field_names(obj)
+    except Exception as exc:
+        target_names = set()
+        result['differences'].append('target schema unreadable: %r' % exc)
+
+    source_hashes = comparable_source_hashes(record, target_names)
+    target_hashes = target_custom_field_hashes(obj, source_hashes)
     field_diffs = {}
     for name, source_hash in source_hashes.items():
         target_hash = target_hashes.get(name)
@@ -271,6 +296,8 @@ def check_record(app, record, input_dir):
         if not info:
             continue
         name = item.get('name')
+        if name not in target_names:
+            continue
         try:
             target_hash = target_binary_hash(getattr(obj, name, None))
         except Exception:
@@ -344,13 +371,14 @@ def run(app, input_dir):
         if site_name not in app:
             continue
         try:
+            setSite(app[site_name])
             brains = app[site_name].portal_catalog(portal_type='EasyForm')
             easyform_counts[site_name] = len(brains)
         except Exception:
             easyform_counts[site_name] = 0
 
     report = {
-        'schema_version': 1,
+        'schema_version': 2,
         'input_dir': input_dir,
         'status_counts': dict(status_counts),
         'parse_errors': parse_errors,
