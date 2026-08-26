@@ -9,6 +9,9 @@ services:
       - ./var/filestorage:/plone/instance/var/filestorage
       - ./var/blobstorage:/plone/instance/var/blobstorage
       - ./migration-data:/migration-data
+      # Full 4.3 export stays outside Git. Override PLONE43_EXPORT_DIR when
+      # the old checkout is not ../previous_plone/src/export.
+      - ${PLONE43_EXPORT_DIR:-../previous_plone/src/export}:/migration-data/export
     environment:
       TZ: Europe/Ljubljana
     restart: unless-stopped
