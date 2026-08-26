@@ -39,8 +39,8 @@ STANDARD_TYPE_MAP = {
     'Event': 'Event', 'Topic': 'Collection',
 }
 SKIP_TYPES = {
-    'uvoz', 'FormFolder', 'FormMailerAdapter', 'FormSelectionField',
-    'FormStringField', 'FormTextField', 'FormThanksPage',
+    'uvoz', 'imiuvozipreiskavo', 'FormFolder', 'FormMailerAdapter',
+    'FormSelectionField', 'FormStringField', 'FormTextField', 'FormThanksPage',
 }
 BASIC_SOURCE_FIELDS = {
     'id', 'title', 'description', 'allowDiscussion', 'subject', 'relatedItems',
@@ -48,9 +48,6 @@ BASIC_SOURCE_FIELDS = {
     'contributors', 'rights', 'excludeFromNav',
 }
 
-# Archetypes/internal implementation fields which are not part of the target
-# Dexterity business model. They are either represented by metadata/behaviors
-# or deliberately not migrated as content fields.
 LEGACY_IMPLEMENTATION_FIELDS = {
     'creation_date', 'modification_date', 'constrainTypesMode',
     'locallyAllowedTypes', 'immediatelyAddableTypes', 'nextPreviousEnabled',
@@ -147,7 +144,6 @@ def target_field_names(obj):
 
 
 def source_value_for_target(item):
-    """Normalize source storage representation the same way importer does."""
     value = item.get('value')
     if item.get('field_type') == 'LinesField':
         if value is None:
@@ -166,8 +162,6 @@ def comparable_source_hashes(record, target_names):
         if name in LEGACY_IMPLEMENTATION_FIELDS:
             continue
         if name not in target_names:
-            # A source-only AT implementation field is not a parity failure;
-            # only fields actually mapped into the target schema are compared.
             continue
         if 'binary' in item:
             continue
