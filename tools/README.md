@@ -1,8 +1,8 @@
 # Plone 4.3 read-only database inventory
 
-`plone43_inventory.py` is deliberately a **Plone 4.3 / Python 2.7 tool**. It is not imported by the Plone 5.2 application and is not part of application startup.
+`plone43_inventory.py` is a self-contained **Plone 4.3 / Python 2.7** tool. It is not imported by the Plone 5.2 application and is not part of application startup.
 
-It inventories these five sites:
+It inventories:
 
 - `/portal` — IMI imenik
 - `/dezurstva` — Dežurstva
@@ -10,132 +10,89 @@ It inventories these five sites:
 - `/preiskave` — Preiskave
 - `/nadomescanja` — Nadomeščanja
 
-It walks actual ZODB objects rather than relying only on catalog indexes. It records portal-type counts, runtime classes and inheritance, interfaces, actual Archetypes schema where the object exposes a callable `Schema()` method, field properties, storage/indexing/searchability/default/vocabulary information, representative values, persistent attributes, workflows/states, local roles, permissions, references, PFG structures, and File/Image information. Objects without an Archetypes schema are explicitly represented as non-Archetypes; they are not discarded.
+It walks actual ZODB objects and records portal-type counts, runtime classes/inheritance/interfaces, Archetypes schemas where `Schema()` is actually available, field configuration and values, persistent attributes, workflows/states, local roles, permissions, references, PloneFormGen structures, and File/Image information. Objects without an Archetypes schema are explicitly retained and marked as such.
 
-## Safety model
+## Read-only safety
 
-The script contains no calls to `invokeFactory`, `manage_addProduct`, `setWorkflowState`, `reindexObject`, schema mutation APIs, transaction commit APIs, or other content/workflow/index mutation APIs. It only traverses and reads existing objects/tools and writes two files outside ZODB:
+The script contains no content/workflow/schema/index mutation calls and does not commit a ZODB transaction. It only reads the existing database and writes these files outside ZODB:
 
 - `plone43_inventory.json`
 - `plone43_inventory.md`
 
-Individual object, field, schema, vocabulary, reference, workflow, and similar inspection failures are recorded in the JSON `errors` array with site, path, portal type, runtime class, operation, field, exception type, and message. The inventory continues rather than aborting a site because of one unusual object.
+Inspection is fault tolerant. Object-, field-, schema-, vocabulary-, workflow-, reference-, and similar failures are recorded with site, path, portal type, runtime class, operation, field, exception type and message, then processing continues.
 
-**Important:** `bin/instance run` starts a Zope application process and therefore the normal Plone process must not be running against the same `Data.fs`. The safest operational procedure is to stop the source container first, then run a one-shot container using the same image and mounted database volume. This avoids `Data.fs.lock` contention and prevents two Zope processes from opening the storage concurrently.
+## Run command
 
-The inventory itself does not commit a transaction. Do not run it against a database that is simultaneously serving requests.
-
-## `bin/instance run` argument handling
-
-Plone 4.3 documentation defines the normal scripting environment as `sys.argv[0] == script name` and subsequent entries as script arguments. The extended `plone.recipe.zope2instance` control script implements `run` on top of the Zope/Python launcher. In the affected deployment, the Python `-c` launcher marker is visible to the executed script immediately after the script name, producing launcher bookkeeping such as:
-
-```text
-[script, '-c', inventory-arguments...]
-```
-
-The inventory accepts the documented clean shape and the legacy/full launcher shapes. It removes `-c` **only in exact launcher positions** and only when the surrounding script name matches the inventory script. An arbitrary `-c`, unknown option, or different script name is still rejected. The parser therefore does not simply discard unknown arguments.
-
-Both option syntaxes are valid:
-
-```sh
-bin/instance run src/plone43_inventory.py --output-dir=/plone/instance/src
-bin/instance run src/plone43_inventory.py --output-dir /plone/instance/src
-```
-
-The first form is recommended because it is a single explicit option/value argument.
-
-## Important: the inventory has a launcher and implementation file
-
-`tools/plone43_inventory.py` is a small Python-2.7-compatible launcher. The complete inventory implementation is in the companion file:
-
-```text
-tools/plone43_inventory_original.py
-```
-
-**Copy both files together.** The launcher deliberately does not use its own `__file__` to locate the implementation because Zope 2.13's `instance run` can expose the generated interpreter path there. It instead locates `plone43_inventory_original.py` next to the script path supplied to the runner, or under `src/`/`tools/` in the buildout working directory.
-
-For the command below, copy both files into `src/`:
-
-```sh
-cp tools/plone43_inventory.py src/plone43_inventory.py
-cp tools/plone43_inventory_original.py src/plone43_inventory_original.py
-```
-
-Then the exact requested command works:
-
-```sh
-bin/instance run src/plone43_inventory.py --output-dir=/plone/instance/src
-```
-
-## Exact procedure with the source Docker setup
-
-The source repository's Compose service is named `instance`, is built from the source `Dockerfile`, and mounts:
-
-- `./var/filestorage` -> `/plone/instance/var/filestorage`
-- `./var/blobstorage` -> `/plone/instance/var/blobstorage`
-- `./src` -> `/plone/instance/src`
-
-The source image is Python 2.7 / Plone 4.3.20. The source Compose service normally runs `bin/instance console`.
-
-### 1. Stop the running Plone/Zope process
-
-From the **source repository checkout** (the directory containing `docker-compose.yml`):
-
-```sh
-docker compose stop instance
-```
-
-Verify that no source instance is still running:
-
-```sh
-docker compose ps
-```
-
-The `instance` service should not be running. Do not use `kill -9` as the normal shutdown procedure; allow Zope to close its ZODB cleanly.
-
-### 2. Make a filesystem backup before the first inventory run
-
-The inventory is intended to be read-only, but because this is the real production-era database, make a backup before opening it with a different process:
-
-```sh
-tar -C var -czf /safe/backup/plone43-filestorage-$(date +%Y%m%d-%H%M%S).tar.gz filestorage
-```
-
-If blobs are required for the inventory's file/image size information, also back up `var/blobstorage`:
-
-```sh
-tar -C var -czf /safe/backup/plone43-blobstorage-$(date +%Y%m%d-%H%M%S).tar.gz blobstorage
-```
-
-Do not perform this backup while Zope is running.
-
-### 3. Run it inside the existing Plone 4.3 container
-
-If the target checkout is mounted into the container so that its `tools` directory is available, copy **both** inventory files into `src/`:
+Copy **only this one file** into the Plone 4.3 container, for example:
 
 ```sh
 cp /path/to/new-plone5/tools/plone43_inventory.py src/plone43_inventory.py
-cp /path/to/new-plone5/tools/plone43_inventory_original.py src/plone43_inventory_original.py
 ```
 
-Then run exactly:
+Then run:
 
 ```sh
 bin/instance run src/plone43_inventory.py --output-dir=/plone/instance/src
 ```
 
-The script writes:
+The alternative form is also supported:
+
+```sh
+bin/instance run src/plone43_inventory.py --output-dir /plone/instance/src
+```
+
+The output is:
 
 ```text
 /plone/instance/src/plone43_inventory.json
 /plone/instance/src/plone43_inventory.md
 ```
 
-Do not copy or modify anything under `my-plone-migration/src` merely to run the inventory.
+## Plone 4.3 `instance run` argv handling
 
-### 4. One-shot Docker invocation when the target checkout is not mounted
+The inventory does **not** use `__file__` to determine its script name. Under the affected Zope 2.13 runner, `__file__` can refer to the generated interpreter rather than the requested script.
 
-From the **source repository checkout**:
+Instead, the script knows its own basename (`plone43_inventory.py`) and finds the final occurrence of that exact script name in `sys.argv`. This handles the launcher forms observed in Plone 4.3, including Python's `-c` marker and duplicate script-name bookkeeping. Only launcher bookkeeping is removed; genuine unknown inventory arguments are still rejected.
+
+For example, a launcher shape such as:
+
+```text
+[interpreter, '-c', 'src/plone43_inventory.py', '--output-dir=/inventory]
+```
+
+is normalized to the inventory arguments:
+
+```text
+['--output-dir=/inventory']
+```
+
+An unrelated argument such as `other.py` or `--bogus` is not silently ignored.
+
+## Stopping the source Zope process
+
+Do **not** run a second Zope process against the same `Data.fs` while the normal Plone 4.3 process is serving it.
+
+Stop the source container first:
+
+```sh
+docker compose stop instance
+```
+
+Verify it is stopped:
+
+```sh
+docker compose ps
+```
+
+Do not delete `Data.fs.lock` while a Zope process may still have the database open.
+
+Then run the inventory in the existing Plone 4.3 environment:
+
+```sh
+bin/instance run src/plone43_inventory.py --output-dir=/plone/instance/src
+```
+
+A one-shot container can also be used, provided it uses the same Plone 4.3 image and the same database/blob mounts, with the target repository's `tools` directory mounted read-only:
 
 ```sh
 docker compose run --rm --no-deps \
@@ -145,60 +102,27 @@ docker compose run --rm --no-deps \
   bin/instance run /migration-tools/plone43_inventory.py --output-dir=/inventory-output
 ```
 
-Replace `/work/new-plone5` with the absolute path of the **target** `travegre/new-plone5` checkout.
+Replace `/work/new-plone5` with the absolute path of the target checkout.
 
-Because both inventory files are in the same read-only `/migration-tools` mount, the launcher finds its companion implementation automatically.
+## What to review
 
-The command uses the already-built Plone 4.3 image and does not start the Compose service's normal long-running command. The source `var/filestorage` and `var/blobstorage` mounts remain the same as the normal service, so the script sees the real source database.
+The resulting inventory should be treated as the database authority for the later migration work. Review especially:
 
-The output will be on the host in:
+- all five site inventories and actual portal-type counts;
+- runtime classes for similarly named types in different sites;
+- `produkti`, `dezurstvo`, `imipreiskava`, `laboratorij`, `seznam_zaposlenih`, and `uvoz`;
+- `imipreiskava` runtime/schema discrepancies;
+- Archetypes fields versus persistent attributes not represented by the schema;
+- workflows and actual states;
+- local roles and permission declarations;
+- references and unresolved references;
+- PloneFormGen objects and nested field/configuration objects;
+- File/Image field types, filenames and sizes;
+- unknown/no-portal-type objects;
+- the inspection-error list.
 
-```text
-inventory-output/plone43_inventory.json
-inventory-output/plone43_inventory.md
-```
+The inventory uses representative samples rather than dumping every object. It retains complete field/schema configuration for sampled Archetypes objects and bounded representative stored values. It never invents schema or migration information.
 
-### 5. Inspect the result
+## Compatibility
 
-The JSON is the machine-readable authority for later migration tooling. The Markdown is a human-readable review report. In particular, review:
-
-- every portal type count in all five sites;
-- runtime class lists for each type;
-- `imipreiskava` samples/classes/schema;
-- all `produkti` and `dezurstvo` implementations separately;
-- `laboratorij`, `seznam_zaposlenih`, and `uvoz`;
-- all PFG objects and their nested children/configuration;
-- workflow chains and actual states;
-- local-role objects;
-- reference/broken-reference sections;
-- File/Image field information;
-- objects reported as `Unknown` or with no portal type;
-- the total and per-site inspection-error counts.
-
-A representative object contains `archetypes_schema.archetypes` and `archetypes_schema.available`. For a non-Archetypes runtime object this is false/false with a reason such as `No callable Archetypes Schema method`; that object still has its runtime class, interfaces, persistent attributes, workflow, roles, references, etc. For an Archetypes object, the actual runtime `Schema()` and its fields are recorded.
-
-### 6. Restart the source site only after the inventory is finished
-
-```sh
-docker compose up -d instance
-```
-
-Do not run the inventory while this service is serving the database.
-
-## If `Data.fs.lock` is present
-
-A lock file means another process may still have the FileStorage open. **Do not delete `Data.fs.lock` while a Zope process might still be using the database.** First identify and stop the process holding the storage. Only after a clean shutdown should an old stale lock be investigated.
-
-A normal `docker compose stop instance` followed by `docker compose run --rm --no-deps ...` avoids the expected lock conflict because the two Zope processes are never concurrent.
-
-## Do not run it from Python 3 / Plone 5.2
-
-The source database contains Python 2-era persistent objects and the source packages are Plone 4.3 code. The inventory must execute inside the **existing Plone 4.3 environment** so that stored classes and Archetypes fields can be imported and inspected correctly.
-
-The tool must not be added to `buildout.cfg`, `configure.zcml`, `profiles`, or any Plone 5.2 startup hook.
-
-## Output characteristics
-
-The inventory intentionally does **not** export all 10,000+ objects. It records complete schema/configuration information for sampled objects and up to five representative objects per portal type. Field values are bounded in size. PFG structures are recursively represented to a bounded depth. Binary fields are represented by field type, filename and size, not by their binary contents.
-
-The script reads both declared/type configuration and actual runtime object classes. Therefore a database object whose runtime class differs from the source repository's expected class will show up in the inventory and can be compared against `MIGRATION_AUDIT.md` before any Dexterity work begins.
+Run this tool **inside the actual Plone 4.3 / Python 2.7 environment**. Do not execute it with the system Python or from the Plone 5.2 application.
