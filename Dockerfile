@@ -27,8 +27,11 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 
 COPY buildout.cfg /plone/instance/buildout.cfg
 COPY src /plone/instance/src
-COPY tools /plone/instance/tools
 RUN buildout -c buildout.cfg
+
+# Migration runners change frequently. Copy them only after the expensive
+# Plone/buildout layer so editing a tool does not reinstall all dependencies.
+COPY tools /plone/instance/tools
 
 RUN mkdir -p /plone/instance/var/filestorage /plone/instance/var/blobstorage \
     && chown -R 1000:1000 /plone/instance
