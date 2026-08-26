@@ -161,9 +161,33 @@ def to_unicode(v):
     return unicode(v)
 
 
+def normalize_json_value(value):
+    """Recursively normalize Python 2 byte strings before JSON encoding.
+
+    json.dumps() itself joins encoded chunks internally.  If the object tree
+    still contains a mixture of ``str`` and ``unicode``, Python 2 can attempt
+    an implicit ASCII decode before dumps() has returned.  Normalize the
+    complete structure first, using the same UTF-8 decoding rule that already
+    fixed markdown().
+    """
+    if isinstance(value, unicode):
+        return value
+    if isinstance(value, str):
+        return value.decode('utf-8')
+    if isinstance(value, dict):
+        return dict((normalize_json_value(key), normalize_json_value(item))
+                    for key, item in value.items())
+    if isinstance(value, list):
+        return [normalize_json_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [normalize_json_value(item) for item in value]
+    return value
+
+
 def utf8_json_dump(obj, handle, **kwargs):
-    """Normalize JSON text to Unicode, then write explicit UTF-8 bytes."""
-    rendered = namespace['json_dumps_original'](obj, **kwargs)
+    """Normalize the object tree, then write explicit UTF-8 JSON bytes."""
+    normalized = normalize_json_value(obj)
+    rendered = namespace['json_dumps_original'](normalized, **kwargs)
     rendered = to_unicode(rendered)
     handle.write(rendered.encode('utf-8'))
 
