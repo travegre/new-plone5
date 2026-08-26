@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  plone:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./var/filestorage:/plone/instance/var/filestorage
+      - ./var/blobstorage:/plone/instance/var/blobstorage
+      - ./migration-data:/migration-data
+    environment:
+      TZ: Europe/Ljubljana
+    restart: unless-stopped
