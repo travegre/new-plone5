@@ -1,91 +1,11 @@
 <?xml version="1.0"?>
-<object name="portal_types">
-  <object name="imi.directory.person" meta_type="Dexterity FTI">
-    <property name="title">IMI Directory Person</property>
-    <property name="factory">imi.directory.person</property>
-    <property name="global_allow">True</property>
-    <property name="filter_content_types">False</property>
-    <property name="schema">imi.migration.content.IDirectoryPerson</property>
-    <property name="klass">plone.dexterity.content.Item</property>
-    <property name="behaviors" purge="false"><element value="plone.basic"/><element value="plone.namefromtitle"/><element value="plone.excludefromnavigation"/></property>
-    <property name="default_view">view</property>
-  </object>
-
-  <object name="imi.staff.directory" meta_type="Dexterity FTI">
-    <property name="title">IMI Staff Directory</property>
-    <property name="factory">imi.staff.directory</property>
-    <property name="global_allow">True</property>
-    <property name="filter_content_types">True</property>
-    <property name="allowed_content_types"><element value="imi.staff.employee"/></property>
-    <property name="schema">imi.migration.content.IStaffDirectory</property>
-    <property name="klass">plone.dexterity.content.Container</property>
-    <property name="behaviors" purge="false"><element value="plone.basic"/><element value="plone.namefromtitle"/><element value="plone.excludefromnavigation"/></property>
-    <property name="default_view">view</property>
-  </object>
-
-  <object name="imi.staff.employee" meta_type="Dexterity FTI">
-    <property name="title">IMI Staff Employee</property>
-    <property name="factory">imi.staff.employee</property>
-    <property name="global_allow">False</property>
-    <property name="filter_content_types">False</property>
-    <property name="schema">imi.migration.content.IStaffEmployee</property>
-    <property name="klass">plone.dexterity.content.Item</property>
-    <property name="behaviors" purge="false"><element value="plone.basic"/><element value="plone.namefromtitle"/><element value="plone.excludefromnavigation"/></property>
-    <property name="default_view">view</property>
-  </object>
-
-  <object name="imi.duty.roster_day" meta_type="Dexterity FTI">
-    <property name="title">IMI Duty Roster Day</property>
-    <property name="factory">imi.duty.roster_day</property>
-    <property name="global_allow">True</property>
-    <property name="filter_content_types">False</property>
-    <property name="schema">imi.migration.content.IDutyRosterDay</property>
-    <property name="klass">plone.dexterity.content.Container</property>
-    <property name="behaviors" purge="false"><element value="plone.basic"/><element value="plone.namefromtitle"/><element value="plone.excludefromnavigation"/></property>
-    <property name="default_view">view</property>
-  </object>
-
-  <object name="imi.kiestra.work_day" meta_type="Dexterity FTI">
-    <property name="title">IMI Kiestra Work Day</property>
-    <property name="factory">imi.kiestra.work_day</property>
-    <property name="global_allow">True</property>
-    <property name="filter_content_types">False</property>
-    <property name="schema">imi.migration.content.IKiestraWorkDay</property>
-    <property name="klass">plone.dexterity.content.Container</property>
-    <property name="behaviors" purge="false"><element value="plone.basic"/><element value="plone.namefromtitle"/><element value="plone.excludefromnavigation"/></property>
-    <property name="default_view">view</property>
-  </object>
-
-  <object name="imi.replacements.day" meta_type="Dexterity FTI">
-    <property name="title">IMI Replacement Day</property>
-    <property name="factory">imi.replacements.day</property>
-    <property name="global_allow">True</property>
-    <property name="filter_content_types">False</property>
-    <property name="schema">imi.migration.content.IReplacementDay</property>
-    <property name="klass">plone.dexterity.content.Container</property>
-    <property name="behaviors" purge="false"><element value="plone.basic"/><element value="plone.namefromtitle"/><element value="plone.excludefromnavigation"/></property>
-    <property name="default_view">view</property>
-  </object>
-
-  <object name="imi.replacements.laboratory" meta_type="Dexterity FTI">
-    <property name="title">IMI Replacement Laboratory</property>
-    <property name="factory">imi.replacements.laboratory</property>
-    <property name="global_allow">True</property>
-    <property name="filter_content_types">False</property>
-    <property name="schema">imi.migration.content.IReplacementLaboratory</property>
-    <property name="klass">plone.dexterity.content.Container</property>
-    <property name="behaviors" purge="false"><element value="plone.basic"/><element value="plone.namefromtitle"/><element value="plone.excludefromnavigation"/></property>
-    <property name="default_view">view</property>
-  </object>
-
-  <object name="imi.exams.examination" meta_type="Dexterity FTI">
-    <property name="title">IMI Examination</property>
-    <property name="factory">imi.exams.examination</property>
-    <property name="global_allow">True</property>
-    <property name="filter_content_types">False</property>
-    <property name="schema">imi.migration.content.IExamination</property>
-    <property name="klass">plone.dexterity.content.Container</property>
-    <property name="behaviors" purge="false"><element value="plone.basic"/><element value="plone.namefromtitle"/><element value="plone.excludefromnavigation"/></property>
-    <property name="default_view">view</property>
-  </object>
+<object name="portal_types" meta_type="Plone Types Tool">
+  <object name="imi.directory.person" meta_type="Dexterity FTI" />
+  <object name="imi.staff.directory" meta_type="Dexterity FTI" />
+  <object name="imi.staff.employee" meta_type="Dexterity FTI" />
+  <object name="imi.duty.roster_day" meta_type="Dexterity FTI" />
+  <object name="imi.kiestra.work_day" meta_type="Dexterity FTI" />
+  <object name="imi.replacements.day" meta_type="Dexterity FTI" />
+  <object name="imi.replacements.laboratory" meta_type="Dexterity FTI" />
+  <object name="imi.exams.examination" meta_type="Dexterity FTI" />
 </object>
