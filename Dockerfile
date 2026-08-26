@@ -27,6 +27,7 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 
 COPY buildout.cfg /plone/instance/buildout.cfg
 COPY src /plone/instance/src
+COPY tools /plone/instance/tools
 RUN buildout -c buildout.cfg
 
 RUN mkdir -p /plone/instance/var/filestorage /plone/instance/var/blobstorage \
