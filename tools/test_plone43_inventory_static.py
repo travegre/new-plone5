@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Dependency-free argv compatibility checks for the Plone 4.3 inventory shim."""
+"""Dependency-free argv compatibility test for the Plone 4.3 inventory."""
 from __future__ import print_function
 
 import ast
@@ -12,22 +12,16 @@ SOURCE = os.path.join(HERE, 'plone43_inventory.py')
 
 def main():
     with open(SOURCE, 'rb') as handle:
-        source = handle.read()
-    text = source.decode('utf-8')
-    tree = ast.parse(text, SOURCE)
-    functions = dict((node.name, node) for node in tree.body
-                     if isinstance(node, ast.FunctionDef))
-    assert '_base' in functions
-    assert '_normalize' in functions
-
-    selected = [node for node in tree.body
-                if isinstance(node, ast.FunctionDef)
-                and node.name in ('_base', '_normalize')]
-    module = ast.Module(body=selected)
+        tree = ast.parse(handle.read().decode('utf-8'), SOURCE)
+    wanted = set(('parse_output_dir', 'parse_inventory_args'))
+    nodes = [n for n in tree.body
+             if isinstance(n, ast.FunctionDef) and n.name in wanted]
+    assert len(nodes) == 2
+    module = ast.Module(body=nodes)
     ast.fix_missing_locations(module)
     namespace = {'os': os}
     exec(compile(module, SOURCE, 'exec'), namespace)
-    normalize = namespace['_normalize']
+    parse = namespace['parse_inventory_args']
     script = 'src/plone43_inventory.py'
     output = '--output-dir=/plone/instance/src'
 
@@ -35,22 +29,21 @@ def main():
         [script, output],
         [script, script, output],
         [script, '-c', script, output],
-        ['/plone/instance/parts/instance/bin/interpreter', '-c', script,
-         output],
+        ['/plone/instance/parts/instance/bin/interpreter', '-c', script, output],
         ['-c', script, output],
     ]
     for argv in cases:
-        result = normalize(argv)
-        assert os.path.basename(result[0]) == 'plone43_inventory_original.py'
-        assert result[1:] == [output]
+        assert parse(argv) == '/plone/instance/src', argv
 
-    # Normalization must not hide genuine inventory arguments.  The original
-    # implementation's parse_output_dir() remains responsible for rejecting
-    # these after launcher bookkeeping has been removed.
-    assert normalize([script, '--bogus'])[1:] == ['--bogus']
-    assert normalize([script, 'other.py'])[1:] == ['other.py']
+    for argv in ([script, '--bogus'], [script, 'other.py']):
+        try:
+            parse(argv)
+        except SystemExit:
+            pass
+        else:
+            raise AssertionError('unexpected argument accepted: %r' % (argv,))
 
-    print('plone43_inventory.py argv compatibility checks: OK')
+    print('plone43_inventory argv compatibility checks: OK')
 
 
 if __name__ == '__main__':
