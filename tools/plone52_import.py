@@ -13,6 +13,7 @@ import plone.api
 from plone.app.textfield.value import RichTextValue
 from plone.dexterity.utils import iterSchemata
 from plone.namedfile.file import NamedBlobFile
+from zope.component.hooks import setSite
 from zope.schema import getFields
 
 CUSTOM_TYPE_MAP = {
@@ -217,6 +218,10 @@ def transition_to_state(obj, state):
 
 def create_record(app, record, input_dir, path_map):
     site = app[record['site']]
+    # bin/instance run starts outside any Plone site. plone.api and Dexterity
+    # resolve tools/utilities (portal_types, workflows, etc.) through the
+    # active site manager, so explicitly activate the site for every record.
+    setSite(site)
     rel = source_relative_path(record)
     if not rel:
         return site
@@ -275,6 +280,9 @@ def run(app, input_dir):
                     'portal_type': record.get('portal_type'), 'error': repr(exc),
                 })
     for obj, state in states:
+        # Re-activate the object's owning Plone site before workflow lookup.
+        site_id = obj.getPhysicalPath()[1]
+        setSite(app[site_id])
         transition_to_state(obj, state)
     import transaction
     transaction.commit()
