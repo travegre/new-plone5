@@ -33,6 +33,6 @@ RUN mkdir -p /plone/instance/var/filestorage /plone/instance/var/blobstorage \
     && chown -R 1000:1000 /plone/instance
 
 USER 1000:1000
-EXPOSE 8080
+EXPOSE 8070
 
 CMD ["bin/instance", "fg"]

@@ -4,7 +4,7 @@ services:
   plone:
     build: .
     ports:
-      - "8080:8080"
+      - "8070:8070"
     volumes:
       - ./var/filestorage:/plone/instance/var/filestorage
       - ./var/blobstorage:/plone/instance/var/blobstorage
