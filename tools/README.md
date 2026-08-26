@@ -27,25 +27,13 @@ The inventory itself does not commit a transaction. Do not run it against a data
 
 ## `bin/instance run` argument handling
 
-Plone 4.3 documentation defines the normal scripting environment as `sys.argv[0] == script name` and subsequent entries as script arguments. citeturn0search0 The extended `plone.recipe.zope2instance` control script implements `run` on top of the Zope/Python launcher. In the affected deployment, the Python `-c` launcher marker is visible to the executed script immediately after the script name, producing this shape:
+Plone 4.3 documentation defines the normal scripting environment as `sys.argv[0] == script name` and subsequent entries as script arguments. The extended `plone.recipe.zope2instance` control script implements `run` on top of the Zope/Python launcher. In the affected deployment, the Python `-c` launcher marker is visible to the executed script immediately after the script name, producing launcher bookkeeping such as:
 
 ```text
 [script, '-c', inventory-arguments...]
 ```
 
-The inventory also accepts the other legacy shape:
-
-```text
-['-c', script, inventory-arguments...]
-```
-
-and the documented clean shape:
-
-```text
-[script, inventory-arguments...]
-```
-
-It removes `-c` **only in those exact launcher positions** and only when the surrounding script name matches the inventory script. An arbitrary `-c`, unknown option, or different script name is still rejected. The parser therefore does not simply discard unknown arguments.
+The inventory accepts the documented clean shape and the legacy/full launcher shapes. It removes `-c` **only in exact launcher positions** and only when the surrounding script name matches the inventory script. An arbitrary `-c`, unknown option, or different script name is still rejected. The parser therefore does not simply discard unknown arguments.
 
 Both option syntaxes are valid:
 
@@ -55,6 +43,29 @@ bin/instance run src/plone43_inventory.py --output-dir /plone/instance/src
 ```
 
 The first form is recommended because it is a single explicit option/value argument.
+
+## Important: the inventory has a launcher and implementation file
+
+`tools/plone43_inventory.py` is a small Python-2.7-compatible launcher. The complete inventory implementation is in the companion file:
+
+```text
+tools/plone43_inventory_original.py
+```
+
+**Copy both files together.** The launcher deliberately does not use its own `__file__` to locate the implementation because Zope 2.13's `instance run` can expose the generated interpreter path there. It instead locates `plone43_inventory_original.py` next to the script path supplied to the runner, or under `src/`/`tools/` in the buildout working directory.
+
+For the command below, copy both files into `src/`:
+
+```sh
+cp tools/plone43_inventory.py src/plone43_inventory.py
+cp tools/plone43_inventory_original.py src/plone43_inventory_original.py
+```
+
+Then the exact requested command works:
+
+```sh
+bin/instance run src/plone43_inventory.py --output-dir=/plone/instance/src
+```
 
 ## Exact procedure with the source Docker setup
 
@@ -100,7 +111,14 @@ Do not perform this backup while Zope is running.
 
 ### 3. Run it inside the existing Plone 4.3 container
 
-If the target checkout is mounted into the container so that its `tools` directory is available, the exact requested command is:
+If the target checkout is mounted into the container so that its `tools` directory is available, copy **both** inventory files into `src/`:
+
+```sh
+cp /path/to/new-plone5/tools/plone43_inventory.py src/plone43_inventory.py
+cp /path/to/new-plone5/tools/plone43_inventory_original.py src/plone43_inventory_original.py
+```
+
+Then run exactly:
 
 ```sh
 bin/instance run src/plone43_inventory.py --output-dir=/plone/instance/src
@@ -113,7 +131,7 @@ The script writes:
 /plone/instance/src/plone43_inventory.md
 ```
 
-If `src/plone43_inventory.py` is the copy from `travegre/new-plone5`, use that exact file; do not modify the source application's packages.
+Do not copy or modify anything under `my-plone-migration/src` merely to run the inventory.
 
 ### 4. One-shot Docker invocation when the target checkout is not mounted
 
@@ -128,6 +146,8 @@ docker compose run --rm --no-deps \
 ```
 
 Replace `/work/new-plone5` with the absolute path of the **target** `travegre/new-plone5` checkout.
+
+Because both inventory files are in the same read-only `/migration-tools` mount, the launcher finds its companion implementation automatically.
 
 The command uses the already-built Plone 4.3 image and does not start the Compose service's normal long-running command. The source `var/filestorage` and `var/blobstorage` mounts remain the same as the normal service, so the script sees the real source database.
 
