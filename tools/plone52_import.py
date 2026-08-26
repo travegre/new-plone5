@@ -54,6 +54,8 @@ BASIC_SOURCE_FIELDS = {
     'contributors', 'rights', 'excludeFromNav',
 }
 
+COMMIT_EVERY = 500
+
 
 def parse_input_dir(argv):
     values = list(argv)
@@ -148,8 +150,6 @@ def lines_value(value):
         return ()
     if isinstance(value, (list, tuple)):
         return tuple(str(v) for v in value)
-    # Do not split strings heuristically; a scalar accidentally stored in an
-    # old LinesField is still one value, not an invented newline/comma parse.
     return (str(value),)
 
 
@@ -218,9 +218,6 @@ def transition_to_state(obj, state):
 
 def create_record(app, record, input_dir, path_map):
     site = app[record['site']]
-    # bin/instance run starts outside any Plone site. plone.api and Dexterity
-    # resolve tools/utilities (portal_types, workflows, etc.) through the
-    # active site manager, so explicitly activate the site for every record.
     setSite(site)
     rel = source_relative_path(record)
     if not rel:
@@ -248,6 +245,7 @@ def create_record(app, record, input_dir, path_map):
             obj.exclude_from_nav = bool(value)
     except Exception:
         pass
+    transition_to_state(obj, (record.get('metadata') or {}).get('workflow_state'))
     obj.reindexObject()
     path_map[(record['site'], rel)] = obj
     return obj
@@ -258,34 +256,36 @@ def run(app, input_dir):
     if not os.path.isfile(objects_file):
         raise SystemExit('Missing %s' % objects_file)
     path_map = {}
-    states = []
-    created = skipped = 0
+    created = skipped = processed = 0
     errors = []
+    import transaction
+
     with open(objects_file, 'r', encoding='utf-8') as handle:
         for lineno, line in enumerate(handle, 1):
             if not line.strip():
                 continue
             record = json.loads(line)
+            processed += 1
             try:
                 obj = create_record(app, record, input_dir, path_map)
                 if obj is None:
                     skipped += 1
-                    continue
-                created += 1
-                states.append((obj, (record.get('metadata') or {}).get('workflow_state')))
+                else:
+                    created += 1
             except Exception as exc:
                 errors.append({
                     'line': lineno, 'site': record.get('site'),
                     'source_path': record.get('source_path'),
                     'portal_type': record.get('portal_type'), 'error': repr(exc),
                 })
-    for obj, state in states:
-        # Re-activate the object's owning Plone site before workflow lookup.
-        site_id = obj.getPhysicalPath()[1]
-        setSite(app[site_id])
-        transition_to_state(obj, state)
-    import transaction
+
+            if processed % COMMIT_EVERY == 0:
+                transaction.commit()
+                print('Progress: %d processed, %d imported/visited, %d skipped, %d errors' %
+                      (processed, created, skipped, len(errors)), flush=True)
+
     transaction.commit()
+    setSite(None)
     report_dir = os.path.join(input_dir, 'reports')
     os.makedirs(report_dir, exist_ok=True)
     with open(os.path.join(report_dir, 'plone52-import-errors.json'), 'w',
