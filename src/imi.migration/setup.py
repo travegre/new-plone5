@@ -9,6 +9,12 @@ setup(
     package_dir={'': 'src'},
     namespace_packages=['imi'],
     include_package_data=True,
+    package_data={
+        'imi.migration': [
+            'configure.zcml',
+            'profiles/default/*.xml',
+        ],
+    },
     zip_safe=False,
     install_requires=[
         'setuptools',
