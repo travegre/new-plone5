@@ -1,4 +1,7 @@
-
 # Plone 4.3 migration payload
 exports/objects.jsonl
 exports/binaries/
+
+# Local Plone 5 target state and mounted migration data
+var/
+migration-data/
