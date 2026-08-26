@@ -1,0 +1,4 @@
+
+# Plone 4.3 migration payload
+exports/objects.jsonl
+exports/binaries/
