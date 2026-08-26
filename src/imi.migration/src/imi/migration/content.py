@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from plone.app.textfield import RichText
 from plone.namedfile.field import NamedBlobFile
+from plone.supermodel import model
 from zope import schema
-from zope.interface import Interface
 
 
 def _textline(title, required=False):
@@ -17,7 +17,7 @@ def _tuple(title):
     return schema.Tuple(title=title, required=False, value_type=schema.TextLine())
 
 
-class IDirectoryPerson(Interface):
+class IDirectoryPerson(model.Schema):
     predime = _textline(u'Predpona')
     ime = _textline(u'Ime')
     priimek = _textline(u'Priimek')
@@ -40,17 +40,17 @@ class IDirectoryPerson(Interface):
     star = _textline(u'Star zapis')
 
 
-class IStaffDirectory(Interface):
+class IStaffDirectory(model.Schema):
     """Container replacing the legacy seznam_zaposlenih import object."""
 
 
-class IStaffEmployee(Interface):
+class IStaffEmployee(model.Schema):
     source_employee_id = _textline(u'Legacy employee ID', required=True)
     contact = _textline(u'Kontakt')
     email = _textline(u'E-naslov')
 
 
-class IDutyRosterDay(Interface):
+class IDutyRosterDay(model.Schema):
     dezurni_zdravnik = _tuple(u'Dežurni zdravnik')
     nadzorni_zdravnik = _tuple(u'Nadzorni zdravnik')
     specializant = _tuple(u'Specializant na usposabljanju')
@@ -77,7 +77,7 @@ class IDutyRosterDay(Interface):
     klukca = schema.Bool(title=u'Kopiraj na cel tekoči teden', required=False)
 
 
-class IKiestraWorkDay(Interface):
+class IKiestraWorkDay(model.Schema):
     priprava_vzorcev = _tuple(u'Priprava vzorcev')
     priprava_vzorcev_text = _textline(u'Priprava vzorcev - opomba')
     cepljenje_vzorcev = _tuple(u'Inoqula + Sortera')
@@ -97,18 +97,18 @@ class IKiestraWorkDay(Interface):
     stalni_tekst = RichText(title=u'Stalni tekst', required=False)
 
 
-class IReplacementDay(Interface):
+class IReplacementDay(model.Schema):
     # Keep this lossless during the first migration. Later normalization can
     # happen only after parity has been proven.
     nadomescanja_json = _text(u'Nadomeščanja (legacy JSON)')
 
 
-class IReplacementLaboratory(Interface):
+class IReplacementLaboratory(model.Schema):
     okrajsava = _textline(u'Okrajšava', required=True)
     privzeti_vodja = _tuple(u'Privzeti vodja')
 
 
-class IExamination(Interface):
+class IExamination(model.Schema):
     sifra = _textline(u'Šifra preiskave')
     podrocje = _tuple(u'Področje preiskave')
     sklop = RichText(title=u'Sklop', required=False)
