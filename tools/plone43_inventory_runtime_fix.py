@@ -2,16 +2,17 @@
 # -*- coding: utf-8 -*-
 """Runtime safety wrapper for the Plone 4.3 inventory.
 
-This imports the main inventory module and patches two runtime issues found only
-against the real Plone 4.3 ZODB:
+This wrapper exists because the main inventory script still auto-executes at
+module import time.  Importing it normally therefore cannot be used to patch
+runtime-only issues first.
 
-* local role blocking must not assume get_local_role_block exists;
-* PloneFormGen portal-type detection must recognize Form*Field and
-  FormThanksPage types actually present in the database.
+The wrapper loads only the definitions from plone43_inventory.py, patches the
+two issues discovered against the real Plone 4.3 ZODB, and then runs the
+inventory exactly once with the ``app`` supplied by ``bin/instance run``.
 
-Run with Plone 4.3's instance runner, for example:
+Run with::
 
-    bin/instance run src/plone43_inventory_runtime_fix.py \
+    PYTHONPATH=src bin/instance run src/plone43_inventory_runtime_fix.py \
         --output-dir=/plone/instance/src
 """
 from __future__ import print_function
@@ -20,48 +21,77 @@ import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-if HERE not in sys.path:
-    sys.path.insert(0, HERE)
-
-import plone43_inventory as inventory
+SOURCE = os.path.join(HERE, 'plone43_inventory.py')
 
 
-def local_roles(ctx, obj):
+if 'app' not in globals():
+    raise SystemExit(
+        'Use the Plone 4.3 bin/instance run command; '
+        'do not execute with system Python.'
+    )
+
+
+# Load the main inventory definitions without executing its final auto-run
+# block.  This is intentionally narrow: we cut only the known final runner
+# block, rather than ignoring arbitrary code or options.
+with open(SOURCE, 'rb') as handle:
+    source = handle.read()
+
+marker = "\nif 'app' not in globals():\n"
+position = source.rfind(marker)
+if position < 0:
+    raise SystemExit(
+        'Could not locate the expected final runner block in %s' % SOURCE
+    )
+
+source = source[:position]
+namespace = {
+    '__name__': 'plone43_inventory_runtime_base',
+    '__file__': SOURCE,
+}
+exec(compile(source, SOURCE, 'exec'), namespace)
+
+
+def local_roles(obj, ctx):
     """Collect local roles without eagerly touching optional methods."""
     roles_method = getattr(obj, 'get_local_roles', None)
     block_method = getattr(obj, 'get_local_role_block', None)
 
-    assignments = []
+    roles = {}
     if callable(roles_method):
-        assignments = inventory.safe_call(
+        roles = namespace['safe'](
             ctx,
             'local_roles',
             roles_method,
             obj=obj,
-            default=[]
+            default={}
         )
 
-    blocks_inheritance = None
+    blocked = None
     if callable(block_method):
-        blocks_inheritance = inventory.safe_call(
+        blocked = namespace['safe'](
             ctx,
-            'local_roles.block',
+            'local_role_block',
             block_method,
             obj=obj,
             default=None
         )
 
-    return {
-        'assignments': inventory.scalar(assignments),
-        'blocks_inheritance': blocks_inheritance,
-    }
+    try:
+        roles = dict(roles or {})
+    except Exception as exc:
+        ctx.error('local_roles.normalize', obj=obj, exception=exc)
+        roles = {}
+
+    return {'roles': roles, 'blocked': blocked}
 
 
-def is_pfg_type(portal_type):
-    """Recognize PloneFormGen portal types found in this installation."""
-    if not portal_type:
-        return False
-    value = portal_type.lower()
+def is_pfg(obj):
+    """Recognize the PloneFormGen portal types present in this database."""
+    pt = namespace['portal_type'](obj) or ''
+    cls = namespace['dotted'](obj) or ''
+    value = pt.lower()
+
     if value in ('formfolder', 'formthankspage'):
         return True
     if value.startswith('fieldset'):
@@ -69,12 +99,14 @@ def is_pfg_type(portal_type):
     if value.startswith('form') and (
             value.endswith('field') or value.endswith('adapter')):
         return True
+    if 'ploneformgen' in cls.lower():
+        return True
     return False
 
 
-inventory.local_roles = local_roles
-inventory.is_pfg_type = is_pfg_type
+# Patch the exact global names used by site_inventory()/inspect_object().
+namespace['local_roles'] = local_roles
+namespace['is_pfg'] = is_pfg
 
-
-if __name__ == '__main__':
-    inventory.run(app, inventory.parse_inventory_args(sys.argv))
+# Run exactly once using the Plone/Zope ``app`` supplied to this wrapper.
+namespace['run'](app, namespace['parse_inventory_args'](sys.argv))
