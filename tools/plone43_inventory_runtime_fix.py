@@ -3,7 +3,7 @@
 """Runtime safety wrapper for the Plone 4.3 inventory.
 
 This wrapper exists because the main inventory script still auto-executes at
-module import time.  Importing it normally therefore cannot be used to patch
+module import time. Importing it normally therefore cannot be used to patch
 runtime-only issues first.
 
 The wrapper loads only the definitions from plone43_inventory.py, patches the
@@ -12,7 +12,7 @@ inventory exactly once with the ``app`` supplied by ``bin/instance run``.
 
 Run with::
 
-    PYTHONPATH=src bin/instance run src/plone43_inventory_runtime_fix.py \
+    bin/instance run src/plone43_inventory_runtime_fix.py \
         --output-dir=/plone/instance/src
 """
 from __future__ import print_function
@@ -20,9 +20,39 @@ from __future__ import print_function
 import os
 import sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-SOURCE = os.path.join(HERE, 'plone43_inventory.py')
+WRAPPER_BASENAME = 'plone43_inventory_runtime_fix.py'
 
+
+def executed_script_path(argv):
+    """Find this script from the argv shape produced by Zope's instance run.
+
+    With ``bin/instance run`` the module-level ``__file__`` may point at the
+    generated instance interpreter rather than at the script being executed.
+    The actual script path is, however, present in ``sys.argv``.  Use the last
+    occurrence to mirror the argument-normalization logic in the main
+    inventory script.
+    """
+    matches = []
+    for value in list(argv):
+        try:
+            if os.path.basename(value) == WRAPPER_BASENAME:
+                matches.append(value)
+        except Exception:
+            pass
+    if not matches:
+        raise SystemExit(
+            'Could not locate %s in Plone/Zope argv: %r' %
+            (WRAPPER_BASENAME, list(argv))
+        )
+    path = matches[-1]
+    if not os.path.isabs(path):
+        path = os.path.abspath(path)
+    return path
+
+
+SCRIPT = executed_script_path(sys.argv)
+HERE = os.path.dirname(SCRIPT)
+SOURCE = os.path.join(HERE, 'plone43_inventory.py')
 
 if 'app' not in globals():
     raise SystemExit(
@@ -30,9 +60,13 @@ if 'app' not in globals():
         'do not execute with system Python.'
     )
 
+if not os.path.isfile(SOURCE):
+    raise SystemExit(
+        'Could not find plone43_inventory.py next to wrapper: %s' % SOURCE
+    )
 
 # Load the main inventory definitions without executing its final auto-run
-# block.  This is intentionally narrow: we cut only the known final runner
+# block. This is intentionally narrow: we cut only the known final runner
 # block, rather than ignoring arbitrary code or options.
 with open(SOURCE, 'rb') as handle:
     source = handle.read()
