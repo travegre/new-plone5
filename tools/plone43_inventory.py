@@ -730,7 +730,17 @@ def markdown(data):
                     (pt, sample.get('path')), '', '```json',
                     json.dumps(sample, ensure_ascii=False, indent=2,
                                sort_keys=True), '```', '</details>', ''])
-    return u'\n'.join(lines) + u'\n'
+
+    #lines_unicode = [line.decode('utf-8') if isinstance(line, str) else line for line in lines]
+    def to_unicode(v):
+      if isinstance(v, unicode):
+        return v
+      if isinstance(v, str):
+        return v.decode('utf-8')
+      return unicode(v)
+
+    return u'\n'.join(to_unicode(line) for line in lines) + u'\n'
+    #return '\n'.join(lines) + '\n'
 
 
 def run(app, outdir):
