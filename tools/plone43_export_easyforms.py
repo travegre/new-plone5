@@ -1,24 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Export PloneFormGen FormFolders as EasyForm migration models.
+"""Export PloneFormGen forms as EasyForm XML models on Plone 4.3.
 
-This is a read-only Plone 4.3/Python 2 pass.  It deliberately uses the
-migration helpers supplied by collective.easyform's Plone-4 migration branch
-instead of reimplementing the PFG->EasyForm XML conversion.
+This exporter is intentionally self-contained.  It follows the conversion
+semantics used by collective.easyform's ``pfg-migration-plone4`` branch, but
+it does *not* install collective.easyform (or its Plone-5-era dependency
+stack) into the Plone 4.3 buildout.
 
-The EasyForm package does not need to be installed into the Plone site; its
-Python code only needs to be present on the buildout path so these imports are
-available::
-
-    from collective.easyform.migration.fields import fields_model
-    from collective.easyform.migration.actions import actions_model
+The current IMI sites use the PFG types covered below: string, selection and
+text fields plus mailer adapters.  Unsupported PFG field/action types are
+reported rather than silently converted.
 
 Run::
 
     bin/instance run src/plone43_export_easyforms.py \
         --output-dir=/plone/instance/src/export
-
-Output: ``pfg-easyform.jsonl`` in the existing export directory.
 """
 from __future__ import print_function
 
@@ -27,22 +23,20 @@ import os
 import sys
 import traceback
 
+from lxml import etree
+from Products.PloneFormGen.content.actionAdapter import FormActionAdapter
+from Products.PloneFormGen.content.fieldsBase import BaseFormField
+
 SITES = ('portal', 'dezurstva', 'kiestra', 'preiskave', 'nadomescanja')
 SCRIPT_BASENAME = 'plone43_export_easyforms.py'
+SCHEMA_NS = 'http://namespaces.plone.org/supermodel/schema'
+EASYFORM_NS = 'http://namespaces.plone.org/supermodel/easyform'
+FORM_NS = 'http://namespaces.plone.org/supermodel/form'
 
 try:
     unicode_type = unicode
 except NameError:  # pragma: no cover
     unicode_type = str
-
-try:
-    from collective.easyform.migration.fields import fields_model
-    from collective.easyform.migration.actions import actions_model
-except ImportError:
-    raise SystemExit(
-        'Missing collective.easyform Plone-4 migration helpers. Add the '
-        'migration_features_1.x EasyForm code to the old buildout path; the '
-        'product does NOT need to be installed into the Plone site.')
 
 
 def to_unicode(value):
@@ -109,24 +103,6 @@ def safe_call(obj, name, default=None):
         return default
 
 
-def fix_model_expressions(model):
-    if not model:
-        return model
-    replacements = (
-        ("request.form['", "request.form['form.widgets."),
-        ("request.form.get('", "request.form.get('form.widgets."),
-        ("member and member.id or ''",
-         "member and member.getProperty('id', '') or ''"),
-    )
-    for old, new in replacements:
-        model = model.replace(old, new)
-    for fieldname in ('email', 'replyto'):
-        old = 'request/form/%s' % fieldname
-        new = "python: request.form.get('form.widgets.%s')" % fieldname
-        model = model.replace(old, new)
-    return model
-
-
 def rich_raw(value):
     if value is None:
         return None
@@ -134,8 +110,197 @@ def rich_raw(value):
     return to_unicode(raw if raw is not None else value)
 
 
+def new_model():
+    model = etree.Element('{%s}model' % SCHEMA_NS,
+                          nsmap={None: SCHEMA_NS,
+                                 'easyform': EASYFORM_NS,
+                                 'form': FORM_NS})
+    schema = etree.SubElement(model, '{%s}schema' % SCHEMA_NS)
+    return model, schema
+
+
+def add_text(parent, name, value):
+    if value is None:
+        return
+    node = etree.SubElement(parent, '{%s}%s' % (SCHEMA_NS, name))
+    if isinstance(value, (list, tuple)):
+        value = u' '.join(to_unicode(v) for v in value)
+    else:
+        value = to_unicode(value)
+    node.text = value
+
+
+def add_list(parent, name, values):
+    node = etree.SubElement(parent, '{%s}%s' % (SCHEMA_NS, name))
+    for value in values or ():
+        value = to_unicode(value)
+        child = etree.SubElement(node, '{%s}element' % SCHEMA_NS)
+        if u'|' in value:
+            key, value = value.split(u'|', 1)
+            child.set('key', key)
+        child.text = value
+
+
+def field_properties(obj):
+    props = {}
+    for field in obj.Schema().fields():
+        name = field.getName()
+        try:
+            accessor = field.getEditAccessor(obj)
+            props[name] = accessor()
+        except Exception:
+            try:
+                props[name] = field.get(obj)
+            except Exception:
+                pass
+    return props
+
+
+def fix_tales(value):
+    value = to_unicode(value or u'')
+    if value == u'here/memberEmail':
+        return u"python:member and member.getProperty('email', '') or ''"
+    if value == u'here/memberFullName':
+        return u"python:member and member.getProperty('fullname', '') or ''"
+    if value == u'here/memberId':
+        return u"python:member and member.getProperty('id', '') or ''"
+    return value
+
+
+def set_easyform_attr(node, name, value):
+    if value in (None, u'', ''):
+        return
+    node.set('{%s}%s' % (EASYFORM_NS, name), to_unicode(value))
+
+
+def append_pfg_field(schema, obj):
+    pt = obj.portal_type
+    mapping = {
+        'FormStringField': 'zope.schema.TextLine',
+        'FormSelectionField': 'zope.schema.Choice',
+        'FormTextField': 'zope.schema.Text',
+        'FormLinesField': 'zope.schema.Text',
+        'FormBooleanField': 'zope.schema.Bool',
+        'FormIntegerField': 'zope.schema.Int',
+        'FormMultiSelectionField': 'zope.schema.Set',
+    }
+    target_type = mapping.get(pt)
+    if target_type is None:
+        raise ValueError('Unsupported PFG field type: %s' % pt)
+
+    props = field_properties(obj)
+    field = etree.SubElement(schema, '{%s}field' % SCHEMA_NS)
+    field.set('name', to_unicode(obj.getId()))
+    field.set('type', target_type)
+
+    add_text(field, 'title', props.get('title') or safe_call(obj, 'Title', obj.getId()))
+    if props.get('description'):
+        add_text(field, 'description', props.get('description'))
+    if props.get('required') is False:
+        add_text(field, 'required', u'False')
+    default = props.get('fgDefault')
+    if default not in (None, u'', '') and not isinstance(default, (list, tuple)):
+        add_text(field, 'default', default)
+
+    vocabulary = props.get('fgVocabulary')
+    if vocabulary:
+        if target_type == 'zope.schema.Set':
+            value_type = etree.SubElement(field, '{%s}value_type' % SCHEMA_NS)
+            value_type.set('type', 'zope.schema.Choice')
+            add_list(value_type, 'values', vocabulary)
+        else:
+            add_list(field, 'values', vocabulary)
+
+    for source_name, target_name in (
+        ('fgTDefault', 'TDefault'),
+        ('fgTEnabled', 'TEnabled'),
+        ('fgTValidator', 'TValidator'),
+        ('hidden', 'THidden'),
+        ('serverSide', 'serverSide'),
+    ):
+        value = props.get(source_name)
+        if value not in (None, u'', '', False):
+            set_easyform_attr(field, target_name,
+                              fix_tales(value) if source_name.startswith('fgT') else value)
+    return field
+
+
+def fields_model(form):
+    model, schema = new_model()
+    for obj in form.objectValues():
+        if isinstance(obj, BaseFormField):
+            append_pfg_field(schema, obj)
+    return etree.tostring(model, pretty_print=True, encoding='utf-8')
+
+
+def append_mailer(schema, obj):
+    props = field_properties(obj)
+    field = etree.SubElement(schema, '{%s}field' % SCHEMA_NS)
+    field.set('name', to_unicode(obj.getId()))
+    field.set('type', 'collective.easyform.actions.Mailer')
+
+    simple = (
+        'title', 'description', 'recipient_name', 'recipient_email',
+        'replyto_field', 'subject_field', 'msg_subject', 'body_pre',
+        'body_post', 'body_footer', 'body_type', 'to_field',
+        'cc_recipients', 'bcc_recipients', 'recipientOverride',
+        'subjectOverride', 'senderOverride', 'ccOverride', 'bccOverride',
+    )
+    for name in simple:
+        value = props.get(name)
+        if value not in (None, u'', ''):
+            add_text(field, name, value)
+
+    for name in ('showFields', 'xinfo_headers', 'additional_headers'):
+        value = props.get(name)
+        if value:
+            add_list(field, name, value)
+
+    for name in ('showAll', 'includeEmpties'):
+        value = props.get(name)
+        if value is not None:
+            add_text(field, name, u'True' if bool(value) else u'False')
+
+    condition = props.get('execCondition')
+    if condition:
+        set_easyform_attr(field, 'execCondition', condition)
+
+    # Deliberately omit PFG's body_pt.  EasyForm will use its own default
+    # mail template, matching the upstream PFG migration helper behavior.
+    return field
+
+
+def actions_model(form):
+    model, schema = new_model()
+    for obj in form.objectValues():
+        if not isinstance(obj, FormActionAdapter):
+            continue
+        if obj.portal_type != 'FormMailerAdapter':
+            raise ValueError('Unsupported PFG action type: %s' % obj.portal_type)
+        append_mailer(schema, obj)
+    return etree.tostring(model, pretty_print=True, encoding='utf-8')
+
+
+def fix_model_expressions(model):
+    if not model:
+        return model
+    replacements = (
+        (b"request.form['", b"request.form['form.widgets."),
+        (b"request.form.get('", b"request.form.get('form.widgets."),
+        (b"member and member.id or ''",
+         b"member and member.getProperty('id', '') or ''"),
+    )
+    for old, new in replacements:
+        model = model.replace(old, new)
+    for fieldname in ('email', 'replyto'):
+        old = ('request/form/%s' % fieldname).encode('utf-8')
+        new = ("python: request.form.get('form.widgets.%s')" % fieldname).encode('utf-8')
+        model = model.replace(old, new)
+    return model
+
+
 def export_form(site_name, obj):
-    record = {
+    return {
         'site': site_name,
         'source_path': object_path(obj),
         'id': safe_call(obj, 'getId', getattr(obj, 'id', None)),
@@ -146,20 +311,6 @@ def export_form(site_name, obj):
         'actions_model': fix_model_expressions(actions_model(obj)),
         'form_tabbing': False,
     }
-
-    thanks_id = safe_call(obj, 'getThanksPage', None)
-    thanks = obj.get(thanks_id, None) if thanks_id else None
-    if thanks is not None:
-        record.update({
-            'thankstitle': to_unicode(getattr(thanks, 'title', None)),
-            'thanksdescription': safe_call(thanks, 'Description', None),
-            'showAll': getattr(thanks, 'showAll', None),
-            'showFields': getattr(thanks, 'showFields', None),
-            'includeEmpties': getattr(thanks, 'includeEmpties', None),
-            'thanksPrologue': rich_raw(getattr(thanks, 'thanksPrologue', None)),
-            'thanksEpilogue': rich_raw(getattr(thanks, 'thanksEpilogue', None)),
-        })
-    return record
 
 
 def run(app, output_dir):
@@ -179,14 +330,27 @@ def run(app, output_dir):
                 site = app.unrestrictedTraverse(site_name)
                 brains = site.portal_catalog(portal_type='FormFolder')
             except Exception as exc:
-                errors.append({
-                    'site': site_name, 'operation': 'catalog',
-                    'error': repr(exc), 'traceback': traceback.format_exc()})
+                errors.append({'site': site_name, 'operation': 'catalog',
+                               'error': repr(exc),
+                               'traceback': traceback.format_exc()})
                 continue
             for brain in brains:
                 try:
                     obj = brain.getObject()
-                    handle.write(json_line(export_form(site_name, obj)))
+                    record = export_form(site_name, obj)
+                    thanks_id = safe_call(obj, 'getThanksPage', None)
+                    thanks = obj.get(thanks_id, None) if thanks_id else None
+                    if thanks is not None:
+                        record.update({
+                            'thankstitle': to_unicode(getattr(thanks, 'title', None)),
+                            'thanksdescription': safe_call(thanks, 'Description', None),
+                            'showAll': getattr(thanks, 'showAll', None),
+                            'showFields': getattr(thanks, 'showFields', None),
+                            'includeEmpties': getattr(thanks, 'includeEmpties', None),
+                            'thanksPrologue': rich_raw(getattr(thanks, 'thanksPrologue', None)),
+                            'thanksEpilogue': rich_raw(getattr(thanks, 'thanksEpilogue', None)),
+                        })
+                    handle.write(json_line(record))
                     exported += 1
                 except Exception as exc:
                     errors.append({
