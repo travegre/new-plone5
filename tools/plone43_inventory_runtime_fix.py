@@ -152,25 +152,27 @@ def is_pfg(obj):
     return False
 
 
-def utf8_json_dump(obj, handle, **kwargs):
-    """Mirror the working Markdown strategy: encode Unicode before writing.
+def to_unicode(v):
+    """Use the same Python 2 str/unicode normalization as markdown()."""
+    if isinstance(v, unicode):
+        return v
+    if isinstance(v, str):
+        return v.decode('utf-8')
+    return unicode(v)
 
-    Python 2's json.dump writes Unicode chunks to a byte-oriented file handle,
-    which makes the file object attempt implicit ASCII encoding.  Render the
-    complete JSON document first, then explicitly encode it as UTF-8 before
-    writing, just as the Markdown path already does.
-    """
+
+def utf8_json_dump(obj, handle, **kwargs):
+    """Normalize JSON text to Unicode, then write explicit UTF-8 bytes."""
     rendered = namespace['json_dumps_original'](obj, **kwargs)
-    if isinstance(rendered, namespace['text_type']):
-        rendered = rendered.encode('utf-8')
-    handle.write(rendered)
+    rendered = to_unicode(rendered)
+    handle.write(rendered.encode('utf-8'))
 
 
 # Patch the exact global names used by site_inventory()/inspect_object().
 namespace['local_roles'] = local_roles
 namespace['is_pfg'] = is_pfg
 
-# Preserve json.dumps before replacing json.dump.  run() uses json.dump for the
+# Preserve json.dumps before replacing json.dump. run() uses json.dump for the
 # machine-readable file; markdown() continues to use json.dumps normally.
 namespace['json_dumps_original'] = namespace['json'].dumps
 namespace['json'].dump = utf8_json_dump
