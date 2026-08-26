@@ -23,31 +23,45 @@ import sys
 WRAPPER_BASENAME = 'plone43_inventory_runtime_fix.py'
 
 
-def executed_script_path(argv):
-    """Find this script from the argv shape produced by Zope's instance run.
-
-    With ``bin/instance run`` the module-level ``__file__`` may point at the
-    generated instance interpreter rather than at the script being executed.
-    The actual script path is, however, present in ``sys.argv``.  Use the last
-    occurrence to mirror the argument-normalization logic in the main
-    inventory script.
-    """
-    matches = []
-    for value in list(argv):
+def wrapper_position(argv):
+    """Return the final argv index of this wrapper under ``instance run``."""
+    positions = []
+    for index, value in enumerate(list(argv)):
         try:
             if os.path.basename(value) == WRAPPER_BASENAME:
-                matches.append(value)
+                positions.append(index)
         except Exception:
             pass
-    if not matches:
+    if not positions:
         raise SystemExit(
             'Could not locate %s in Plone/Zope argv: %r' %
             (WRAPPER_BASENAME, list(argv))
         )
-    path = matches[-1]
-    if not os.path.isabs(path):
-        path = os.path.abspath(path)
-    return path
+    return positions[-1]
+
+
+def executed_script_path(argv):
+    """Resolve this script from the argv shape produced by Zope instance run."""
+    value = list(argv)[wrapper_position(argv)]
+    if not os.path.isabs(value):
+        value = os.path.abspath(value)
+    return value
+
+
+def wrapper_output_dir(argv, parse_output_dir):
+    """Parse only arguments belonging to this wrapper.
+
+    Typical Plone 4.3/Zope 2.13 argv is::
+
+        interpreter -c src/plone43_inventory_runtime_fix.py --output-dir=...
+
+    The ``-c`` belongs to the generated instance interpreter and appears
+    before the wrapper path.  We intentionally ignore everything before the
+    wrapper and strictly parse only arguments after it.
+    """
+    argv = list(argv)
+    args = argv[wrapper_position(argv) + 1:]
+    return parse_output_dir(args)
 
 
 SCRIPT = executed_script_path(sys.argv)
@@ -143,4 +157,5 @@ namespace['local_roles'] = local_roles
 namespace['is_pfg'] = is_pfg
 
 # Run exactly once using the Plone/Zope ``app`` supplied to this wrapper.
-namespace['run'](app, namespace['parse_inventory_args'](sys.argv))
+outdir = wrapper_output_dir(sys.argv, namespace['parse_output_dir'])
+namespace['run'](app, outdir)
