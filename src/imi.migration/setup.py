@@ -13,6 +13,7 @@ setup(
         'imi.migration': [
             'configure.zcml',
             'profiles/default/*.xml',
+            'profiles/default/types/*.xml',
         ],
     },
     zip_safe=False,
