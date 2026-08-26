@@ -162,14 +162,7 @@ def to_unicode(v):
 
 
 def normalize_json_value(value):
-    """Recursively normalize Python 2 byte strings before JSON encoding.
-
-    json.dumps() itself joins encoded chunks internally.  If the object tree
-    still contains a mixture of ``str`` and ``unicode``, Python 2 can attempt
-    an implicit ASCII decode before dumps() has returned.  Normalize the
-    complete structure first, using the same UTF-8 decoding rule that already
-    fixed markdown().
-    """
+    """Recursively normalize Python 2 byte strings before JSON encoding."""
     if isinstance(value, unicode):
         return value
     if isinstance(value, str):
@@ -181,14 +174,21 @@ def normalize_json_value(value):
         return [normalize_json_value(item) for item in value]
     if isinstance(value, tuple):
         return [normalize_json_value(item) for item in value]
+    if isinstance(value, set):
+        return [normalize_json_value(item) for item in value]
     return value
 
 
-def utf8_json_dump(obj, handle, **kwargs):
-    """Normalize the object tree, then write explicit UTF-8 JSON bytes."""
+def utf8_json_dumps(obj, **kwargs):
+    """Normalize the complete object tree before any JSON encoder sees it."""
     normalized = normalize_json_value(obj)
     rendered = namespace['json_dumps_original'](normalized, **kwargs)
-    rendered = to_unicode(rendered)
+    return to_unicode(rendered)
+
+
+def utf8_json_dump(obj, handle, **kwargs):
+    """Write the normalized JSON document as explicit UTF-8 bytes."""
+    rendered = utf8_json_dumps(obj, **kwargs)
     handle.write(rendered.encode('utf-8'))
 
 
@@ -196,9 +196,11 @@ def utf8_json_dump(obj, handle, **kwargs):
 namespace['local_roles'] = local_roles
 namespace['is_pfg'] = is_pfg
 
-# Preserve json.dumps before replacing json.dump. run() uses json.dump for the
-# machine-readable file; markdown() continues to use json.dumps normally.
+# IMPORTANT: patch BOTH dumps() and dump().  markdown() embeds JSON using
+# json.dumps(), while run() writes the standalone JSON file using json.dump().
+# Both must pass through the same recursive Unicode normalization on Python 2.
 namespace['json_dumps_original'] = namespace['json'].dumps
+namespace['json'].dumps = utf8_json_dumps
 namespace['json'].dump = utf8_json_dump
 
 # Run exactly once using the Plone/Zope ``app`` supplied to this wrapper.
