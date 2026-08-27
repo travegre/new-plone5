@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from plone.app.textfield import RichText
+from plone.app.z3cform.widget import SelectFieldWidget
+from plone.autoform import directives as form
 from plone.namedfile.field import NamedBlobFile
 from plone.supermodel import model
 from zope import schema
@@ -15,6 +17,15 @@ def _text(title, required=False):
 
 def _tuple(title):
     return schema.Tuple(title=title, required=False, value_type=schema.TextLine())
+
+
+def _staff_tuple(title):
+    """A roster value: stored legacy person ids, displayed as staff names."""
+    return schema.Tuple(
+        title=title,
+        required=False,
+        value_type=schema.Choice(vocabulary='imi.duty.staff'),
+    )
 
 
 class IDirectoryPerson(model.Schema):
@@ -51,30 +62,103 @@ class IStaffEmployee(model.Schema):
 
 
 class IDutyRosterDay(model.Schema):
-    dezurni_zdravnik = _tuple(u'Dežurni zdravnik')
-    nadzorni_zdravnik = _tuple(u'Nadzorni zdravnik')
-    specializant = _tuple(u'Specializant na usposabljanju')
-    sarsifon = _tuple(u'Virološki laboratoriji')
-    dezurni_tehnik = _tuple(u'Dežurni tehnik')
-    izobrazevanje = _tuple(u'Izobraževanje')
-    bakterioloski_tehnik = _tuple(u'Urgentni laboratorij')
-    inoqula_tehnik = _tuple(u'BMK laboratorij')
-    sprejem_predpriprava_tehnik = _tuple(u'Sprejem/predpriprava')
-    vpis = _tuple(u'Vpis')
-    intervencijska_skupina = _tuple(u'Intervencijska skupina')
+    """Duty roster with the Plone-4 editor semantics preserved.
+
+    The old Archetypes InAndOutWidgets stored employee ids and displayed the
+    title from seznam_zaposlenih.  SelectFieldWidget gives us the equivalent
+    searchable multi-select in Plone 5 while keeping those ids untouched.
+    CSS wrapper classes reproduce the old three-column working layout.
+    """
+
+    # These four fields were explicitly hidden by the old Archetypes widgets.
+    form.omitted('dezurni_tehnik', 'izobrazevanje', 'VINVZV', 'VINDIF')
+
+    form.widget(
+        'dezurni_zdravnik', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third duty-team-start')
+    form.widget(
+        'nadzorni_zdravnik', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'specializant', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'sarsifon', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'bakterioloski_tehnik', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'inoqula_tehnik', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'sprejem_predpriprava_tehnik', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'vpis', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'intervencijska_skupina', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'intervencijska_skupina_telefon',
+        wrapper_css_class='duty-roster-field duty-roster-third')
+
+    form.widget(
+        'BOR', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third duty-ready-start')
+    form.widget(
+        'HIV', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'HUM', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'IT', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'PRZ', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'KLM', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'KOV', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'WHO', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget(
+        'kiestra', SelectFieldWidget,
+        wrapper_css_class='duty-roster-field duty-roster-third')
+    form.widget('klukca', wrapper_css_class='duty-roster-clear')
+
+    dezurni_zdravnik = _staff_tuple(u'Dežurni zdravnik')
+    nadzorni_zdravnik = _staff_tuple(u'Nadzorni zdravnik')
+    specializant = _staff_tuple(u'Specializant na usposabljanju')
+    sarsifon = _staff_tuple(u'Virološki laboratoriji')
+    dezurni_tehnik = _staff_tuple(u'Dežurni tehnik')
+    izobrazevanje = _staff_tuple(u'Izobraževanje')
+    bakterioloski_tehnik = _staff_tuple(u'Urgentni laboratorij')
+    inoqula_tehnik = _staff_tuple(u'BMK laboratorij')
+    sprejem_predpriprava_tehnik = _staff_tuple(u'Sprejem/predpriprava')
+    vpis = _staff_tuple(u'Vpis')
+    intervencijska_skupina = _staff_tuple(u'Intervencijska skupina')
     intervencijska_skupina_telefon = _textline(u'Intervencijska skupina telefon')
-    BOR = _tuple(u'BOR')
-    HIV = _tuple(u'HIV')
-    HUM = _tuple(u'HUM')
-    IT = _tuple(u'IT')
-    PRZ = _tuple(u'PRZ')
-    KLM = _tuple(u'KLM')
-    KOV = _tuple(u'VZ')
-    VINVZV = _tuple(u'VIN (VZV, EBV)')
-    VINDIF = _tuple(u'VIN (DIF ali PCR)')
-    WHO = _tuple(u'WHO')
-    kiestra = _tuple(u'Kiestra')
-    klukca = schema.Bool(title=u'Kopiraj na cel tekoči teden', required=False)
+    BOR = _staff_tuple(u'BOR')
+    HIV = _staff_tuple(u'HIV')
+    HUM = _staff_tuple(u'HUM')
+    IT = _staff_tuple(u'IT')
+    PRZ = _staff_tuple(u'PRZ')
+    KLM = _staff_tuple(u'KLM')
+    KOV = _staff_tuple(u'VZ')
+    VINVZV = _staff_tuple(u'VIN (VZV, EBV)')
+    VINDIF = _staff_tuple(u'VIN (DIF ali PCR)')
+    WHO = _staff_tuple(u'WHO')
+    kiestra = _staff_tuple(u'Kiestra')
+    klukca = schema.Bool(
+        title=u'Kopiraj to stanje pripravljenosti na cel tekoči teden',
+        required=False)
 
 
 class IKiestraWorkDay(model.Schema):
