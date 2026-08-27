@@ -25,5 +25,6 @@ setup(
         'plone.api',
         'plone.app.dexterity',
         'collective.easyform==3.2.1',
+        'openpyxl==3.0.10',
     ],
 )
