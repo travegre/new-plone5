@@ -3,13 +3,13 @@
 """Import compatible Plone 4.3 users/groups/roles and site settings.
 
 Reads ``security-settings.json`` created by
-``plone43_export_security_settings.py``.  Users are recreated with random,
+``plone43_export_security_settings.py``. Users are recreated with random,
 unknown passwords because the normal export deliberately contains no password
-material.  Administrators must reset passwords separately.
+material. Administrators must reset passwords separately.
 
-The importer is idempotent.  It deliberately ignores PAS virtual groups such
-as ``AuthenticatedUsers``: those are computed automatically and must not be
-created or populated as ordinary groups in Plone 5.
+The importer is idempotent. PAS virtual groups such as ``AuthenticatedUsers``
+are ignored because they are computed automatically and are not ordinary
+stored groups in Plone 5.
 """
 import json
 import os
@@ -25,6 +25,7 @@ VIRTUAL_GROUPS = frozenset((
     'Anonymous Users',
     'Authenticated Users',
 ))
+BASE_USER_ROLES = ('Member',)
 
 
 def parse_input_dir(argv):
@@ -45,8 +46,33 @@ def is_virtual_group(group_id):
     return str(group_id or '') in VIRTUAL_GROUPS
 
 
+def normal_roles(roles):
+    """Return stored roles suitable for explicit PAS role assignment."""
+    ignored = {'Authenticated', 'Anonymous'}
+    return tuple(str(role) for role in (roles or ())
+                 if str(role) not in ignored)
+
+
+def assign_principal_roles(site, principal_id, roles):
+    """Assign exported portal roles one at a time through the PAS role manager."""
+    assigned = []
+    errors = []
+    manager = getattr(site.acl_users, 'portal_role_manager', None)
+    if manager is None:
+        return assigned, ['missing portal_role_manager for %s' % principal_id]
+    for role in normal_roles(roles):
+        try:
+            manager.assignRoleToPrincipal(role, str(principal_id))
+            assigned.append(role)
+        except Exception as exc:
+            errors.append('role %s -> %s: %r' % (role, principal_id, exc))
+    return assigned, errors
+
+
 def create_groups(site, records):
     created = existing = skipped_virtual = 0
+    errors = []
+    roles_assigned = 0
     for record in records:
         group_id = str(record.get('id') or '')
         if not group_id:
@@ -56,27 +82,33 @@ def create_groups(site, records):
             continue
         group = plone.api.group.get(groupname=group_id)
         if group is None:
-            plone.api.group.create(
-                groupname=group_id,
-                title=record.get('title') or group_id,
-                description=record.get('description') or '',
-                roles=tuple(record.get('roles') or ()),
-            )
-            created += 1
+            try:
+                # Create first without elevated roles.  Explicit role assignment
+                # below is less restrictive and matches how PAS stores roles.
+                plone.api.group.create(
+                    groupname=group_id,
+                    title=record.get('title') or group_id,
+                    description=record.get('description') or '',
+                    roles=(),
+                )
+                created += 1
+            except Exception as exc:
+                errors.append('create group %s: %r' % (group_id, exc))
+                continue
         else:
             existing += 1
-            try:
-                role_manager = site.acl_users.portal_role_manager
-                role_manager.assignRoleToPrincipal(
-                    tuple(record.get('roles') or ()), group_id)
-            except Exception:
-                pass
-    return created, existing, skipped_virtual
+        assigned, role_errors = assign_principal_roles(
+            site, group_id, record.get('roles') or ())
+        roles_assigned += len(assigned)
+        errors.extend(role_errors)
+    return created, existing, skipped_virtual, roles_assigned, errors
 
 
 def create_users(site, records):
     created = existing = 0
     reset_required = []
+    errors = []
+    roles_assigned = 0
     for record in records:
         user_id = str(record.get('id') or '')
         if not user_id:
@@ -86,27 +118,34 @@ def create_users(site, records):
         email = props.pop('email', '') or None
         if user is None:
             password = secrets.token_urlsafe(32)
-            plone.api.user.create(
-                username=user_id,
-                password=password,
-                email=email,
-                properties=props,
-                roles=tuple(record.get('roles') or ()),
-            )
-            created += 1
-            reset_required.append(user_id)
+            try:
+                # RegistrationTool intentionally refuses elevated roles at
+                # creation time.  Create a normal member, then restore roles via
+                # portal_role_manager below.
+                user = plone.api.user.create(
+                    username=user_id,
+                    password=password,
+                    email=email,
+                    properties=props,
+                    roles=BASE_USER_ROLES,
+                )
+                created += 1
+                reset_required.append(user_id)
+            except Exception as exc:
+                errors.append('create user %s: %r' % (user_id, exc))
+                continue
         else:
             existing += 1
             try:
-                plone.api.user.update(
-                    user=user,
-                    email=email,
-                    properties=props,
-                    roles=tuple(record.get('roles') or ()),
-                )
-            except Exception:
-                pass
-    return created, existing, reset_required
+                plone.api.user.update(user=user, email=email, properties=props)
+            except Exception as exc:
+                errors.append('update user %s properties: %r' % (user_id, exc))
+
+        assigned, role_errors = assign_principal_roles(
+            site, user_id, record.get('roles') or ())
+        roles_assigned += len(assigned)
+        errors.extend(role_errors)
+    return created, existing, reset_required, roles_assigned, errors
 
 
 def add_memberships(records):
@@ -206,7 +245,6 @@ def apply_registry_email(site, properties):
         registry = getUtility(IRegistry)
     except Exception:
         return changed
-
     mapping = {
         'email_from_address': 'plone.email_from_address',
         'email_from_name': 'plone.email_from_name',
@@ -281,10 +319,12 @@ def run(app, input_dir):
             setSite(site)
             errors = []
 
-            groups_created, groups_existing, groups_virtual = create_groups(
+            groups_created, groups_existing, groups_virtual, group_roles, group_errors = create_groups(
                 site, record.get('groups') or ())
-            users_created, users_existing, resets = create_users(
+            errors.extend(group_errors)
+            users_created, users_existing, resets, user_roles, user_errors = create_users(
                 site, record.get('users') or ())
+            errors.extend(user_errors)
             memberships_added, memberships_existing, memberships_virtual, membership_errors = \
                 add_memberships(record.get('users') or ())
             errors.extend(membership_errors)
@@ -309,8 +349,10 @@ def run(app, input_dir):
                 'groups_created': groups_created,
                 'groups_existing': groups_existing,
                 'virtual_groups_skipped': groups_virtual,
+                'group_roles_assigned': group_roles,
                 'users_created': users_created,
                 'users_existing': users_existing,
+                'user_roles_assigned': user_roles,
                 'memberships_added': memberships_added,
                 'memberships_existing': memberships_existing,
                 'virtual_memberships_skipped': memberships_virtual,
@@ -333,6 +375,7 @@ def run(app, input_dir):
                    groups_created, groups_existing,
                    memberships_added, memberships_existing,
                    memberships_virtual))
+            print('  roles assigned: users %d, groups %d' % (user_roles, group_roles))
             for error in errors:
                 print('  ERROR: %s' % error)
             for skipped in workflows_skipped:
