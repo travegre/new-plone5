@@ -12,6 +12,8 @@ setup(
     package_data={
         'imi.migration': [
             'configure.zcml',
+            'browser/*.zcml',
+            'browser/*.pt',
             'profiles/default/*.xml',
             'profiles/default/types/*.xml',
         ],
