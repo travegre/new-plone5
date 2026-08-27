@@ -4,7 +4,8 @@
 
 Compares pfg-easyform.jsonl against target EasyForm objects. XML models are
 canonicalized before comparison so formatting differences do not count.
-Also reports MailHost readiness without requiring or exposing SMTP secrets.
+Also reports MailHost readiness and mailer routing details without exposing
+SMTP secrets.
 """
 import json
 import os
@@ -14,6 +15,8 @@ from lxml import etree
 from zope.component.hooks import setSite
 
 SCRIPT = 'plone52_verify_easyforms.py'
+SCHEMA_NS = 'http://namespaces.plone.org/supermodel/schema'
+EASYFORM_NS = 'http://namespaces.plone.org/supermodel/easyform'
 
 
 def parse_input_dir(argv):
@@ -61,6 +64,11 @@ def local_roles(obj):
         return []
 
 
+def node_text(field, name):
+    node = field.find('{%s}%s' % (SCHEMA_NS, name))
+    return node.text if node is not None and node.text else None
+
+
 def mailer_summary(actions_model):
     result = []
     if not actions_model:
@@ -68,16 +76,23 @@ def mailer_summary(actions_model):
     if isinstance(actions_model, str):
         actions_model = actions_model.encode('utf-8')
     root = etree.fromstring(actions_model)
-    ns = {'s': 'http://namespaces.plone.org/supermodel/schema'}
+    ns = {'s': SCHEMA_NS}
     for field in root.xpath('.//s:field', namespaces=ns):
         if field.get('type') != 'collective.easyform.actions.Mailer':
             continue
         item = {'name': field.get('name')}
-        for name in ('recipient_name', 'recipient_email', 'replyto_field',
-                     'subject_field', 'msg_subject', 'to_field'):
-            node = field.find('{http://namespaces.plone.org/supermodel/schema}%s' % name)
-            if node is not None and node.text:
-                item[name] = node.text
+        for name in (
+            'recipient_name', 'recipient_email', 'replyto_field',
+            'subject_field', 'msg_subject', 'to_field', 'cc_recipients',
+            'bcc_recipients', 'recipientOverride', 'subjectOverride',
+            'senderOverride', 'ccOverride', 'bccOverride', 'body_type',
+        ):
+            value = node_text(field, name)
+            if value is not None:
+                item[name] = value
+        exec_condition = field.get('{%s}execCondition' % EASYFORM_NS)
+        if exec_condition:
+            item['execCondition'] = exec_condition
         result.append(item)
     return result
 
@@ -156,6 +171,11 @@ def run(app, input_dir):
                       (mailer.get('name'), mailer.get('recipient_email'),
                        mailer.get('to_field'), mailer.get('replyto_field'),
                        mailer.get('msg_subject')))
+                for key in ('recipientOverride', 'senderOverride', 'subjectOverride',
+                            'cc_recipients', 'bcc_recipients', 'ccOverride',
+                            'bccOverride', 'execCondition'):
+                    if mailer.get(key) is not None:
+                        print('    %s=%r' % (key, mailer.get(key)))
             for diff in diffs:
                 print('  DIFF: %s' % diff)
 
