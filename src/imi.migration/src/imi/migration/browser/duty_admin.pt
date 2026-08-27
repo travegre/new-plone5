@@ -3,66 +3,62 @@
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       metal:use-macro="context/main_template/macros/master">
   <body>
-    <metal:main fill-slot="main">
-      <article id="content">
-        <header>
-          <h1 class="documentFirstHeading">Urejanje dežurstev</h1>
-        </header>
+    <metal:title fill-slot="content-title">
+      <h1 class="documentFirstHeading">Urejanje dežurstev</h1>
+    </metal:title>
 
-        <div id="content-core">
-          <form action="@@izberi_dezurstvo"
-                method="get"
-                class="enableFormTabbing pat-formautofocus">
-            <fieldset>
-              <legend>Uredi dežurstvo</legend>
+    <metal:core fill-slot="content-core">
+      <form action="@@izberi_dezurstvo"
+            method="get"
+            class="enableFormTabbing pat-formautofocus">
+        <fieldset>
+          <legend>Uredi dežurstvo</legend>
 
-              <div class="field">
-                <label for="datum">Datum</label>
-                <div class="formHelp">Izberite datum obstoječega ali novega dežurstva.</div>
-                <input id="datum"
-                       name="datum"
-                       type="date"
-                       required="required" />
-              </div>
+          <div class="field">
+            <label for="datum">Datum</label>
+            <div class="formHelp">Izberite datum obstoječega ali novega dežurstva.</div>
+            <input id="datum"
+                   name="datum"
+                   type="date"
+                   required="required" />
+          </div>
 
-              <div class="formControls">
-                <button type="submit" class="context">Uredi</button>
-              </div>
-            </fieldset>
-          </form>
+          <div class="formControls">
+            <button type="submit" class="context">Uredi</button>
+          </div>
+        </fieldset>
+      </form>
 
-          <form action="@@kopiraj_dezurstvo"
-                method="post"
-                class="enableFormTabbing"
-                style="margin-top: 2em;">
-            <fieldset>
-              <legend>Kopiraj dežurstvo</legend>
+      <form action="@@kopiraj_dezurstvo"
+            method="post"
+            class="enableFormTabbing"
+            style="margin-top: 2em;">
+        <fieldset>
+          <legend>Kopiraj dežurstvo</legend>
 
-              <div class="field">
-                <label for="star">Obstoječi datum</label>
-                <div class="formHelp">Datum dežurstva, ki ga želite kopirati.</div>
-                <input id="star"
-                       name="star"
-                       type="date"
-                       required="required" />
-              </div>
+          <div class="field">
+            <label for="star">Obstoječi datum</label>
+            <div class="formHelp">Datum dežurstva, ki ga želite kopirati.</div>
+            <input id="star"
+                   name="star"
+                   type="date"
+                   required="required" />
+          </div>
 
-              <div class="field">
-                <label for="nov">Novi datum</label>
-                <div class="formHelp">Datum nove kopije dežurstva.</div>
-                <input id="nov"
-                       name="nov"
-                       type="date"
-                       required="required" />
-              </div>
+          <div class="field">
+            <label for="nov">Novi datum</label>
+            <div class="formHelp">Datum nove kopije dežurstva.</div>
+            <input id="nov"
+                   name="nov"
+                   type="date"
+                   required="required" />
+          </div>
 
-              <div class="formControls">
-                <button type="submit" class="context">Kopiraj</button>
-              </div>
-            </fieldset>
-          </form>
-        </div>
-      </article>
-    </metal:main>
+          <div class="formControls">
+            <button type="submit" class="context">Kopiraj</button>
+          </div>
+        </fieldset>
+      </form>
+    </metal:core>
   </body>
 </html>
