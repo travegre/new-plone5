@@ -16,6 +16,10 @@ SITES = (
     ('nadomescanja', 'Nadomeščanja'),
 )
 PROFILE = 'profile-imi.migration:default'
+EXTENSION_IDS = (
+    'plone.app.theming:default',
+    'plonetheme.barceloneta:default',
+)
 
 
 def ensure_site(app, site_id, title):
@@ -26,6 +30,7 @@ def ensure_site(app, site_id, title):
             title=title,
             default_language='sl',
             setup_content=False,
+            extension_ids=EXTENSION_IDS,
         )
     site = app[site_id]
     setup = site.portal_setup
