@@ -109,6 +109,9 @@ class DutyPublicView(BaseDutyPublicView):
             })
         return rows
 
+    def today_id(self):
+        return date.today().strftime('%Y-%m-%d')
+
     def easyform_url(self):
         return self.portal.absolute_url() + '/@@dezurstva-change-request'
 
@@ -122,15 +125,17 @@ class DutyHomeView(BaseDutyHomeView):
 
 
 class DutyChangeRequestView(BrowserView):
-    """Render the migrated EasyForm directly, bypassing bad inherited layouts."""
+    """Render only the migrated EasyForm body, bypassing site/default layouts."""
 
     def __call__(self):
         form = api.portal.get().get('spremeni-dezurstvo')
         if form is None:
             self.request.response.setStatus(404)
             return u'Obrazec Sprememba dežurstva ne obstaja.'
-        from collective.easyform.browser.view import EasyFormView
-        return EasyFormView(form, self.request)()
+        from collective.easyform.browser.view import EasyFormFormEmbedded
+        embedded = EasyFormFormEmbedded(form, self.request)
+        embedded.update()
+        return embedded.render()
 
 
 class DutyExportView(BaseDutyExportView):
