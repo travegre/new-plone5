@@ -130,7 +130,7 @@
                 <option value="pretekli">za pretekli mesec</option>
                 <option value="oddo">od - do</option>
               </select>
-              <span class="date-range">od <input name="od" type="text" placeholder="dd.mm.llll" /> do <input name="do" type="text" placeholder="dd.mm.llll" /></span>
+              <span class="date-range">od <input type="date" data-export-date="od" /> do <input type="date" data-export-date="do" /><input type="hidden" name="od" /><input type="hidden" name="do" /></span>
               <input class="submit" type="submit" value="Izvozi" />
             </form>
           </div>
@@ -154,7 +154,7 @@
                   <option value="pretekli">za pretekli mesec</option>
                   <option value="oddo">od - do</option>
                 </select>
-                <span class="date-range">od <input name="od" type="text" placeholder="dd.mm.llll" /> do <input name="do" type="text" placeholder="dd.mm.llll" /></span>
+                <span class="date-range">od <input type="date" data-export-date="od" /> do <input type="date" data-export-date="do" /><input type="hidden" name="od" /><input type="hidden" name="do" /></span>
                 <input class="submit" type="submit" value="Izvozi" />
               </div>
             </form>
