@@ -9,6 +9,11 @@ services:
       - ./var/filestorage:/plone/instance/var/filestorage
       - ./var/blobstorage:/plone/instance/var/blobstorage
       - ./migration-data:/migration-data
+      # Use the working tree directly during migration development. Changes to
+      # Python/ZCML/templates/CSS/JS/tools normally need only a container restart,
+      # not a Docker rebuild.
+      - ./src/imi.migration:/plone/instance/src/imi.migration
+      - ./tools:/plone/instance/tools
       # Full 4.3 export stays outside Git. Override PLONE43_EXPORT_DIR when
       # the old checkout is not ../previous_plone/src/export.
       - ${PLONE43_EXPORT_DIR:-../previous_plone/src/export}:/migration-data/export
