@@ -125,17 +125,43 @@ class DutyHomeView(BaseDutyHomeView):
 
 
 class DutyChangeRequestView(BrowserView):
-    """Render only the migrated EasyForm body, bypassing site/default layouts."""
+    """Render the EasyForm in the legacy public Dežurstva shell."""
 
     def __call__(self):
         form = api.portal.get().get('spremeni-dezurstvo')
         if form is None:
             self.request.response.setStatus(404)
             return u'Obrazec Sprememba dežurstva ne obstaja.'
+
         from collective.easyform.browser.view import EasyFormFormEmbedded
-        embedded = EasyFormFormEmbedded(form, self.request)
+
+        class PublicEasyForm(EasyFormFormEmbedded):
+            def action(inner_self):
+                base = api.portal.get().absolute_url() + '/@@dezurstva-change-request'
+                datum = str(inner_self.request.form.get('datum') or '').strip()
+                return base + (('?datum=' + datum) if datum else '')
+
+        embedded = PublicEasyForm(form, self.request)
         embedded.update()
-        return embedded.render()
+        body = embedded.render()
+        portal_url = api.portal.get().absolute_url()
+        css_url = portal_url + '/++resource++imi.migration/duty-public.css'
+        easyform_css = portal_url + '/++resource++easyform.css'
+        logo_url = portal_url + '/logo.png'
+        home_url = portal_url + '/@@dezurstva-public'
+        return u'''<!DOCTYPE html>
+<html><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sprememba dežurstva</title>
+<link rel="stylesheet" href="%s" />
+<link rel="stylesheet" href="%s" />
+</head><body class="imi-duty-public imi-duty-change-request">
+<div id="okolo"><div id="okol">
+<a href="%s"><img id="logo" src="%s" alt="IMI" /></a>
+<h1><a href="%s"> DEŽURSTVA IN PRIPRAVLJENOST</a></h1>
+<div class="legacy-easyform-wrap">%s</div>
+<p class="change-request-back"><a href="%s">Nazaj</a></p>
+</div></div></body></html>''' % (
+            css_url, easyform_css, home_url, logo_url, home_url, body, home_url)
 
 
 class DutyExportView(BaseDutyExportView):
