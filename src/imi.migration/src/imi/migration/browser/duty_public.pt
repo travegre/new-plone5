@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dežurstva in pripravljenost</title>
+  <link rel="stylesheet"
+        tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/duty-public.css" />
+  <script>
+    (function () {
+      var now = new Date();
+      var next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 10);
+      var delay = next.getTime() - now.getTime();
+      if (delay > 0) { window.setTimeout(function () { window.location.reload(true); }, delay); }
+    }());
+  </script>
+</head>
+<body class="imi-duty-public">
+  <div class="duty-last-change" tal:condition="view/last_change">
+    Zadnja sprememba: <span tal:replace="view/last_change">27.08.2026 ob 12:00</span>
+  </div>
+
+  <main class="duty-shell">
+    <header class="duty-header">
+      <a tal:attributes="href context/absolute_url" class="duty-logo-link">
+        <img tal:attributes="src string:${context/absolute_url}/logo.png"
+             src="logo.png" alt="IMI" class="duty-logo" />
+      </a>
+      <h1><a tal:attributes="href context/absolute_url">DEŽURSTVA IN PRIPRAVLJENOST</a></h1>
+    </header>
+
+    <nav class="duty-date-nav" aria-label="Izbira dneva">
+      <a class="duty-prev"
+         tal:attributes="href string:${context/absolute_url}/@@dezurstva-public?datum=${view/previous_date}">Nazaj</a>
+      <h2 tal:content="view/formatted_date">danes, četrtek, 27.08.2026</h2>
+      <a class="duty-next"
+         tal:attributes="href string:${context/absolute_url}/@@dezurstva-public?datum=${view/next_date}">Naprej</a>
+    </nav>
+
+    <section tal:condition="view/roster" class="duty-columns">
+      <section class="duty-panel">
+        <h2>DEŽURNA EKIPA</h2>
+        <table class="duty-table">
+          <tbody>
+            <tr tal:repeat="row view/team_rows">
+              <td tal:content="row/label">dežurni zdravnik</td>
+              <td tal:content="row/name">Ime Priimek</td>
+            </tr>
+            <tr tal:condition="view/intervention_phone">
+              <td>Intervencijska skupina telefon</td>
+              <td tal:content="view/intervention_phone">telefon</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="duty-panel">
+        <h2>STANJE PRIPRAVLJENOSTI</h2>
+        <table class="duty-table">
+          <tbody>
+            <tr tal:repeat="row view/readiness_rows">
+              <td tal:content="row/label">BOR</td>
+              <td tal:content="row/name">Ime Priimek</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <section tal:condition="not:view/roster" class="duty-empty">
+      Za izbrani dan ni vnesenega dežurstva.
+    </section>
+
+    <section class="duty-person-search">
+      <h2>DEŽURSTVA PO OSEBI</h2>
+      <form method="get" tal:attributes="action string:${context/absolute_url}/@@dezurstva-public">
+        <label for="oseba">Oseba</label>
+        <select id="oseba" name="oseba">
+          <option value="">-- izberi --</option>
+          <option tal:repeat="option view/staff_options"
+                  tal:attributes="value python:option[0]; selected python:view.selected_person() == option[0]"
+                  tal:content="python:option[1]">Ime Priimek</option>
+        </select>
+        <button type="submit">Prikaži</button>
+      </form>
+
+      <div tal:condition="view/selected_person" class="duty-person-results">
+        <p tal:condition="not:view/person_dates">Za izbrano osebo ni najdenih dežurstev.</p>
+        <ul tal:condition="view/person_dates">
+          <li tal:repeat="item view/person_dates">
+            <a tal:attributes="href string:${context/absolute_url}/@@dezurstva-public?datum=${item/id}"
+               tal:content="item/label">27.08.2026</a>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
