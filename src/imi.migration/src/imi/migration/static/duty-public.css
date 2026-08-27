@@ -159,6 +159,7 @@ form#izvoz-2 .submit {
 .legacy-utility-row form { text-align: left; }
 .change-request-link { text-align:center; font-size:16px; }
 .person-name { color:#5fb11e; }
-.person-year-list { width:40%; margin:0 auto 30px auto; text-align:left; }
-.person-date { display:block; }
+.person-year-list { width:40%; margin:0 auto 30px auto; text-align:center; }
+.person-month-list { text-align:center; }
+.person-date { display:block; text-align:center; }
 .date-range { display:none; }
