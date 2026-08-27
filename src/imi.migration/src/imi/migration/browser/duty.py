@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from plone import api
 from Products.Five import BrowserView
-from zope.component.hooks import getSite
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
 
 ROSTER_TYPE = 'imi.duty.roster_day'
@@ -48,13 +48,30 @@ def _publish_if_possible(obj):
         if 'publish' in ids:
             api.content.transition(obj=obj, transition='publish')
     except Exception:
-        # Publishing was convenient in the legacy script, but creation/editing
-        # must not fail merely because the target workflow differs.
         pass
 
 
 class DutyAdminView(BrowserView):
     """Plone 5 replacement for the legacy ``dezurstva_admin.pt`` page."""
+
+
+class DutyHomeView(BrowserView):
+    """Default site-root view: editor dashboard for editors, public page otherwise."""
+
+    admin_template = ViewPageTemplateFile('duty_admin.pt')
+
+    def __call__(self):
+        portal = _portal(self.context)
+        if api.user.has_permission('Modify portal content', obj=portal):
+            return self.admin_template()
+
+        # Until the legacy public dezurstva view is ported, keep anonymous users
+        # on the migrated front page.  This will be replaced by the public view.
+        front_page = portal.get('front-page')
+        if front_page is not None:
+            self.request.response.redirect(front_page.absolute_url())
+            return ''
+        return self.admin_template()
 
 
 class SelectDutyView(BrowserView):
