@@ -7,6 +7,7 @@
   <title>Dežurstva in pripravljenost</title>
   <link rel="stylesheet"
         tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/duty-public.css" />
+  <script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/duty-public.js"></script>
   <script>
     (function () {
       var now = new Date();
@@ -84,7 +85,7 @@
           <div class="legacy-half left">
             <form method="get" tal:attributes="action string:${context/absolute_url}/@@dezurstva-public">
               <p>Prikaži razpored na izbrani datum: </p>
-              <input name="datum" tal:attributes="value view/selected_date_sl" type="text" class="datepicker" />
+              <input name="datum" tal:attributes="value view/selected_date_id" type="date" class="datepicker" />
               <input type="submit" value="Prikaži" />
             </form>
           </div>
