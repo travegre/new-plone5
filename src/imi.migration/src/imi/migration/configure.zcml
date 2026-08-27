@@ -3,6 +3,11 @@
     xmlns:browser="http://namespaces.zope.org/browser"
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup">
 
+  <!-- The lightweight Docker develop-package skeleton intentionally has no
+       install_requires metadata, so includeDependencies(package=".") no longer
+       guarantees that CMFCore permissions are registered before our browser
+       pages use cmf.ModifyPortalContent / cmf.AddPortalContent. -->
+  <include package="Products.CMFCore" file="permissions.zcml" />
   <includeDependencies package="." />
   <include package=".browser" />
 
