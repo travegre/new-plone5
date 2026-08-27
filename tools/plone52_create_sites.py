@@ -22,6 +22,17 @@ EXTENSION_IDS = (
 )
 
 
+def configure_site_root(site, site_id):
+    if site_id != 'dezurstva':
+        return
+    set_default = getattr(site, 'setDefaultPage', None)
+    if callable(set_default):
+        set_default(None)
+    set_layout = getattr(site, 'setLayout', None)
+    if callable(set_layout):
+        set_layout('@@dezurstva-home')
+
+
 def ensure_site(app, site_id, title):
     if site_id not in app.objectIds():
         addPloneSite(
@@ -35,6 +46,7 @@ def ensure_site(app, site_id, title):
     site = app[site_id]
     setup = site.portal_setup
     setup.runAllImportStepsFromProfile(PROFILE)
+    configure_site_root(site, site_id)
     return site
 
 
