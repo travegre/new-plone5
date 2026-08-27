@@ -1,0 +1,35 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser">
+
+  <browser:page
+      name="dezurstva-admin"
+      for="Products.CMFCore.interfaces.ISiteRoot"
+      class=".duty.DutyAdminView"
+      template="duty_admin.pt"
+      permission="cmf.ModifyPortalContent"
+      />
+
+  <browser:page
+      name="dezurstva_admin"
+      for="Products.CMFCore.interfaces.ISiteRoot"
+      class=".duty.DutyAdminView"
+      template="duty_admin.pt"
+      permission="cmf.ModifyPortalContent"
+      />
+
+  <browser:page
+      name="izberi_dezurstvo"
+      for="Products.CMFCore.interfaces.ISiteRoot"
+      class=".duty.SelectDutyView"
+      permission="cmf.AddPortalContent"
+      />
+
+  <browser:page
+      name="kopiraj_dezurstvo"
+      for="Products.CMFCore.interfaces.ISiteRoot"
+      class=".duty.CopyDutyView"
+      permission="cmf.AddPortalContent"
+      />
+
+</configure>
