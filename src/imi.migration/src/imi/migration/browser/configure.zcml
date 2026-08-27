@@ -10,6 +10,13 @@
       />
 
   <browser:page
+      name="dezurstva-public"
+      for="Products.CMFCore.interfaces.ISiteRoot"
+      class=".duty.DutyPublicView"
+      permission="zope2.View"
+      />
+
+  <browser:page
       name="dezurstva-admin"
       for="Products.CMFCore.interfaces.ISiteRoot"
       class=".duty.DutyAdminView"
