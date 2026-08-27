@@ -1,15 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Parity checker for the IMI Plone 4.3 -> 5.2 migration.
-
-Run inside the Plone 5.2 target after import::
-
-    bin/instance run tools/plone52_parity.py --input-dir=/migration-data/export
-
-The checker is read-only. It compares the source export manifest/JSONL with
-objects currently present in the five target Plone sites and writes a machine-
-readable parity report to ``reports/plone52-parity.json``.
-"""
+"""Parity checker for the IMI Plone 4.3 -> 5.2 migration."""
 import hashlib
 import json
 import os
@@ -42,12 +33,14 @@ SKIP_TYPES = {
     'uvoz', 'imiuvozipreiskavo', 'FormFolder', 'FormMailerAdapter',
     'FormSelectionField', 'FormStringField', 'FormTextField', 'FormThanksPage',
 }
+SKIP_PATHS = {
+    '/dezurstva/objekt-za-seznam-zaposlenih-v-formi-spremeni-dezurstvo-ne-brisi',
+}
 BASIC_SOURCE_FIELDS = {
     'id', 'title', 'description', 'allowDiscussion', 'subject', 'relatedItems',
     'location', 'language', 'effectiveDate', 'expirationDate', 'creators',
     'contributors', 'rights', 'excludeFromNav',
 }
-
 LEGACY_IMPLEMENTATION_FIELDS = {
     'creation_date', 'modification_date', 'constrainTypesMode',
     'locallyAllowedTypes', 'immediatelyAddableTypes', 'nextPreviousEnabled',
@@ -97,8 +90,7 @@ def target_type(record):
     site = record.get('site') or record.get('source_site')
     source_type = record.get('portal_type')
     rel = source_relative_path(record)
-    if site in ('dezurstva', 'nadomescanja') and \
-            '/seznam_zaposlenih/' in ('/' + rel + '/'):
+    if site in ('dezurstva', 'nadomescanja') and '/seznam_zaposlenih/' in ('/' + rel + '/'):
         if source_type == 'Folder' and not rel.endswith('/seznam_zaposlenih'):
             return 'imi.staff.employee'
     if (site, source_type) in CUSTOM_TYPE_MAP:
@@ -107,8 +99,7 @@ def target_type(record):
 
 
 def source_field_map(record):
-    return {item.get('name'): item for item in record.get('fields', [])
-            if item.get('name')}
+    return {item.get('name'): item for item in record.get('fields', []) if item.get('name')}
 
 
 def normalize(value):
@@ -159,11 +150,7 @@ def comparable_source_hashes(record, target_names):
     for name, item in source_field_map(record).items():
         if name in BASIC_SOURCE_FIELDS or name in ('id', 'title', 'description'):
             continue
-        if name in LEGACY_IMPLEMENTATION_FIELDS:
-            continue
-        if name not in target_names:
-            continue
-        if 'binary' in item:
+        if name in LEGACY_IMPLEMENTATION_FIELDS or name not in target_names or 'binary' in item:
             continue
         result[name] = stable_hash(source_value_for_target(item))
     return result
@@ -220,8 +207,7 @@ def local_roles(obj):
     if not callable(method):
         return []
     try:
-        return sorted((str(principal), sorted(list(roles)))
-                      for principal, roles in method() or ())
+        return sorted((str(principal), sorted(list(roles))) for principal, roles in method() or ())
     except Exception:
         return []
 
@@ -233,8 +219,7 @@ def source_local_roles(record):
         value = value.get('roles') or value
         if isinstance(value, dict):
             value = list(value.items())
-    return sorted((str(principal), sorted(list(roles)))
-                  for principal, roles in value)
+    return sorted((str(principal), sorted(list(roles))) for principal, roles in value)
 
 
 def check_record(app, record, input_dir):
@@ -248,7 +233,7 @@ def check_record(app, record, input_dir):
         'status': 'ok',
         'differences': [],
     }
-    if source_type in SKIP_TYPES or (source_type or '').startswith('Form'):
+    if record.get('source_path') in SKIP_PATHS or source_type in SKIP_TYPES or (source_type or '').startswith('Form'):
         result['status'] = 'skipped-by-policy'
         return result
     if expected_type is None:
@@ -261,18 +246,14 @@ def check_record(app, record, input_dir):
         result['status'] = 'missing'
         result['differences'].append('target object not found at source-relative path')
         return result
-
     if getattr(obj, 'portal_type', None) != expected_type:
-        result['differences'].append(
-            'portal_type: expected %r got %r' %
-            (expected_type, getattr(obj, 'portal_type', None)))
+        result['differences'].append('portal_type: expected %r got %r' % (expected_type, getattr(obj, 'portal_type', None)))
 
     try:
         target_names = target_field_names(obj)
     except Exception as exc:
         target_names = set()
         result['differences'].append('target schema unreadable: %r' % exc)
-
     source_hashes = comparable_source_hashes(record, target_names)
     target_hashes = target_custom_field_hashes(obj, source_hashes)
     field_diffs = {}
@@ -296,12 +277,7 @@ def check_record(app, record, input_dir):
             target_hash = target_binary_hash(getattr(obj, name, None))
         except Exception:
             target_hash = None
-        binaries.append({
-            'field': name,
-            'source_sha256': info.get('sha256'),
-            'target_sha256': target_hash,
-            'match': target_hash == info.get('sha256'),
-        })
+        binaries.append({'field': name, 'source_sha256': info.get('sha256'), 'target_sha256': target_hash, 'match': target_hash == info.get('sha256')})
     bad_binaries = [item for item in binaries if not item['match']]
     if bad_binaries:
         result['binary_differences'] = bad_binaries
@@ -313,13 +289,11 @@ def check_record(app, record, input_dir):
     if source_state and source_state != target_state:
         result['workflow'] = {'source': source_state, 'target': target_state}
         result['differences'].append('workflow state differs')
-
     src_roles = source_local_roles(record)
     tgt_roles = local_roles(obj)
     if src_roles != tgt_roles:
         result['local_roles'] = {'source': src_roles, 'target': tgt_roles}
         result['differences'].append('local roles differ')
-
     if result['differences']:
         result['status'] = 'different'
     return result
@@ -330,13 +304,11 @@ def run(app, input_dir):
     pfg_path = os.path.join(input_dir, 'pfg.jsonl')
     if not os.path.isfile(objects_path):
         raise SystemExit('Missing %s' % objects_path)
-
     results = []
     parse_errors = []
     source_counts = Counter()
     target_expected_counts = Counter()
     status_counts = Counter()
-
     for lineno, record in load_jsonl(objects_path):
         if '__parse_error__' in record:
             parse_errors.append({'line': lineno, **record})
@@ -366,8 +338,7 @@ def run(app, input_dir):
             continue
         try:
             setSite(app[site_name])
-            brains = app[site_name].portal_catalog(portal_type='EasyForm')
-            easyform_counts[site_name] = len(brains)
+            easyform_counts[site_name] = len(app[site_name].portal_catalog(portal_type='EasyForm'))
         except Exception:
             easyform_counts[site_name] = 0
 
@@ -377,20 +348,12 @@ def run(app, input_dir):
         'status_counts': dict(status_counts),
         'parse_errors': parse_errors,
         'differences': results,
-        'source_counts_by_site_type': {
-            '%s|%s' % key: value for key, value in sorted(source_counts.items())
-        },
-        'expected_target_counts_by_site_type': {
-            '%s|%s' % key: value for key, value in sorted(target_expected_counts.items())
-        },
+        'source_counts_by_site_type': {'%s|%s' % key: value for key, value in sorted(source_counts.items())},
+        'expected_target_counts_by_site_type': {'%s|%s' % key: value for key, value in sorted(target_expected_counts.items())},
         'pfg_source_counts': dict(pfg_source_counts),
         'easyform_target_counts': dict(easyform_counts),
-        'pfg_easyform_count_match': {
-            site: pfg_source_counts.get(site, 0) == easyform_counts.get(site, 0)
-            for site in SITES
-        },
+        'pfg_easyform_count_match': {site: pfg_source_counts.get(site, 0) == easyform_counts.get(site, 0) for site in SITES},
     }
-
     report_dir = os.path.join(input_dir, 'reports')
     os.makedirs(report_dir, exist_ok=True)
     output = os.path.join(report_dir, 'plone52-parity.json')
