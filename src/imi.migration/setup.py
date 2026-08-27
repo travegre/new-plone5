@@ -14,6 +14,8 @@ setup(
             'configure.zcml',
             'browser/*.zcml',
             'browser/*.pt',
+            'static/*.css',
+            'static/*.js',
             'profiles/default/*.xml',
             'profiles/default/types/*.xml',
         ],
