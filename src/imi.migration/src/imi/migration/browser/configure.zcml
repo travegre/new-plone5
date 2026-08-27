@@ -17,6 +17,13 @@
       />
 
   <browser:page
+      name="dezurstva-izvoz"
+      for="Products.CMFCore.interfaces.ISiteRoot"
+      class=".duty.DutyExportView"
+      permission="zope2.View"
+      />
+
+  <browser:page
       name="dezurstva-admin"
       for="Products.CMFCore.interfaces.ISiteRoot"
       class=".duty.DutyAdminView"
