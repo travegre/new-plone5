@@ -1,231 +1,163 @@
-html, body.imi-duty-public {
-  margin: 0;
-  min-height: 100%;
-}
-body.imi-duty-public {
-  color: #414152;
-  background: #f4f2f7;
-  font-family: Tahoma, sans-serif;
-  font-size: 16px;
-  text-decoration: none;
-}
-.imi-duty-public a {
-  color: #5fb11e;
-  font-size: 16px;
-  text-decoration: none;
-}
-#okolo {
-  min-height: 1500px;
-}
 #okol {
   width: 95%;
   margin: 30px auto 30px auto;
   text-align: center;
   padding-bottom: 30px;
 }
-#logo {
-  margin: 0;
+
+#okolo {
+  min-height: 1500px;
 }
+
+
+#logo {
+  margin: 0px 0 0px 0;
+}
+
+
+body {
+  background: url(ozadje_body.png);
+}
+
 h1, h2 {
-  margin: 20px 0;
-  text-align: center;
-  color: #624C9C;
+	margin: 20px 0 20px 0;
+	text-align: center;
+	color: #624C9C;
   text-decoration: none;
   font-family: Helvetica, Arial, sans-serif;
 }
+
 h2 {
-  margin: 0;
+  margin: 0px 0;
   font-size: 2em;
 }
+
 h1 a {
-  text-decoration: none;
-  color: #624C9C !important;
-  font-size: 32px !important;
+	text-decoration: none;
+	color: #624C9C !important;
+  font-size: 32px;
   margin: 0;
 }
-#last-change {
-  position: absolute;
-  top: 5px;
-  right: 10px;
-}
-.clear {
-  clear: both;
-}
-.legacy-date-nav {
-  width: 100%;
-}
-.legacy-date-nav .legacy-back {
-  margin-top: 14px;
-  width: 28%;
-  margin-right: 5%;
-  float: left;
-  text-align: right;
-  font-size: 24px;
+
+body {
+  color: #414152;
+  font-size: 16px;
+  text-decoration: none;
   font-family: Tahoma, sans-serif;
 }
-.legacy-date-nav h2 {
-  width: 33%;
-  float: left;
-  text-align: center;
+
+a {
+  color: #5fb11e;
+  font-size: 16px;
+  text-decoration: none;
+
 }
-.legacy-date-nav .legacy-next {
-  margin-top: 14px;
-  width: 25%;
-  margin-left: 5%;
-  float: left;
-  text-align: left;
-  font-size: 24px;
-  font-family: Tahoma, sans-serif;
-}
-.legacy-columns,
-.legacy-utility-row {
-  width: 100%;
-  overflow: hidden;
-}
-.legacy-half {
-  width: 49%;
-  display: inline-block;
-  vertical-align: top;
-}
-.legacy-half.left {
-  float: left;
-}
-.legacy-half.right {
-  float: right;
-}
-.left-heading {
-  text-align: left;
-}
-.legacy-table {
+
+table {
   border: 1px solid #624c9c;
-  border-collapse: collapse;
-  background: white;
-  vertical-align: top;
 }
-.legacy-table td {
+
+table td {
   padding: 12px;
   border: 1px solid #624c9c;
   border-collapse: collapse;
   font-size: 1.5em;
+}
+
+table td {
   text-align: left;
 }
-.legacy-table td:nth-child(2) {
+
+table td:nth-child(2) {
   font-weight: bold;
   font-family: Tahoma, sans-serif;
   font-size: 2.05em;
 }
-.intervention-table {
-  margin-top: 10px;
-}
-.intervention-table .intervention-label {
-  font-size: 1em;
-}
-.intervention-table .intervention-label h2 {
-  text-align: center;
-  color: #624C9C;
-  font-weight: bold;
-  font-size: 2em;
-}
-.intervention-table .intervention-label p {
-  text-align: center;
-}
-.intervention-table .intervention-name {
-  background: white;
-  font-weight: bold;
-  font-size: 2.05em;
-}
-.legacy-utility-row form {
-  text-align: left;
-}
-.legacy-utility-row input,
-.legacy-utility-row select {
-  font-family: Tahoma, sans-serif;
-  font-size: 16px;
-  padding: 3px;
-}
-.legacy-utility-row select {
-  max-width: 95%;
-}
-.change-request-link {
-  text-align: center;
-  font-size: 16px !important;
-}
-.legacy-empty {
-  font-size: 16px;
-}
-.export-row {
-  text-align: left;
-}
-.export-row .date-range {
-  display: inline-block;
-  margin-left: 5px;
-}
-.export-row .date-range input {
-  width: 90px;
-}
-.person-name {
+
+.fieldErrorBox {
   color: #5fb11e;
 }
-.person-year-list {
+
+#pfg-fieldwrapper .field {
+  margin: 40px 0;
+  text-align: left;
+
+}
+
+#pfg-fieldwrapper .field input,
+#pfg-fieldwrapper .field select,
+#pfg-fieldwrapper .field textarea {
+  width: 100%;
+  padding: 6px;
+}
+
+#pfg-fieldwrapper {
+  margin: 20px auto;
+  text-align: left;
   width: 40%;
-  margin: 0 auto 30px auto;
+
+}
+
+span.required {
+  content: "*";
+  color: #5fb11e !important;
+}
+
+.template-fg_thankspage_view_p3 .documentDescription {
+display: none;
+}
+
+h2, table {
+display: inline-table;
+}
+
+#last-change {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+
+}
+
+/* IZVOZ */
+form#izvoz-1,
+form#izvoz-2 {
   text-align: left;
 }
-.person-year-list h3 {
-  color: #624C9C;
-  font-family: Helvetica, Arial, sans-serif;
-  font-size: 1.5em;
-  margin: 24px 0 8px;
+
+form#izvoz-1 #oddo,
+form#izvoz-2 #oddo-2,
+form#izvoz-2 #obdobje,
+form#izvoz-1 .submit,
+form#izvoz-2 .submit {
+  display: none;
 }
-.person-month-list h4 {
-  color: #414152;
-  font-family: Tahoma, sans-serif;
-  font-size: 16px;
-  margin: 12px 0 4px;
+
+/* Plone 5 compatibility only: layout hooks replacing inline TAL-era wrappers. */
+.clear { clear: both; }
+.legacy-date-nav { width: 100%; }
+.legacy-date-nav .legacy-back {
+  margin-top: 14px; width: 28%; margin-right: 5%; float: left;
+  text-align: right; font-size: 24px; font-family: Tahoma, sans-serif;
 }
-.person-date {
-  display: block;
-  line-height: 1.7;
+.legacy-date-nav h2 { width: 33%; float: left; text-align: center; }
+.legacy-date-nav .legacy-next {
+  margin-top: 14px; width: 25%; margin-left: 5%; float: left;
+  text-align: left; font-size: 24px; font-family: Tahoma, sans-serif;
 }
-.person-date a {
-  font-size: 16px;
-}
-hr {
-  border: 0;
-  border-top: 1px solid #ccc;
-}
-@media (max-width: 900px) {
-  #last-change {
-    position: static;
-    text-align: right;
-    padding: 5px 10px 0;
-  }
-  .legacy-half,
-  .legacy-half.left,
-  .legacy-half.right {
-    width: 100%;
-    float: none;
-    display: block;
-    margin-bottom: 24px;
-  }
-  .legacy-date-nav .legacy-back,
-  .legacy-date-nav .legacy-next {
-    width: 20%;
-    margin-left: 0;
-    margin-right: 0;
-    font-size: 20px;
-  }
-  .legacy-date-nav h2 {
-    width: 60%;
-  }
-  .legacy-table td {
-    font-size: 1.2em;
-  }
-  .legacy-table td:nth-child(2),
-  .intervention-table .intervention-name {
-    font-size: 1.55em;
-  }
-  .person-year-list {
-    width: 90%;
-  }
-}
+.legacy-half { width: 49%; display: inline-block; vertical-align: top; }
+.legacy-half.left { float: left; }
+.legacy-half.right { float: right; }
+.legacy-columns, .legacy-utility-row { width: 100%; overflow: hidden; }
+.left-heading { text-align: left; }
+.legacy-table { border-collapse: collapse; background: white; vertical-align: top; }
+.intervention-table { margin-top: 10px; }
+.intervention-label { font-size: 1em; }
+.intervention-label h2 { text-align:center; color:#624C9C; font-weight:bold; }
+.intervention-label p { text-align:center; }
+.intervention-name { background:white; font-weight:bold; font-size:2.05em; }
+.legacy-utility-row form { text-align: left; }
+.change-request-link { text-align:center; font-size:16px; }
+.person-name { color:#5fb11e; }
+.person-year-list { width:40%; margin:0 auto 30px auto; text-align:left; }
+.person-date { display:block; }
+.date-range { display:none; }
