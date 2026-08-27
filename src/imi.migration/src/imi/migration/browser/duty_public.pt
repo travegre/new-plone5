@@ -67,11 +67,12 @@
           <div class="legacy-half right">
             <h2 class="section-heading left-heading">STANJE PRIPRAVLJENOSTI</h2>
             <p></p>
-            <table class="legacy-table">
+            <table class="legacy-table readiness-table">
               <tbody>
                 <tr tal:repeat="row view/readiness_rows">
                   <td tal:content="row/label">BOR</td>
                   <td tal:content="row/name">Ime Priimek</td>
+                  <td class="readiness-contact" tal:content="row/contact">telefon</td>
                 </tr>
               </tbody>
             </table>
@@ -130,7 +131,7 @@
                 <option value="pretekli">za pretekli mesec</option>
                 <option value="oddo">od - do</option>
               </select>
-              <span class="date-range">od <input type="date" data-export-date="od" /> do <input type="date" data-export-date="do" /><input type="hidden" name="od" /><input type="hidden" name="do" /></span>
+              <span class="date-range">od <input type="date" name="od" /> do <input type="date" name="do" /></span>
               <input class="submit" type="submit" value="Izvozi" />
             </form>
           </div>
@@ -154,7 +155,7 @@
                   <option value="pretekli">za pretekli mesec</option>
                   <option value="oddo">od - do</option>
                 </select>
-                <span class="date-range">od <input type="date" data-export-date="od" /> do <input type="date" data-export-date="do" /><input type="hidden" name="od" /><input type="hidden" name="do" /></span>
+                <span class="date-range">od <input type="date" name="od" /> do <input type="date" name="do" /></span>
                 <input class="submit" type="submit" value="Izvozi" />
               </div>
             </form>
