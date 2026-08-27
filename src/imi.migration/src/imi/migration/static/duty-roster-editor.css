@@ -1,0 +1,79 @@
+/* Plone 5 editor layout for imi.duty.roster_day.
+ * Recreates the working layout of the old dezurstva.podoba Archetypes form
+ * without carrying forward its jQuery 1.5 / jQuery UI dependencies.
+ */
+
+.duty-roster-field {
+    box-sizing: border-box;
+    float: left;
+    clear: none !important;
+    width: 32%;
+    margin-right: 1%;
+    min-height: 8.5em;
+}
+
+.duty-roster-field select,
+.duty-roster-field input[type="text"],
+.duty-roster-field .select2-container,
+.duty-roster-field .pat-select2 {
+    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100%;
+}
+
+.duty-team-start,
+.duty-ready-start {
+    clear: left !important;
+}
+
+.duty-team-start::before,
+.duty-ready-start::before {
+    display: block;
+    box-sizing: border-box;
+    width: 309%;
+    margin: 0.35em 0 0.65em;
+    padding: 0.25em 0;
+    font-size: 1.6rem;
+    line-height: 1.25;
+    font-weight: 600;
+    color: #c00;
+}
+
+.duty-team-start::before {
+    content: "DEŽURNA EKIPA";
+}
+
+.duty-ready-start::before {
+    content: "STANJE PRIPRAVLJENOSTI";
+}
+
+.duty-ready-start {
+    margin-top: 1.25em;
+}
+
+.duty-roster-clear {
+    clear: both !important;
+    padding-top: 1em;
+}
+
+/* Keep the form buttons below the floated roster columns. */
+.template-edit.portaltype-imi-duty-roster-day #form-buttons,
+.template-edit.portaltype-imi-duty-roster-day .formControls,
+.portaltype-imi-duty-roster-day #form-buttons,
+.portaltype-imi-duty-roster-day .formControls {
+    clear: both;
+}
+
+@media (max-width: 900px) {
+    .duty-roster-field {
+        float: none;
+        width: 100%;
+        margin-right: 0;
+        min-height: 0;
+    }
+
+    .duty-team-start::before,
+    .duty-ready-start::before {
+        width: 100%;
+    }
+}
