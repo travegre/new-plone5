@@ -85,6 +85,36 @@ def create_or_get(app, record):
     return obj, True
 
 
+def apply_metadata(obj, record):
+    metadata = record.get('metadata') or {}
+    for principal, roles in metadata.get('local_roles') or ():
+        obj.manage_setLocalRoles(str(principal), tuple(str(r) for r in roles))
+    if metadata.get('local_role_block'):
+        blocker = getattr(obj, 'blockLocalRoles', None)
+        if callable(blocker):
+            blocker()
+    exclude = metadata.get('exclude_from_nav')
+    if exclude is not None:
+        try:
+            obj.exclude_from_nav = bool(exclude)
+        except Exception:
+            pass
+    state = metadata.get('workflow_state')
+    if state:
+        try:
+            current = plone.api.content.get_state(obj=obj)
+        except Exception:
+            current = None
+        if current != state:
+            wf = plone.api.portal.get_tool('portal_workflow')
+            chain = wf.getChainFor(obj)
+            if chain:
+                status = dict(wf.getStatusOf(chain[0], obj) or {})
+                status['review_state'] = state
+                wf.setStatusOf(chain[0], obj, status)
+                obj.reindexObject(idxs=['review_state'])
+
+
 def apply_record(obj, record):
     obj.fields_model = record['fields_model']
     obj.actions_model = record['actions_model']
@@ -98,6 +128,7 @@ def apply_record(obj, record):
                 setattr(obj, name, record[name])
             except Exception:
                 pass
+    apply_metadata(obj, record)
     obj.reindexObject()
 
 
