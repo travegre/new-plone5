@@ -131,7 +131,7 @@
                 <option value="pretekli">za pretekli mesec</option>
                 <option value="oddo">od - do</option>
               </select>
-              <span class="date-range">od <input type="date" name="od" /> do <input type="date" name="do" /></span>
+              <span class="date-range">od <input type="date" name="od" tal:attributes="value view/today_id" /> do <input type="date" name="do" tal:attributes="value view/today_id" /></span>
               <input class="submit" type="submit" value="Izvozi" />
             </form>
           </div>
@@ -155,7 +155,7 @@
                   <option value="pretekli">za pretekli mesec</option>
                   <option value="oddo">od - do</option>
                 </select>
-                <span class="date-range">od <input type="date" name="od" /> do <input type="date" name="do" /></span>
+                <span class="date-range">od <input type="date" name="od" tal:attributes="value view/today_id" /> do <input type="date" name="do" tal:attributes="value view/today_id" /></span>
                 <input class="submit" type="submit" value="Izvozi" />
               </div>
             </form>
