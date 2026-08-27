@@ -16,7 +16,7 @@
 
 
 body {
-  background: url(ozadje_body.png);
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAIAAAA/Y+msAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAcSURBVHjaYnr69Ol/MIAzGJD5EJIBWR7CBggwAMnZM/mCB9LIAAAAAElFTkSuQmCC);
 }
 
 h1, h2 {
@@ -155,6 +155,7 @@ form#izvoz-2 .submit {
 .intervention-label h2 { text-align:center; color:#624C9C; font-weight:bold; }
 .intervention-label p { text-align:center; }
 .intervention-name { background:white; font-weight:bold; font-size:2.05em; }
+.readiness-contact { white-space: nowrap; }
 .legacy-utility-row form { text-align: left; }
 .change-request-link { text-align:center; font-size:16px; }
 .person-name { color:#5fb11e; }
