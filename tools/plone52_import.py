@@ -10,6 +10,7 @@ import os
 import sys
 
 import plone.api
+from plone.app.textfield import RichText
 from plone.app.textfield.value import RichTextValue
 from plone.dexterity.utils import iterSchemata
 from plone.namedfile.file import NamedBlobFile
@@ -35,17 +36,6 @@ STANDARD_TYPE_MAP = {
 SKIP_TYPES = {
     'uvoz', 'FormFolder', 'FormMailerAdapter', 'FormSelectionField',
     'FormStringField', 'FormTextField', 'FormThanksPage',
-}
-
-RICH_FIELDS = {
-    ('imi.exams.examination', 'sklop'),
-    ('imi.exams.examination', 'sinonim'),
-    ('imi.exams.examination', 'metode'),
-    ('imi.exams.examination', 'opis'),
-    ('imi.exams.examination', 'opombe'),
-    ('imi.exams.examination', 'trajanje'),
-    ('imi.exams.examination', 'urnik'),
-    ('imi.kiestra.work_day', 'stalni_tekst'),
 }
 
 BASIC_SOURCE_FIELDS = {
@@ -138,11 +128,11 @@ def parse_employee(record):
     }
 
 
-def dexterity_field_names(obj):
-    names = set()
+def dexterity_fields(obj):
+    fields = {}
     for iface in iterSchemata(obj):
-        names.update(getFields(iface).keys())
-    return names
+        fields.update(getFields(iface))
+    return fields
 
 
 def lines_value(value):
@@ -155,24 +145,24 @@ def lines_value(value):
 
 def apply_custom_fields(obj, record, input_dir):
     fields = field_map(record)
-    target_pt = obj.portal_type
 
-    if target_pt == 'imi.staff.employee':
+    if obj.portal_type == 'imi.staff.employee':
         for key, value in parse_employee(record).items():
             setattr(obj, key, value)
         return
 
-    target_fields = dexterity_field_names(obj)
+    target_fields = dexterity_fields(obj)
     for name, item in fields.items():
         if name in BASIC_SOURCE_FIELDS or name in ('id', 'title', 'description'):
             continue
-        if name not in target_fields:
+        target_field = target_fields.get(name)
+        if target_field is None:
             continue
         if 'binary' in item:
             value = binary_value(input_dir, item.get('binary'))
         else:
             value = item.get('value')
-        if (target_pt, name) in RICH_FIELDS:
+        if isinstance(target_field, RichText):
             value = convert_rich(value)
         elif item.get('field_type') == 'LinesField':
             value = lines_value(value)
