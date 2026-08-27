@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Restore the final Dežurstva root navigation and remove obsolete helpers.
-
-The old PFG vocabulary helper is no longer needed because the migrated
-EasyForm uses the named ``imi.form.staff_email`` vocabulary directly.
-"""
+"""Restore final Dežurstva navigation, layout, and remove obsolete helpers."""
 
 from plone import api
 from plone.app.dexterity.behaviors.exclfromnav import IExcludeFromNavigation
@@ -60,6 +56,18 @@ def run(app):
     site = app['dezurstva']
     setSite(site)
     try:
+        # The root must always traverse through DutyHomeView.  That view renders
+        # the editor dashboard for editors and the legacy public frontend for
+        # anonymous/non-editor users.
+        set_default = getattr(site, 'setDefaultPage', None)
+        if callable(set_default):
+            set_default(None)
+        set_layout = getattr(site, 'setLayout', None)
+        if not callable(set_layout):
+            raise SystemExit('/dezurstva does not support setLayout')
+        set_layout('@@dezurstva-home')
+        print('/dezurstva layout -> @@dezurstva-home')
+
         for obj_id in OBSOLETE_IDS:
             if obj_id in site.objectIds():
                 api.content.delete(obj=site[obj_id], check_linkintegrity=False)
@@ -94,7 +102,7 @@ def run(app):
         except Exception:
             pass
         transaction.commit()
-        print('Dežurstva root navigation restored.')
+        print('Dežurstva root navigation and layout restored.')
     finally:
         setSite(None)
 
