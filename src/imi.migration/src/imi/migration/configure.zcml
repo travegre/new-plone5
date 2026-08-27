@@ -11,6 +11,11 @@
       name="imi.duty.staff"
       />
 
+  <utility
+      component=".vocabularies.form_staff_email_vocabulary"
+      name="imi.form.staff_email"
+      />
+
   <subscriber
       for=".content.IDutyRosterDay zope.lifecycleevent.interfaces.IObjectModifiedEvent"
       handler=".events.copy_readiness_to_week"
