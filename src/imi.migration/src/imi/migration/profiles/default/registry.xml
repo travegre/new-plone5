@@ -8,4 +8,12 @@
     <value key="compile">False</value>
     <value key="depends">plone</value>
   </records>
+
+  <record name="plone.displayed_types"
+          interface="Products.CMFPlone.interfaces.controlpanel.INavigationSchema"
+          field="displayed_types">
+    <value purge="False">
+      <element>imi.staff.directory</element>
+    </value>
+  </record>
 </registry>
