@@ -1,9 +1,20 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup">
 
   <includeDependencies package="." />
   <include package=".browser" />
+
+  <utility
+      component=".vocabularies.duty_staff_vocabulary"
+      name="imi.duty.staff"
+      />
+
+  <browser:resourceDirectory
+      name="imi.migration"
+      directory="static"
+      />
 
   <genericsetup:registerProfile
       name="default"
