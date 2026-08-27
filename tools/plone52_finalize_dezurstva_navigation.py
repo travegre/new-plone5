@@ -1,17 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Restore the legacy Dežurstva root navigation order and visibility.
+"""Restore the final Dežurstva root navigation and remove obsolete helpers.
 
-The old site exposed these root objects in this order:
-
-* seznam_zaposlenih
-* dezurstva-1 (Dežurstva)
-* spremeni-dezurstvo (Sprememba dežurstva)
-* objekt-za-seznam-zaposlenih-v-formi-spremeni-dezurstvo-ne-brisi
-
-The final helper object is intentionally preserved: the legacy
-``Sprememba dežurstva`` form used it as the context exposing
-``getSampleVocabulary50()``.
+The old PFG vocabulary helper is no longer needed because the migrated
+EasyForm uses the named ``imi.form.staff_email`` vocabulary directly.
 """
 
 from plone import api
@@ -21,12 +13,14 @@ NAV_IDS = (
     'seznam_zaposlenih',
     'dezurstva-1',
     'spremeni-dezurstvo',
+)
+
+OBSOLETE_IDS = (
     'objekt-za-seznam-zaposlenih-v-formi-spremeni-dezurstvo-ne-brisi',
 )
 
 
 def _make_navigation_visible(obj):
-    """Use the real Plone behavior, falling back for legacy-ish objects."""
     behavior = IExcludeFromNavigation(obj, None)
     if behavior is not None:
         behavior.exclude_from_nav = False
@@ -37,7 +31,6 @@ def _make_navigation_visible(obj):
 
 
 def _publish_if_possible(obj):
-    """The four legacy menu entries were public navigation items."""
     try:
         state = api.content.get_state(obj=obj)
     except Exception:
@@ -67,6 +60,11 @@ def run(app):
     site = app['dezurstva']
     setSite(site)
     try:
+        for obj_id in OBSOLETE_IDS:
+            if obj_id in site.objectIds():
+                api.content.delete(obj=site[obj_id], check_linkintegrity=False)
+                print('Deleted obsolete helper: /dezurstva/%s' % obj_id)
+
         missing = [obj_id for obj_id in NAV_IDS if obj_id not in site.objectIds()]
         if missing:
             raise SystemExit('Missing required Dežurstva objects: %s' % ', '.join(missing))
@@ -76,15 +74,12 @@ def run(app):
             obj = site[obj_id]
             _make_navigation_visible(obj)
             state = _publish_if_possible(obj)
-
             try:
                 obj.reindexObject()
             except Exception:
                 pass
-
             if callable(mover):
                 mover(obj_id, position)
-
             print('%d. /dezurstva/%s type=%s state=%s exclude_from_nav=%r' % (
                 position + 1,
                 obj_id,
