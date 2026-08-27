@@ -26,11 +26,23 @@ COPY requirements.txt /plone/instance/requirements.txt
 RUN python -m pip install --no-cache-dir -r requirements.txt
 
 COPY buildout.cfg /plone/instance/buildout.cfg
-COPY src /plone/instance/src
+
+# Buildout needs the develop package to exist, but it does not need the full
+# application source merely to resolve/install Plone and third-party eggs.
+# Keep this skeleton stable so normal Python/ZCML/template/resource edits do
+# not invalidate the expensive Buildout dependency layer.
+RUN mkdir -p /plone/instance/src/imi.migration/src/imi/migration
+COPY src/imi.migration/setup.py /plone/instance/src/imi.migration/setup.py
+COPY src/imi.migration/src/imi/__init__.py /plone/instance/src/imi.migration/src/imi/__init__.py
+COPY src/imi.migration/src/imi/migration/__init__.py /plone/instance/src/imi.migration/src/imi/migration/__init__.py
 RUN buildout -c buildout.cfg
 
-# Migration runners change frequently. Copy them only after the expensive
-# Plone/buildout layer so editing a tool does not reinstall all dependencies.
+# Application source changes frequently. The develop egg created above points
+# at this same source directory, so replacing it here makes the current code
+# available at runtime without rerunning Buildout.
+COPY src /plone/instance/src
+
+# Migration runners change frequently too; keep them after Buildout as well.
 COPY tools /plone/instance/tools
 
 RUN mkdir -p /plone/instance/var/filestorage /plone/instance/var/blobstorage \
