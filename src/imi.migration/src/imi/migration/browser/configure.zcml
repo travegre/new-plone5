@@ -5,21 +5,21 @@
   <browser:page
       name="dezurstva-home"
       for="Products.CMFCore.interfaces.ISiteRoot"
-      class=".duty.DutyHomeView"
+      class=".duty_compat.DutyHomeView"
       permission="zope2.View"
       />
 
   <browser:page
       name="dezurstva-public"
       for="Products.CMFCore.interfaces.ISiteRoot"
-      class=".duty.DutyPublicView"
+      class=".duty_compat.DutyPublicView"
       permission="zope2.View"
       />
 
   <browser:page
       name="dezurstva-izvoz"
       for="Products.CMFCore.interfaces.ISiteRoot"
-      class=".duty.DutyExportView"
+      class=".duty_compat.DutyExportView"
       permission="zope2.View"
       />
 
