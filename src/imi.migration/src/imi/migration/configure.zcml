@@ -3,6 +3,7 @@
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup">
 
   <includeDependencies package="." />
+  <include package=".browser" />
 
   <genericsetup:registerProfile
       name="default"
