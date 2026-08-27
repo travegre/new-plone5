@@ -3,12 +3,13 @@
 """Import compatible Plone 4.3 users/groups/roles and site settings.
 
 Reads ``security-settings.json`` created by
-``plone43_export_security_settings.py``.
+``plone43_export_security_settings.py``.  Users are recreated with random,
+unknown passwords because the normal export deliberately contains no password
+material.  Administrators must reset passwords separately.
 
-The import is intentionally idempotent. Passwords and SMTP passwords are never
-read or written by this script. Missing users get random unknown passwords so
-that principals, ownership and permissions exist immediately; real passwords
-must be reset/configured separately.
+The importer is idempotent.  It deliberately ignores PAS virtual groups such
+as ``AuthenticatedUsers``: those are computed automatically and must not be
+created or populated as ordinary groups in Plone 5.
 """
 import json
 import os
@@ -19,6 +20,11 @@ import plone.api
 from zope.component.hooks import setSite
 
 SCRIPT = 'plone52_import_security_settings.py'
+VIRTUAL_GROUPS = frozenset((
+    'AuthenticatedUsers',
+    'Anonymous Users',
+    'Authenticated Users',
+))
 
 
 def parse_input_dir(argv):
@@ -35,154 +41,149 @@ def parse_input_dir(argv):
     raise SystemExit('Use --input-dir=/migration-data/export')
 
 
-def ensure_group(record, stats):
-    group_id = str(record.get('id') or '')
-    if not group_id:
-        return
-    group = plone.api.group.get(groupname=group_id)
-    if group is None:
-        try:
+def is_virtual_group(group_id):
+    return str(group_id or '') in VIRTUAL_GROUPS
+
+
+def create_groups(site, records):
+    created = existing = skipped_virtual = 0
+    for record in records:
+        group_id = str(record.get('id') or '')
+        if not group_id:
+            continue
+        if is_virtual_group(group_id):
+            skipped_virtual += 1
+            continue
+        group = plone.api.group.get(groupname=group_id)
+        if group is None:
             plone.api.group.create(
                 groupname=group_id,
                 title=record.get('title') or group_id,
                 description=record.get('description') or '',
+                roles=tuple(record.get('roles') or ()),
             )
-            stats['groups_created'] += 1
-        except Exception as exc:
-            stats['errors'].append('group %s create: %r' % (group_id, exc))
-            return
-    else:
-        stats['groups_existing'] += 1
-
-    roles = [str(r) for r in (record.get('roles') or ())
-             if r not in ('Authenticated',)]
-    if roles:
-        try:
-            plone.api.group.grant_roles(groupname=group_id, roles=roles)
-        except Exception as exc:
-            stats['errors'].append('group %s roles: %r' % (group_id, exc))
+            created += 1
+        else:
+            existing += 1
+            try:
+                role_manager = site.acl_users.portal_role_manager
+                role_manager.assignRoleToPrincipal(
+                    tuple(record.get('roles') or ()), group_id)
+            except Exception:
+                pass
+    return created, existing, skipped_virtual
 
 
-def ensure_user(site, record, stats):
-    user_id = str(record.get('id') or '')
-    if not user_id:
-        return
-
-    props = dict(record.get('properties') or {})
-    email = props.pop('email', '') or None
-    fullname = props.get('fullname') or ''
-    user = plone.api.user.get(username=user_id)
-
-    if user is None:
-        try:
+def create_users(site, records):
+    created = existing = 0
+    reset_required = []
+    for record in records:
+        user_id = str(record.get('id') or '')
+        if not user_id:
+            continue
+        user = plone.api.user.get(username=user_id)
+        props = dict(record.get('properties') or {})
+        email = props.pop('email', '') or None
+        if user is None:
+            password = secrets.token_urlsafe(32)
             plone.api.user.create(
                 username=user_id,
-                password=secrets.token_urlsafe(32),
+                password=password,
                 email=email,
                 properties=props,
+                roles=tuple(record.get('roles') or ()),
             )
-            stats['users_created'] += 1
-            stats['password_resets_required'].append(user_id)
-        except Exception as exc:
-            stats['errors'].append('user %s create: %r' % (user_id, exc))
-            return
-    else:
-        stats['users_existing'] += 1
-
-    member = site.portal_membership.getMemberById(user_id)
-    if member is not None:
-        changes = {}
-        if email:
-            changes['email'] = email
-        if fullname:
-            changes['fullname'] = fullname
-        for key in ('description', 'location', 'home_page'):
-            value = props.get(key)
-            if value not in (None, ''):
-                changes[key] = value
-        if changes:
+            created += 1
+            reset_required.append(user_id)
+        else:
+            existing += 1
             try:
-                member.setMemberProperties(changes)
-            except Exception as exc:
-                stats['errors'].append('user %s properties: %r' % (user_id, exc))
-
-    roles = [str(r) for r in (record.get('roles') or ())
-             if r not in ('Authenticated',)]
-    if roles:
-        try:
-            plone.api.user.grant_roles(username=user_id, roles=roles)
-        except Exception as exc:
-            stats['errors'].append('user %s roles: %r' % (user_id, exc))
+                plone.api.user.update(
+                    user=user,
+                    email=email,
+                    properties=props,
+                    roles=tuple(record.get('roles') or ()),
+                )
+            except Exception:
+                pass
+    return created, existing, reset_required
 
 
-def restore_memberships(site_record, stats):
-    desired = {}
-    for group in site_record.get('groups') or ():
-        gid = str(group.get('id') or '')
-        if gid:
-            desired.setdefault(gid, set()).update(
-                str(uid) for uid in group.get('members') or ())
-    for user in site_record.get('users') or ():
-        uid = str(user.get('id') or '')
-        for gid in user.get('groups') or ():
-            desired.setdefault(str(gid), set()).add(uid)
-
-    for gid, members in desired.items():
-        if plone.api.group.get(groupname=gid) is None:
+def add_memberships(records):
+    added = existing = skipped_virtual = 0
+    errors = []
+    for record in records:
+        user_id = str(record.get('id') or '')
+        if not user_id or plone.api.user.get(username=user_id) is None:
             continue
-        for uid in sorted(members):
-            if plone.api.user.get(username=uid) is None:
-                stats['errors'].append('membership %s <- %s: user missing' % (gid, uid))
+        for group_id in record.get('groups') or ():
+            group_id = str(group_id)
+            if is_virtual_group(group_id):
+                skipped_virtual += 1
+                continue
+            if plone.api.group.get(groupname=group_id) is None:
+                errors.append('missing group %s for user %s' % (group_id, user_id))
                 continue
             try:
-                plone.api.group.add_user(groupname=gid, username=uid)
-                stats['memberships_added'] += 1
+                current = plone.api.group.get_groups(username=user_id)
+                current_ids = set(g.getId() for g in current)
             except Exception:
-                # Existing membership is fine; verify before reporting failure.
-                try:
-                    group = plone.api.group.get(groupname=gid)
-                    member_ids = set(m.getId() for m in group.getGroupMembers())
-                    if uid not in member_ids:
-                        raise
-                except Exception as exc:
-                    stats['errors'].append('membership %s <- %s: %r' % (gid, uid, exc))
+                current_ids = set()
+            if group_id in current_ids:
+                existing += 1
+                continue
+            try:
+                plone.api.group.add_user(groupname=group_id, username=user_id)
+                added += 1
+            except Exception as exc:
+                errors.append('membership %s <- %s: %r' %
+                              (group_id, user_id, exc))
+    return added, existing, skipped_virtual, errors
 
 
-def apply_site_local_roles(site, records, stats):
+def apply_site_local_roles(site, records):
+    count = 0
+    errors = []
     for principal, roles in records or ():
         try:
             site.manage_setLocalRoles(str(principal), tuple(str(r) for r in roles))
-            stats['site_local_roles_applied'] += 1
+            count += 1
         except Exception as exc:
-            stats['errors'].append('site local role %s: %r' % (principal, exc))
+            errors.append('site local roles %s: %r' % (principal, exc))
+    return count, errors
 
 
-def apply_site_identity(site, record, stats):
+def apply_site_identity(site, record):
+    changed = []
+    title = record.get('title')
+    description = record.get('description')
     try:
-        if record.get('title') is not None:
-            site.setTitle(record.get('title'))
-        if record.get('description') is not None:
-            site.setDescription(record.get('description'))
-        site.reindexObject()
-        stats['site_identity_applied'] = True
-    except Exception as exc:
-        stats['errors'].append('site identity: %r' % exc)
+        if title is not None:
+            site.setTitle(title)
+            changed.append('title')
+    except Exception:
+        pass
+    try:
+        if description is not None:
+            site.setDescription(description)
+            changed.append('description')
+    except Exception:
+        pass
+    return changed
 
 
-def apply_site_properties(site, properties, stats):
+def apply_site_properties(site, properties):
+    changed = []
     props_tool = getattr(site, 'portal_properties', None)
     sheet = getattr(props_tool, 'site_properties', None) if props_tool is not None else None
     if sheet is not None:
-        for name, value in sorted((properties or {}).items()):
+        for name, value in (properties or {}).items():
             try:
                 if sheet.hasProperty(name):
-                    sheet._updateProperty(name, value)
-                    stats['site_properties_applied'].append(name)
-                else:
-                    stats['site_properties_skipped'].append(name)
-            except Exception as exc:
-                stats['errors'].append('site property %s: %r' % (name, exc))
-
+                    sheet.manage_changeProperties(**{name: value})
+                    changed.append(name)
+            except Exception:
+                pass
     default_language = (properties or {}).get('default_language')
     if default_language:
         languages = getattr(site, 'portal_languages', None)
@@ -190,141 +191,156 @@ def apply_site_properties(site, properties, stats):
         if callable(setter):
             try:
                 setter(str(default_language))
-                if 'default_language' not in stats['site_properties_applied']:
-                    stats['site_properties_applied'].append('default_language')
-            except Exception as exc:
-                stats['errors'].append('default language: %r' % exc)
-
-    # Plone 5 moved sender settings to registry-backed control panels in many
-    # installations. Copy the source values there when those records exist.
-    registry = getattr(site, 'portal_registry', None)
-    if registry is not None:
-        for old_name, registry_name in (
-                ('email_from_address', 'plone.email_from_address'),
-                ('email_from_name', 'plone.email_from_name')):
-            value = (properties or {}).get(old_name)
-            if value in (None, ''):
-                continue
-            try:
-                registry[registry_name] = value
-                stats['registry_settings_applied'].append(registry_name)
+                if 'default_language' not in changed:
+                    changed.append('default_language')
             except Exception:
-                stats['warnings'].append('registry record unavailable: %s' % registry_name)
+                pass
+    return changed
 
 
-def apply_mailhost(site, record, stats):
+def apply_registry_email(site, properties):
+    changed = []
+    try:
+        from plone.registry.interfaces import IRegistry
+        from zope.component import getUtility
+        registry = getUtility(IRegistry)
+    except Exception:
+        return changed
+
+    mapping = {
+        'email_from_address': 'plone.email_from_address',
+        'email_from_name': 'plone.email_from_name',
+    }
+    for source_name, target_name in mapping.items():
+        if source_name not in (properties or {}):
+            continue
+        try:
+            if target_name in registry:
+                registry[target_name] = properties[source_name]
+                changed.append(target_name)
+        except Exception:
+            pass
+    return changed
+
+
+def apply_mailhost(site, record):
     if not record:
-        return
+        return []
     mh = getattr(site, 'MailHost', None)
     if mh is None:
-        stats['warnings'].append('MailHost unavailable')
-        return
+        return []
+    changed = []
     for name in ('smtp_host', 'smtp_port', 'smtp_uid'):
         if name not in record or record[name] is None:
             continue
         try:
             setattr(mh, name, record[name])
-            stats['mailhost_fields_applied'].append(name)
-        except Exception as exc:
-            stats['errors'].append('MailHost %s: %r' % (name, exc))
-    if record.get('smtp_password_configured'):
-        stats['warnings'].append(
-            'source SMTP password was configured; set target SMTP password separately')
+            changed.append(name)
+        except Exception:
+            pass
+    return changed
 
 
-def apply_workflow_chains(site, chains, stats):
+def apply_workflow_chains(site, chains):
     tool = getattr(site, 'portal_workflow', None)
     if tool is None:
-        return
+        return [], []
+    applied = []
+    skipped = []
     known = set(tool.objectIds())
-    target_types = set(site.portal_types.objectIds())
-    for type_id, chain in sorted((chains or {}).items()):
-        chain = [str(x) for x in chain]
-        if str(type_id) not in target_types:
-            stats['workflow_chains_skipped'].append('%s (target type missing)' % type_id)
+    for type_id, chain in (chains or {}).items():
+        if type_id not in site.portal_types.objectIds():
             continue
-        missing = [name for name in chain if name not in known]
-        if missing:
-            stats['workflow_chains_skipped'].append(
-                '%s -> %s (missing workflows: %s)' %
-                (type_id, ','.join(chain), ','.join(missing)))
+        if not chain or not all(name in known for name in chain):
+            skipped.append({'portal_type': str(type_id), 'source_chain': list(chain or ())})
             continue
         try:
-            tool.setChainForPortalTypes((str(type_id),), tuple(chain))
-            stats['workflow_chains_applied'].append(str(type_id))
-        except Exception as exc:
-            stats['errors'].append('workflow %s: %r' % (type_id, exc))
-
-
-def import_site(app, record):
-    site_id = str(record.get('id') or '')
-    site = app.get(site_id)
-    stats = {
-        'site': site_id,
-        'users_created': 0,
-        'users_existing': 0,
-        'groups_created': 0,
-        'groups_existing': 0,
-        'memberships_added': 0,
-        'site_local_roles_applied': 0,
-        'site_identity_applied': False,
-        'site_properties_applied': [],
-        'site_properties_skipped': [],
-        'registry_settings_applied': [],
-        'mailhost_fields_applied': [],
-        'workflow_chains_applied': [],
-        'workflow_chains_skipped': [],
-        'password_resets_required': [],
-        'warnings': [],
-        'errors': [],
-    }
-    if site is None:
-        stats['errors'].append('target site missing')
-        return stats
-
-    setSite(site)
-    apply_site_identity(site, record, stats)
-    for group in record.get('groups') or ():
-        ensure_group(group, stats)
-    for user in record.get('users') or ():
-        ensure_user(site, user, stats)
-    restore_memberships(record, stats)
-    apply_site_local_roles(site, record.get('site_local_roles') or (), stats)
-    apply_site_properties(site, record.get('properties') or {}, stats)
-    apply_mailhost(site, record.get('mailhost'), stats)
-    apply_workflow_chains(site, record.get('workflow_chains') or {}, stats)
-    return stats
+            tool.setChainForPortalTypes((str(type_id),), tuple(str(x) for x in chain))
+            applied.append(str(type_id))
+        except Exception:
+            skipped.append({'portal_type': str(type_id), 'source_chain': list(chain or ())})
+    return applied, skipped
 
 
 def run(app, input_dir):
     path = os.path.join(input_dir, 'security-settings.json')
     if not os.path.isfile(path):
-        raise SystemExit(
-            'Missing %s; run the Plone 4.3 security/settings exporter first.' % path)
+        raise SystemExit('Missing %s; run the Plone 4.3 security/settings exporter first.' % path)
     with open(path, 'r', encoding='utf-8') as handle:
         payload = json.load(handle)
 
     import transaction
-    results = []
+    report = {'sites': {}, 'password_resets_required': {}}
     try:
         for record in payload.get('sites') or ():
-            stats = import_site(app, record)
-            results.append(stats)
-            if stats['errors']:
-                transaction.abort()
-                print('%s: FAILED (%d errors)' % (stats['site'], len(stats['errors'])))
-                for error in stats['errors']:
-                    print('  ERROR: %s' % error)
+            site_id = str(record.get('id') or '')
+            site = app.get(site_id)
+            if site is None:
+                print('Missing target site: %s' % site_id)
                 continue
+            setSite(site)
+            errors = []
+
+            groups_created, groups_existing, groups_virtual = create_groups(
+                site, record.get('groups') or ())
+            users_created, users_existing, resets = create_users(
+                site, record.get('users') or ())
+            memberships_added, memberships_existing, memberships_virtual, membership_errors = \
+                add_memberships(record.get('users') or ())
+            errors.extend(membership_errors)
+
+            local_roles, local_role_errors = apply_site_local_roles(
+                site, record.get('site_local_roles') or ())
+            errors.extend(local_role_errors)
+
+            identity = apply_site_identity(site, record)
+            props = apply_site_properties(site, record.get('properties') or {})
+            registry_email = apply_registry_email(site, record.get('properties') or {})
+            mail = apply_mailhost(site, record.get('mailhost'))
+            workflows, workflows_skipped = apply_workflow_chains(
+                site, record.get('workflow_chains') or {})
+
+            try:
+                site.reindexObject()
+            except Exception:
+                pass
+
+            report['sites'][site_id] = {
+                'groups_created': groups_created,
+                'groups_existing': groups_existing,
+                'virtual_groups_skipped': groups_virtual,
+                'users_created': users_created,
+                'users_existing': users_existing,
+                'memberships_added': memberships_added,
+                'memberships_existing': memberships_existing,
+                'virtual_memberships_skipped': memberships_virtual,
+                'site_local_roles_applied': local_roles,
+                'site_identity_applied': identity,
+                'site_properties_applied': props,
+                'registry_email_applied': registry_email,
+                'mailhost_fields_applied': mail,
+                'workflow_chains_applied': workflows,
+                'workflow_chains_skipped': workflows_skipped,
+                'smtp_password_required': bool((record.get('mailhost') or {}).get('smtp_password_configured')),
+                'errors': errors,
+            }
+            report['password_resets_required'][site_id] = resets
+
+            status = 'OK' if not errors else 'FAILED (%d errors)' % len(errors)
+            print('%s: %s' % (site_id, status))
+            print('  users +%d/%d existing, groups +%d/%d existing, memberships +%d/%d existing, virtual memberships skipped %d' %
+                  (users_created, users_existing,
+                   groups_created, groups_existing,
+                   memberships_added, memberships_existing,
+                   memberships_virtual))
+            for error in errors:
+                print('  ERROR: %s' % error)
+            for skipped in workflows_skipped:
+                print('  WORKFLOW SKIPPED: %s <- %s' %
+                      (skipped['portal_type'], ','.join(skipped['source_chain'])))
+            if (record.get('mailhost') or {}).get('smtp_password_configured'):
+                print('  WARNING: SMTP password was configured on source and must be set separately.')
             transaction.commit()
-            print('%s: users +%d/%d existing, groups +%d/%d existing, memberships %d' %
-                  (stats['site'], stats['users_created'], stats['users_existing'],
-                   stats['groups_created'], stats['groups_existing'],
-                   stats['memberships_added']))
-            for warning in stats['warnings']:
-                print('  WARNING: %s' % warning)
-            for skipped in stats['workflow_chains_skipped']:
-                print('  WORKFLOW SKIPPED: %s' % skipped)
     finally:
         setSite(None)
 
@@ -332,7 +348,7 @@ def run(app, input_dir):
     os.makedirs(report_dir, exist_ok=True)
     report_path = os.path.join(report_dir, 'plone52-security-settings-import.json')
     with open(report_path, 'w', encoding='utf-8') as handle:
-        json.dump(results, handle, ensure_ascii=False, indent=2, sort_keys=True)
+        json.dump(report, handle, ensure_ascii=False, indent=2, sort_keys=True)
     print('Security/settings report: %s' % report_path)
     print('User passwords were NOT migrated; newly-created users require password reset.')
     print('SMTP password was NOT migrated and must be configured securely if required.')
