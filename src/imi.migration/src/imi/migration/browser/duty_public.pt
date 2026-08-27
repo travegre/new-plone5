@@ -86,7 +86,7 @@
           <div class="legacy-half left">
             <form method="get" tal:attributes="action string:${context/absolute_url}/@@dezurstva-public">
               <p>Prikaži razpored na izbrani datum: </p>
-              <input name="datum" tal:attributes="value view/selected_date_id" type="date" class="datepicker" />
+              <input name="datum" tal:attributes="value view/today_id" type="date" class="datepicker" />
               <input type="submit" value="Prikaži" />
             </form>
           </div>
