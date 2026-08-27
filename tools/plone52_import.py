@@ -38,6 +38,13 @@ SKIP_TYPES = {
     'FormStringField', 'FormTextField', 'FormThanksPage',
 }
 
+# This legacy roster-day object existed only to provide getSampleVocabulary50()
+# to the PFG form.  EasyForm now uses the named imi.form.staff_email vocabulary,
+# so the helper is deliberately absent from Plone 5.
+SKIP_PATHS = {
+    '/dezurstva/objekt-za-seznam-zaposlenih-v-formi-spremeni-dezurstvo-ne-brisi',
+}
+
 BASIC_SOURCE_FIELDS = {
     'id', 'title', 'description', 'allowDiscussion', 'subject', 'relatedItems',
     'location', 'language', 'effectiveDate', 'expirationDate', 'creators',
@@ -207,6 +214,8 @@ def transition_to_state(obj, state):
 
 
 def create_record(app, record, input_dir, path_map):
+    if record.get('source_path') in SKIP_PATHS:
+        return None
     site = app[record['site']]
     setSite(site)
     rel = source_relative_path(record)
@@ -264,22 +273,24 @@ def run(app, input_dir):
                     created += 1
             except Exception as exc:
                 errors.append({
-                    'line': lineno, 'site': record.get('site'),
+                    'line': lineno,
+                    'site': record.get('site'),
                     'source_path': record.get('source_path'),
-                    'portal_type': record.get('portal_type'), 'error': repr(exc),
+                    'portal_type': record.get('portal_type'),
+                    'error': repr(exc),
                 })
-
             if processed % COMMIT_EVERY == 0:
+                import transaction
                 transaction.commit()
                 print('Progress: %d processed, %d imported/visited, %d skipped, %d errors' %
-                      (processed, created, skipped, len(errors)), flush=True)
+                      (processed, created, skipped, len(errors)))
 
+    import transaction
     transaction.commit()
-    setSite(None)
     report_dir = os.path.join(input_dir, 'reports')
     os.makedirs(report_dir, exist_ok=True)
-    with open(os.path.join(report_dir, 'plone52-import-errors.json'), 'w',
-              encoding='utf-8') as handle:
+    report = os.path.join(report_dir, 'plone52-import-errors.json')
+    with open(report, 'w', encoding='utf-8') as handle:
         json.dump(errors, handle, ensure_ascii=False, indent=2, sort_keys=True)
     print('Imported/visited: %d' % created)
     print('Skipped: %d' % skipped)
