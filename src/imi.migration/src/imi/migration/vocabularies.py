@@ -11,6 +11,16 @@ def _staff_directory():
     site = getSite()
     if site is None:
         return None
+
+    # The old Nadomeščanja getSampleVocabulary50() explicitly traversed
+    # /dezurstva/seznam_zaposlenih, so preserve that cross-site dependency.
+    site_id = getattr(site, 'getId', lambda: '')()
+    if site_id == 'nadomescanja':
+        app = getattr(site, 'aq_parent', None)
+        dezurstva = app.get('dezurstva') if app is not None else None
+        if dezurstva is not None:
+            return dezurstva.get('seznam_zaposlenih')
+
     return site.get('seznam_zaposlenih')
 
 
