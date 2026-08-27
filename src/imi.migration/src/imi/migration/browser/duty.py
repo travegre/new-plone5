@@ -2,6 +2,7 @@
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
+from io import BytesIO
 
 from plone import api
 from Products.Five import BrowserView
@@ -28,7 +29,6 @@ TEAM_FIELDS = (
     ('inoqula_tehnik', u'BMK laboratorij'),
     ('sprejem_predpriprava_tehnik', u'sprejem/predpriprava'),
     ('vpis', u'vpis'),
-    ('intervencijska_skupina', u'Intervencijska skupina'),
 )
 
 READINESS_FIELDS = (
@@ -46,6 +46,11 @@ READINESS_FIELDS = (
 DAY_NAMES = {
     0: u'ponedeljek', 1: u'torek', 2: u'sreda', 3: u'četrtek',
     4: u'petek', 5: u'sobota', 6: u'nedelja',
+}
+MONTH_NAMES = {
+    1: u'januar', 2: u'februar', 3: u'marec', 4: u'april',
+    5: u'maj', 6: u'junij', 7: u'julij', 8: u'avgust',
+    9: u'september', 10: u'oktober', 11: u'november', 12: u'december',
 }
 
 
@@ -83,7 +88,7 @@ def _publish_if_possible(obj):
 
 
 class DutyPublicView(BrowserView):
-    """Plone-5 public replacement for the old dezurstva_brez_kontaktov skin."""
+    """Public Dežurstva frontend preserving the Plone-4 skin semantics."""
 
     template = ViewPageTemplateFile('duty_public.pt')
 
@@ -99,16 +104,20 @@ class DutyPublicView(BrowserView):
         return _roster_folder(self.context)
 
     def selected_date(self):
-        raw = self.request.form.get('datum')
+        raw = str(self.request.form.get('datum') or '').strip()
         if raw:
-            try:
-                return datetime.strptime(_normalise_date(raw), '%Y-%m-%d').date()
-            except ValueError:
-                pass
+            for fmt in ('%Y-%m-%d', '%d.%m.%Y'):
+                try:
+                    return datetime.strptime(raw, fmt).date()
+                except ValueError:
+                    pass
         return date.today()
 
     def selected_date_id(self):
         return self.selected_date().strftime('%Y-%m-%d')
+
+    def selected_date_sl(self):
+        return self.selected_date().strftime('%d.%m.%Y')
 
     def formatted_date(self):
         selected = self.selected_date()
@@ -149,7 +158,7 @@ class DutyPublicView(BrowserView):
         for field_name, label in definitions:
             values = list(getattr(roster, field_name, ()) or ())
             if field_name == 'vpis':
-                values.reverse()  # preserve the old public template semantics
+                values.reverse()
             for employee_id in values:
                 rows.append({
                     'field': field_name,
@@ -165,9 +174,18 @@ class DutyPublicView(BrowserView):
     def readiness_rows(self):
         return self._field_rows(READINESS_FIELDS)
 
+    def intervention_rows(self):
+        roster = self.roster()
+        if roster is None:
+            return []
+        return [self.staff_title(value)
+                for value in (getattr(roster, 'intervencijska_skupina', ()) or ())]
+
     def intervention_phone(self):
         roster = self.roster()
-        return getattr(roster, 'intervencijska_skupina_telefon', '') if roster is not None else ''
+        if roster is None:
+            return ''
+        return getattr(roster, 'intervencijska_skupina_telefon', '') or '040 190 945'
 
     def last_change(self):
         try:
@@ -199,6 +217,9 @@ class DutyPublicView(BrowserView):
     def selected_person(self):
         return str(self.request.form.get('oseba') or '')
 
+    def selected_person_title(self):
+        return self.staff_title(self.selected_person()) if self.selected_person() else ''
+
     def person_dates(self):
         person = self.selected_person()
         if not person:
@@ -218,11 +239,115 @@ class DutyPublicView(BrowserView):
                         continue
                     rows.append({
                         'id': obj.getId(),
+                        'date': parsed,
+                        'year': parsed.year,
+                        'month': parsed.month,
                         'label': '%02d.%02d.%04d' % (parsed.day, parsed.month, parsed.year),
                     })
         except Exception:
             pass
         return rows
+
+    def person_dates_by_year(self):
+        grouped = {}
+        for item in self.person_dates():
+            grouped.setdefault(item['year'], {}).setdefault(item['month'], []).append(item)
+        result = []
+        for year in sorted(grouped, reverse=True):
+            months = []
+            for month in sorted(grouped[year], reverse=True):
+                months.append({
+                    'number': month,
+                    'name': MONTH_NAMES[month],
+                    'dates': sorted(grouped[year][month], key=lambda x: x['date']),
+                })
+            result.append({'year': year, 'months': months})
+        return result
+
+    def easyform_url(self):
+        form = self.portal.get('spremeni-dezurstvo')
+        return form.absolute_url() if form is not None else ''
+
+
+class DutyExportView(BrowserView):
+    """Excel export replacement for the legacy ``izvoz.py`` flow."""
+
+    def _parse_period(self):
+        request = self.request.form
+        mode = str(request.get('izbira') or request.get('izvoz-1-izbira') or request.get('izvoz-2-izbira') or '')
+        today = date.today()
+        monday = today - timedelta(days=today.weekday())
+        if mode == 'teden':
+            return monday - timedelta(days=7), monday - timedelta(days=1)
+        if mode == 'tedenplus2':
+            return monday, monday + timedelta(days=14)
+        if mode == 'tekoci':
+            first = today.replace(day=1)
+            next_month = (first.replace(day=28) + timedelta(days=4)).replace(day=1)
+            return first, next_month - timedelta(days=1)
+        if mode == 'pretekli':
+            first_this = today.replace(day=1)
+            last_previous = first_this - timedelta(days=1)
+            return last_previous.replace(day=1), last_previous
+        if mode == 'oddo':
+            start = str(request.get('od') or '').strip()
+            end = str(request.get('do') or '').strip()
+            return datetime.strptime(start, '%d.%m.%Y').date(), datetime.strptime(end, '%d.%m.%Y').date()
+        raise ValueError('Izberite obdobje za izvoz.')
+
+    def __call__(self):
+        from openpyxl import Workbook
+
+        first_day, last_day = self._parse_period()
+        person = str(self.request.form.get('oseba') or self.request.form.get('izvoz-2-oseba') or '')
+        portal = _portal(self.context)
+        folder = _roster_folder(self.context)
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = 'izpis'
+        heading = 'Izpis: %s - %s' % (
+            first_day.strftime('%d.%m.%Y'), last_day.strftime('%d.%m.%Y'))
+        if person:
+            directory = portal.get('seznam_zaposlenih')
+            employee = directory.get(person) if directory is not None else None
+            heading += ' za osebo %s' % (employee.Title() if employee is not None else person)
+        sheet.cell(row=1, column=1, value=heading)
+
+        row = 4
+        brains = portal.portal_catalog(
+            portal_type=ROSTER_TYPE,
+            path='/'.join(folder.getPhysicalPath()),
+            sort_on='id', sort_order='ascending')
+        for brain in brains:
+            try:
+                day = datetime.strptime(brain.id, '%Y-%m-%d').date()
+            except ValueError:
+                continue
+            if day < first_day or day > last_day:
+                continue
+            obj = brain.getObject()
+            values = tuple(getattr(obj, 'dezurni_zdravnik', ()) or ())
+            for employee_id in values:
+                if person and employee_id != person:
+                    continue
+                directory = portal.get('seznam_zaposlenih')
+                employee = directory.get(employee_id) if directory is not None else None
+                name = employee.Title() if employee is not None else employee_id
+                row += 1
+                sheet.cell(row=row, column=1, value=day.strftime('%d.%m.%Y'))
+                sheet.cell(row=row, column=2, value=u'dežurni zdravnik')
+                sheet.cell(row=row, column=3, value=name)
+
+        payload = BytesIO()
+        workbook.save(payload)
+        payload.seek(0)
+        filename = 'izpis_%s-%s.xlsx' % (
+            first_day.strftime('%d_%m_%Y'), last_day.strftime('%d_%m_%Y'))
+        response = self.request.response
+        response.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response.setHeader('Content-Disposition', 'attachment; filename="%s"' % filename)
+        return payload.getvalue()
 
 
 class DutyAdminView(BrowserView):
@@ -233,13 +358,11 @@ class DutyHomeView(BrowserView):
     """Default site-root view: editor dashboard for editors, public roster otherwise."""
 
     admin_template = ViewPageTemplateFile('duty_admin.pt')
-    public_template = ViewPageTemplateFile('duty_public.pt')
 
     def __call__(self):
         portal = _portal(self.context)
         if api.user.has_permission('Modify portal content', obj=portal):
             return self.admin_template()
-        # Render through DutyPublicView so all public helper methods are present.
         return DutyPublicView(self.context, self.request)()
 
 
@@ -282,23 +405,14 @@ class CopyDutyView(BrowserView):
                 api.portal.show_message(u'Dežurstvo že obstaja.', request=request, type='warning')
                 request.response.redirect(target.absolute_url() + '/edit')
                 return ''
-
             source = folder.get(source_id)
             if source is None:
                 raise KeyError(u'Izvorno dežurstvo %s ne obstaja.' % source_id)
-
-            values = {}
-            for name in COPY_FIELDS:
-                if hasattr(source, name):
-                    values[name] = getattr(source, name)
-
+            values = {name: getattr(source, name)
+                      for name in COPY_FIELDS if hasattr(source, name)}
             target = api.content.create(
-                container=folder,
-                type=ROSTER_TYPE,
-                id=target_id,
-                title=target_id,
-                **values
-            )
+                container=folder, type=ROSTER_TYPE, id=target_id,
+                title=target_id, **values)
             _publish_if_possible(target)
             api.portal.show_message(u'Dežurstvo je bilo uspešno kopirano.', request=request)
             request.response.redirect(folder.absolute_url())
