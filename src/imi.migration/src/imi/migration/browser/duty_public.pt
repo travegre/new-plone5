@@ -17,84 +17,166 @@
   </script>
 </head>
 <body class="imi-duty-public">
-  <div class="duty-last-change" tal:condition="view/last_change">
+  <div id="last-change" tal:condition="view/last_change">
     Zadnja sprememba: <span tal:replace="view/last_change">27.08.2026 ob 12:00</span>
   </div>
 
-  <main class="duty-shell">
-    <header class="duty-header">
-      <a tal:attributes="href context/absolute_url" class="duty-logo-link">
-        <img tal:attributes="src string:${context/absolute_url}/logo.png"
-             src="logo.png" alt="IMI" class="duty-logo" />
-      </a>
-      <h1><a tal:attributes="href context/absolute_url">DEŽURSTVA IN PRIPRAVLJENOST</a></h1>
-    </header>
+  <div id="okolo">
+    <div id="okol">
+      <a tal:attributes="href context/absolute_url"><img id="logo" tal:attributes="src string:${context/absolute_url}/logo.png" src="logo.png" alt="IMI" /></a>
+      <h1><a tal:attributes="href context/absolute_url"> DEŽURSTVA IN PRIPRAVLJENOST</a></h1>
 
-    <nav class="duty-date-nav" aria-label="Izbira dneva">
-      <a class="duty-prev"
-         tal:attributes="href string:${context/absolute_url}/@@dezurstva-public?datum=${view/previous_date}">Nazaj</a>
-      <h2 tal:content="view/formatted_date">danes, četrtek, 27.08.2026</h2>
-      <a class="duty-next"
-         tal:attributes="href string:${context/absolute_url}/@@dezurstva-public?datum=${view/next_date}">Naprej</a>
-    </nav>
+      <tal:normal condition="not:view/selected_person">
+        <div class="legacy-date-nav">
+          <a class="legacy-back" tal:attributes="href string:${context/absolute_url}/@@dezurstva-public?datum=${view/previous_date}">Nazaj</a>
+          <h2 tal:content="view/formatted_date">danes, četrtek, 27.08.2026</h2>
+          <a class="legacy-next" tal:attributes="href string:${context/absolute_url}/@@dezurstva-public?datum=${view/next_date}">Naprej</a>
+        </div>
+        <div class="clear">&nbsp;</div>
+        <br />
 
-    <section tal:condition="view/roster" class="duty-columns">
-      <section class="duty-panel">
-        <h2>DEŽURNA EKIPA</h2>
-        <table class="duty-table">
-          <tbody>
-            <tr tal:repeat="row view/team_rows">
-              <td tal:content="row/label">dežurni zdravnik</td>
-              <td tal:content="row/name">Ime Priimek</td>
-            </tr>
-            <tr tal:condition="view/intervention_phone">
-              <td>Intervencijska skupina telefon</td>
-              <td tal:content="view/intervention_phone">telefon</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
+        <div tal:condition="view/roster" class="legacy-columns">
+          <div class="legacy-half left">
+            <h2 class="section-heading left-heading">DEŽURNA EKIPA</h2>
+            <p></p>
+            <table id="levaTabela" class="legacy-table">
+              <tbody>
+                <tr tal:repeat="row view/team_rows">
+                  <td tal:content="row/label">dežurni zdravnik</td>
+                  <td tal:content="row/name">Ime Priimek</td>
+                </tr>
+              </tbody>
+            </table>
 
-      <section class="duty-panel">
-        <h2>STANJE PRIPRAVLJENOSTI</h2>
-        <table class="duty-table">
-          <tbody>
-            <tr tal:repeat="row view/readiness_rows">
-              <td tal:content="row/label">BOR</td>
-              <td tal:content="row/name">Ime Priimek</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-    </section>
+            <table class="legacy-table intervention-table" tal:condition="view/intervention_rows">
+              <tbody>
+                <tr tal:repeat="name view/intervention_rows">
+                  <td tal:condition="python:repeat['name'].index == 0"
+                      tal:attributes="rowspan python:len(view.intervention_rows())"
+                      class="intervention-label">
+                    <h2>INTERVENCIJSKA <br /> SKUPINA <br /></h2>
+                    <p tal:content="view/intervention_phone">040 190 945</p>
+                  </td>
+                  <td class="intervention-name" tal:content="name">Ime Priimek</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-    <section tal:condition="not:view/roster" class="duty-empty">
-      Za izbrani dan ni vnesenega dežurstva.
-    </section>
+          <div class="legacy-half right">
+            <h2 class="section-heading left-heading">STANJE PRIPRAVLJENOSTI</h2>
+            <p></p>
+            <table class="legacy-table">
+              <tbody>
+                <tr tal:repeat="row view/readiness_rows">
+                  <td tal:content="row/label">BOR</td>
+                  <td tal:content="row/name">Ime Priimek</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-    <section class="duty-person-search">
-      <h2>DEŽURSTVA PO OSEBI</h2>
-      <form method="get" tal:attributes="action string:${context/absolute_url}/@@dezurstva-public">
-        <label for="oseba">Oseba</label>
-        <select id="oseba" name="oseba">
-          <option value="">-- izberi --</option>
-          <option tal:repeat="option view/staff_options"
-                  tal:attributes="value python:option[0]; selected python:view.selected_person() == option[0]"
-                  tal:content="python:option[1]">Ime Priimek</option>
-        </select>
-        <button type="submit">Prikaži</button>
-      </form>
+        <p tal:condition="not:view/roster" class="legacy-empty">Za izbrani dan ni vnesenega dežurstva.</p>
+        <div class="clear">&nbsp;</div>
 
-      <div tal:condition="view/selected_person" class="duty-person-results">
-        <p tal:condition="not:view/person_dates">Za izbrano osebo ni najdenih dežurstev.</p>
-        <ul tal:condition="view/person_dates">
-          <li tal:repeat="item view/person_dates">
-            <a tal:attributes="href string:${context/absolute_url}/@@dezurstva-public?datum=${item/id}"
-               tal:content="item/label">27.08.2026</a>
-          </li>
-        </ul>
-      </div>
-    </section>
-  </main>
+        <div class="legacy-utility-row">
+          <div class="legacy-half left">
+            <form method="get" tal:attributes="action string:${context/absolute_url}/@@dezurstva-public">
+              <p>Prikaži razpored na izbrani datum: </p>
+              <input name="datum" tal:attributes="value view/selected_date_sl" type="text" class="datepicker" />
+              <input type="submit" value="Prikaži" />
+            </form>
+          </div>
+
+          <div class="legacy-half right">
+            <form method="get" tal:attributes="action string:${context/absolute_url}/@@dezurstva-public">
+              <p>Prikaži vsa dežurstva za osebo:</p>
+              <select name="oseba" id="oseba">
+                <option value=""></option>
+                <option tal:repeat="option view/staff_options"
+                        tal:attributes="value python:option[0]"
+                        tal:content="python:option[1]">Ime Priimek</option>
+              </select>
+              <input type="submit" value="Prikaži" />
+            </form>
+          </div>
+        </div>
+
+        <div class="clear">&nbsp;</div>
+        <div class="clear">&nbsp;</div>
+        <div class="clear">&nbsp;</div>
+
+        <a tal:condition="python:view.roster() and view.easyform_url()"
+           class="change-request-link"
+           tal:attributes="href string:${view/easyform_url}?datum=${view/selected_date_id}">Za spremembo dežurstva lahko zaprosite tukaj</a>
+
+        <p>&nbsp;</p>
+        <hr />
+        <br />
+        <h2>IZVOZ</h2>
+        <div class="clear">&nbsp;</div>
+
+        <div class="legacy-utility-row export-row">
+          <div class="legacy-half left">
+            <form method="get" tal:attributes="action string:${context/absolute_url}/@@dezurstva-izvoz" id="izvoz-1">
+              <p>Izberite obdobje: </p>
+              <select name="izvoz-1-izbira" id="izvoz-1-izbira">
+                <option value=""></option>
+                <option value="teden">za prejšnji teden</option>
+                <option value="tedenplus2">za naslednja 2 tedna</option>
+                <option value="tekoci">za tekoči mesec</option>
+                <option value="pretekli">za pretekli mesec</option>
+                <option value="oddo">od - do</option>
+              </select>
+              <span class="date-range">od <input name="od" type="text" placeholder="dd.mm.llll" /> do <input name="do" type="text" placeholder="dd.mm.llll" /></span>
+              <input class="submit" type="submit" value="Izvozi" />
+            </form>
+          </div>
+
+          <div class="legacy-half right">
+            <form method="get" tal:attributes="action string:${context/absolute_url}/@@dezurstva-izvoz" id="izvoz-2">
+              <p>Izberite osebo in nato obdobje:</p>
+              <select name="izvoz-2-oseba" id="izvoz-2-oseba">
+                <option value=""></option>
+                <option tal:repeat="option view/staff_options"
+                        tal:attributes="value python:option[0]"
+                        tal:content="python:option[1]">Ime Priimek</option>
+              </select>
+              <div id="obdobje">
+                <p>Izberite obdobje: </p>
+                <select name="izvoz-2-izbira" id="izvoz-2-izbira">
+                  <option value=""></option>
+                  <option value="teden">za prejšnji teden</option>
+                  <option value="tedenplus2">za naslednja 2 tedna</option>
+                  <option value="tekoci">za tekoči mesec</option>
+                  <option value="pretekli">za pretekli mesec</option>
+                  <option value="oddo">od - do</option>
+                </select>
+                <span class="date-range">od <input name="od" type="text" placeholder="dd.mm.llll" /> do <input name="do" type="text" placeholder="dd.mm.llll" /></span>
+                <input class="submit" type="submit" value="Izvozi" />
+              </div>
+            </form>
+          </div>
+        </div>
+      </tal:normal>
+
+      <tal:person condition="view/selected_person">
+        <h2>Dežurstva za osebo <span class="person-name" tal:content="view/selected_person_title">Ime Priimek</span></h2>
+        <p>&nbsp;</p>
+        <div class="person-year-list" tal:repeat="year view/person_dates_by_year">
+          <h3 tal:content="year/year">2026</h3>
+          <div class="person-month-list" tal:repeat="month year/months">
+            <h4 tal:content="month/name">avgust</h4>
+            <div class="person-date" tal:repeat="item month/dates">
+              <a tal:attributes="href string:${context/absolute_url}/@@dezurstva-public?datum=${item/id}"
+                 tal:content="item/label">27.08.2026</a>
+            </div>
+          </div>
+        </div>
+        <p><a tal:attributes="href string:${context/absolute_url}/@@dezurstva-public">Nazaj</a></p>
+      </tal:person>
+    </div>
+  </div>
 </body>
 </html>
