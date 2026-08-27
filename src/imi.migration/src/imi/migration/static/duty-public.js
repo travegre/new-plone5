@@ -8,12 +8,20 @@
     var person = personId ? document.getElementById(personId) : null;
     var range = form.querySelector('.date-range');
     var submit = form.querySelector('.submit');
+    var periodContainer = person ? form.querySelector('#obdobje') : null;
 
     function refresh() {
       var mode = period ? period.value : '';
       var personOk = !person || !!person.value;
-      if (range) { range.style.display = mode === 'oddo' ? 'inline-block' : 'none'; }
-      if (submit) { submit.style.display = (mode && personOk) ? 'inline' : 'none'; }
+      if (periodContainer) {
+        periodContainer.style.display = personOk ? 'block' : 'none';
+      }
+      if (range) {
+        range.style.display = (mode === 'oddo' && personOk) ? 'inline-block' : 'none';
+      }
+      if (submit) {
+        submit.style.display = (mode && personOk) ? 'inline' : 'none';
+      }
     }
 
     if (period) { period.addEventListener('change', refresh); }
