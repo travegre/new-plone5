@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Verify migrated EasyForms and their mailer action models.
-
-Compares pfg-easyform.jsonl against target EasyForm objects. XML models are
-canonicalized before comparison so formatting differences do not count.
-Also reports MailHost readiness and mailer routing details without exposing
-SMTP secrets.
-"""
+"""Verify migrated EasyForms and their mailer action models."""
 import json
 import os
 import sys
 
 from lxml import etree
+from zope.component import getUtility
 from zope.component.hooks import setSite
+from zope.schema.interfaces import IVocabularyFactory
 
 SCRIPT = 'plone52_verify_easyforms.py'
 SCHEMA_NS = 'http://namespaces.plone.org/supermodel/schema'
@@ -42,9 +38,8 @@ def canonical_xml(value):
 
 def target_object(app, record):
     site = app[record['site']]
-    source = record['source_path'].strip('/').split('/')
     current = site
-    for part in source[1:]:
+    for part in record['source_path'].strip('/').split('/')[1:]:
         current = current[part]
     return site, current
 
@@ -95,6 +90,30 @@ def mailer_summary(actions_model):
             item['execCondition'] = exec_condition
         result.append(item)
     return result
+
+
+def field_vocabulary_summary(fields_model):
+    result = []
+    if not fields_model:
+        return result
+    if isinstance(fields_model, str):
+        fields_model = fields_model.encode('utf-8')
+    root = etree.fromstring(fields_model)
+    ns = {'s': SCHEMA_NS}
+    for field in root.xpath('.//s:field', namespaces=ns):
+        vocabulary = node_text(field, 'vocabulary')
+        if vocabulary:
+            result.append({'field': field.get('name'), 'vocabulary': vocabulary})
+    return result
+
+
+def runtime_vocabulary(context, name):
+    try:
+        factory = getUtility(IVocabularyFactory, name=name)
+        vocabulary = factory(context)
+        return {'ok': True, 'terms': len(vocabulary)}
+    except Exception as exc:
+        return {'ok': False, 'error': repr(exc)}
 
 
 def mailhost_summary(site):
@@ -155,17 +174,31 @@ def run(app, input_dir):
                     diffs.append('exclude_from_nav differs')
 
             mailers = mailer_summary(record.get('actions_model'))
+            vocabularies = field_vocabulary_summary(record.get('fields_model'))
+            runtime_vocabularies = []
+            for vocabulary in vocabularies:
+                runtime = runtime_vocabulary(obj, vocabulary['vocabulary'])
+                runtime_vocabularies.append(dict(vocabulary, runtime=runtime))
+                if not runtime['ok']:
+                    diffs.append('vocabulary %s cannot resolve' % vocabulary['vocabulary'])
+
             item = {
                 'site': record['site'],
                 'source_path': record['source_path'],
                 'status': 'ok' if not diffs else 'different',
                 'differences': diffs,
                 'mailers': mailers,
+                'vocabularies': runtime_vocabularies,
             }
             report['forms'].append(item)
             total_differences += len(diffs)
             print('%s: %s (%d mailer actions)' %
                   (record['source_path'], item['status'].upper(), len(mailers)))
+            for vocabulary in runtime_vocabularies:
+                runtime = vocabulary['runtime']
+                print('  VOCAB field=%s name=%s runtime=%s' %
+                      (vocabulary['field'], vocabulary['vocabulary'],
+                       ('%d terms' % runtime['terms']) if runtime['ok'] else runtime['error']))
             for mailer in mailers:
                 print('  MAILER %s recipient=%r to_field=%r replyto=%r subject=%r' %
                       (mailer.get('name'), mailer.get('recipient_email'),
