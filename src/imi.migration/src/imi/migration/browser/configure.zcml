@@ -3,6 +3,13 @@
     xmlns:browser="http://namespaces.zope.org/browser">
 
   <browser:page
+      name="dezurstva-home"
+      for="Products.CMFCore.interfaces.ISiteRoot"
+      class=".duty.DutyHomeView"
+      permission="zope2.View"
+      />
+
+  <browser:page
       name="dezurstva-admin"
       for="Products.CMFCore.interfaces.ISiteRoot"
       class=".duty.DutyAdminView"
