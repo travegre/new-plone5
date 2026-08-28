@@ -1,5 +1,5 @@
 /* Public Preiskave skin rebuilt from the original Plone-4 imipreiskave.css. */
-body.imi-exams-public{margin:0;background:#fff;color:#333;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.45}
+body.imi-exams-public{margin:0;background:#fff;color:#333;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.38}
 .imi-exams-public *{box-sizing:border-box}
 .imi-exams-public ul{margin:0;padding:0;list-style:none}
 .imi-exams-public span,.imi-exams-public p,.imi-exams-public div{font-family:Arial,Helvetica,sans-serif;color:#333}
@@ -15,32 +15,31 @@ body.imi-exams-public{margin:0;background:#fff;color:#333;font-family:Arial,Helv
 .imi-exams-public h1.site-title{position:absolute;left:165px;top:58px;border:0;margin:0;font-size:32px;line-height:40px;color:#624C9C!important}
 .imi-exams-public h1.site-title a{color:#624C9C!important;font-size:32px;font-family:Arial,Helvetica,sans-serif}
 
-/* The old top navigation used floating 13px items on a 59px strip. */
-.imi-exams-public #glavni_meni{height:59px;padding:12px 0 0 70px;margin:0;clear:both;border-top:1px solid #eee;border-bottom:1px solid #eee;background:#fafafa}
+/* GLAVNI MENI values from the original skin. */
+.imi-exams-public #glavni_meni{height:59px;padding:12px 0 0 70px;margin:0;clear:both;border:0;background:#f5f5f5}
 .imi-exams-public #glavni_meni ul{margin:0;padding:0}
-.imi-exams-public #glavni_meni ul li{height:46px;padding:14px 16px 0;float:left;cursor:pointer;border-left:1px solid #e7e7e9}
-.imi-exams-public #glavni_meni ul li.domov{padding:14px 12px 0 0;width:52px;border-left:0}
+.imi-exams-public #glavni_meni ul li{height:32px;padding:14px 16px 0;float:left;cursor:pointer;border-left:1px solid #e7e7e9}
+.imi-exams-public #glavni_meni ul li.domov{padding:0 2px 0 0;height:46px;width:35px;border-left:0;overflow:hidden}
 .imi-exams-public #glavni_meni ul li a{font-family:Arial,sans-serif;font-size:13px;color:#414152;white-space:nowrap}
 .imi-exams-public #glavni_meni ul li:hover,.imi-exams-public #glavni_meni ul li.oznacen{background:#5FB11E}
 .imi-exams-public #glavni_meni ul li:hover a,.imi-exams-public #glavni_meni ul li.oznacen a{color:#fff}
 .imi-exams-public .clear{clear:both}
 
-.imi-exams-public #vsebina_podstran{padding:18px 0 50px;float:left;width:760px;max-width:calc(100% - 140px);margin-left:70px}
+/* Original subpage body is 760px wide next to the 220px submenu region. */
+.imi-exams-public #vsebina_podstran{padding:18px 0 50px;float:left;width:760px;max-width:760px;margin-left:220px}
 .imi-exams-public #listing_preiskav{padding-top:30px;clear:both}
 .imi-exams-public #vsebina_podstran #listing_preiskav ul{padding-left:10px;list-style:none}
 .imi-exams-public .legacy-intro{font-size:16px;margin:20px 0 30px}
-.imi-exams-public .home-actions{display:flex;gap:18px;flex-wrap:wrap}
-.imi-exams-public .home-actions a{display:block;padding:15px 20px;background:#e7e7e9;color:#624C9C;font-size:16px}
-.imi-exams-public .home-actions a:hover{background:#5FB11E;color:#fff}
 
-/* Hitro iskanje */
-.imi-exams-public .legacy-quick-search{margin:20px 0 40px}
-.imi-exams-public .legacy-quick-search .LSBox{position:relative}
-.imi-exams-public .legacy-quick-search #exam-search{width:620px;max-width:82%;height:42px;padding:7px 10px;border:1px solid #aaa;font-size:20px;color:#414152}
-.imi-exams-public .legacy-quick-search .searchButton{height:42px;padding:0 18px;font-size:15px;cursor:pointer}
-.imi-exams-public .legacy-quick-search .LSBox>span{display:block;margin-top:7px;color:#666;font-size:12px}
-.imi-exams-public .rezultati{position:absolute;z-index:50;width:100%;top:72px;left:0;background:#fff;display:none}
-.imi-exams-public .livesearchContainer{border:1px solid #ccc;background:#fff;padding:0;margin:0}
+/* Hitro iskanje: these are the actual old #okolo/#searchGadget dimensions. */
+.imi-exams-public .legacy-quick-search{margin:0 0 30px}
+.imi-exams-public .legacy-quick-search .LSBox{position:relative;text-align:left;padding:30px 0 0 0}
+.imi-exams-public .legacy-quick-search #exam-search{width:310px;height:auto;padding:5px;margin:0 0 7px;border:1px inset;font-size:16px;line-height:22px;color:#414152;background:#fff}
+.imi-exams-public .legacy-quick-search #exam-search:focus{outline:2px solid #5FB11E;outline-offset:2px}
+.imi-exams-public .legacy-quick-search .searchButton{height:40px;padding:0 12px;margin:-8px 0 0 5px;font-size:15px;vertical-align:middle;cursor:pointer;background:none;border:1px solid #666}
+.imi-exams-public .legacy-quick-search .LSBox>span{display:block;padding:7px 0;color:#666;font-size:12px}
+.imi-exams-public .rezultati{position:absolute;z-index:50;width:760px;top:100%;left:0;padding-top:30px;background:transparent;display:none}
+.imi-exams-public .livesearchContainer{border:2px solid #E7E7E9;background:#fff;padding:20px 5px;margin:0;width:760px}
 .imi-exams-public .LSTable{padding:0!important}
 .imi-exams-public .LSRow{padding:7px 10px!important;border-bottom:1px solid #e7e7e9;background:#fff}
 .imi-exams-public .LSRow:hover{background:#f3f3f3}
@@ -49,60 +48,58 @@ body.imi-exams-public{margin:0;background:#fff;color:#333;font-family:Arial,Helv
 .imi-exams-public #LSNothingFound{padding:10px}
 
 /* Laboratory / area / group selectors copied from the old views. */
-.imi-exams-public .trenutno{color:#666;font-size:11px;line-height:18px}
-.imi-exams-public .podrocje_select{background:none;border:1px solid #666;color:#624C9C;height:28px;padding:2px 4px;width:300px;font:14px Arial,Helvetica,sans-serif;margin:3px 0 22px}
-.imi-exams-public .vijolcno{color:#624C9C;font-size:12px;margin-left:10px}
-.imi-exams-public ul.izbirnik_crk{clear:both;margin:10px 0 0 30px;min-height:24px}
+.imi-exams-public .trenutno{color:#666;font-size:10px;line-height:18px}
+.imi-exams-public .podrocje_select{background:none;border:1px solid #666;color:#624C9C;font-size:15px;height:26px;padding:2px 0 0;width:300px;margin:3px 0 22px}
+.imi-exams-public .vijolcno{color:#624C9C;font-size:14px;margin-left:20px;line-height:30px}
+.imi-exams-public ul.izbirnik_crk{clear:both;margin-left:30px;min-height:24px}
 .imi-exams-public ul.izbirnik_crk li{font-size:14px;background:none!important;margin-right:15px;float:left;cursor:pointer;color:#414152;padding:3px 0}
 .imi-exams-public ul.izbirnik_crk li.odprt,.imi-exams-public ul.izbirnik_crk li:hover{color:#5FB11E}
-.imi-exams-public .locnica_druga{height:3px;background:#e7e7e9;margin:5px 0 15px}
+.imi-exams-public .locnica_druga{height:10px;border-bottom:2px solid #e7e7e9;margin-bottom:15px;clear:both}
 .imi-exams-public .alphabet-listing{margin-bottom:12px;clear:both}
 .imi-exams-public .velika_crka{font-size:20px;margin:10px 0 6px;color:#5FB11E}
 .imi-exams-public .alphabet-listing ul{padding-left:10px}
-.imi-exams-public .alphabet-listing li{margin:0 0 4px 0;line-height:18px}
-.imi-exams-public .alphabet-listing li a{font-size:13px;color:#000}
+.imi-exams-public .alphabet-listing li{margin:0 0 4px;line-height:18px}
+.imi-exams-public .alphabet-listing li a{font-size:14px;color:#000}
 .imi-exams-public .alphabet-listing li a:hover{color:#5FB11E}
 .imi-exams-public .year-title,.imi-exams-public .urgent-sample-title{margin:28px 0 12px;padding-top:10px;border-top:3px solid #e7e7e9;color:#666;font-size:16px;font-weight:bold}
-.imi-exams-public .urgent-samples li{margin:5px 0}
-.imi-exams-public .urgent-samples a{color:#5FB11E}
+.imi-exams-public .urgent-samples li{margin:5px 0}.imi-exams-public .urgent-samples a{color:#5FB11E}
 
-/* Vzorci: the old page is a hierarchical browser with three columns. */
-.imi-exams-public .vzorci_drobtine{margin:5px 0 25px;color:#666;font-size:10px;line-height:18px}
+/* Vzorci: old hierarchy was distributed into three 230px columns. */
+.imi-exams-public .vzorci_drobtine{margin:30px 0 20px 15px;clear:both;color:#666;font-size:10px;line-height:18px}
 .imi-exams-public .vzorci_drobtine a{color:#666!important}
-.imi-exams-public .sample-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:30px;row-gap:12px;margin-top:20px}
-.imi-exams-public .sample-choice-grid .razvrsti{text-align:left}
+.imi-exams-public .sample-choice-grid{display:grid;grid-template-columns:repeat(3,230px);column-gap:15px;row-gap:12px;margin:20px 0 0 15px}
+.imi-exams-public .sample-choice-grid .razvrsti{text-align:left;margin-bottom:12px}
 .imi-exams-public .sample-choice-grid .razvrsti a{font-size:17px;color:#624C9C;line-height:19px}
 .imi-exams-public .sample-choice-grid .razvrsti a:hover{color:#5FB11E}
 .imi-exams-public .sample-exam-results{margin-top:35px;border-top:3px solid #e7e7e9;padding-top:12px}
 
-/* Examination detail: original 20% / 55% / 20% three-region layout. */
-.imi-exams-public .legacy-examination{width:960px!important;max-width:calc(100% - 140px)!important}
-.imi-exams-public .exam-main-title{width:107%;margin:0 0 30px -3.5%;font-family:"Droid Serif","Lucida Grande",serif;font-size:30px;font-weight:400;line-height:1.15;color:#333}
-.imi-exams-public .exam-three-columns{display:flex;align-items:flex-start;gap:2.5%;width:100%}
-.imi-exams-public .preiskava_opis_container{width:20%}
-.imi-exams-public .preiskava_vzorci_container{width:55%}
-.imi-exams-public .preiskava_tech_data{width:20%}
-.imi-exams-public .text-12,.imi-exams-public .text-16{font-size:14px;margin:0 0 5px}
-.imi-exams-public .text-13,.imi-exams-public .text-17{font-size:13px;margin:0 0 18px;line-height:1.45}
-.imi-exams-public .siv-tekst{color:#666;font-weight:normal}
-.imi-exams-public .section-title{font-size:18px!important;color:#414152;margin-bottom:15px}
+/* Examination detail: generated old layout uses three equal ~31.98% columns. */
+.imi-exams-public .legacy-examination{width:760px!important;max-width:760px!important;margin-left:220px!important}
+.imi-exams-public .exam-main-title{width:107.142857%;margin:0 0 30px -3.57143%;font-family:"Droid Serif","Lucida Grande",serif;font-size:2.25em;font-weight:400;line-height:1.38;text-align:center;color:rgb(165,69,191)!important}
+.imi-exams-public .exam-three-columns{display:flex;align-items:flex-start;width:100%;gap:2.0268%}
+.imi-exams-public .preiskava_opis_container,.imi-exams-public .preiskava_vzorci_container,.imi-exams-public .preiskava_tech_data{width:31.9777947807%;min-width:0;margin-bottom:32px}
+.imi-exams-public .text-12,.imi-exams-public .text-14,.imi-exams-public .text-16{clear:both;width:100%;margin:32px 0 0;font-family:"Droid Serif","Lucida Grande",serif;font-size:1.5em;font-weight:400;color:rgb(67,67,67)!important;line-height:1.38}
+.imi-exams-public .text-13,.imi-exams-public .text-15,.imi-exams-public .text-17{clear:both;width:100%;margin:8px 0 0;font-size:.875em;color:rgb(67,67,67)!important;line-height:1.38}
+.imi-exams-public .siv-tekst{color:#666!important;font-weight:normal}
+.imi-exams-public .section-title{font-size:1.5em!important;color:rgb(67,67,67)!important}
 .imi-exams-public .div_vzorci{margin:20px 0}
 .imi-exams-public .sample-card{border-top:2px solid #e7e7e9;padding:8px 0;margin-bottom:6px}
-.imi-exams-public .naslov_vzorca{color:#5FB11E!important;padding:8px 30px 8px 0;border:0;font-size:16px;font-weight:bold;cursor:pointer;position:relative;margin:0}
-.imi-exams-public .naslov_vzorca:after{content:'▼';position:absolute;right:5px;top:8px;font-size:12px;color:#666}
+.imi-exams-public .naslov_vzorca{color:#5FB11E!important;padding:8px 30px 8px 0;border:0;font-family:"Droid Serif","Lucida Grande",serif;font-size:1.5em;font-weight:400;cursor:pointer;position:relative;margin:0}
+.imi-exams-public .naslov_vzorca:after{content:'▼';position:absolute;right:5px;top:10px;font-size:12px;color:#666}
 .imi-exams-public .naslov_vzorca.odprt:after{content:'▲'}
-.imi-exams-public .ostali_fajli{display:none;padding:10px 0}
+.imi-exams-public .ostali_fajli{display:none;padding:10px 0;font-size:14px}
 .imi-exams-public .vzorec_levo{padding-right:1%;float:left;margin-bottom:6px;width:100%;font-weight:bold}
 .imi-exams-public .vzorec_desno{float:left;margin-bottom:6px;width:100%;padding-bottom:10px}
 .imi-exams-public .vzorec_desno.lab .tel{font-weight:bold;color:#5FB11E!important}
 .imi-exams-public .lab-code{clear:both;margin:0 0 10px}
 .imi-exams-public .packaging-images{clear:both;display:flex;gap:10px;flex-wrap:wrap;padding:10px 0 18px}
 .imi-exams-public .embalaza_slika{width:100%;max-width:150px;max-height:150px;object-fit:contain;cursor:pointer}
-.imi-exams-public .preiskava_tech_data>div{border-bottom:2px solid #e7e7e9;margin-bottom:14px;padding-bottom:6px}
-.imi-exams-public #opis_preiskave.collapsed{max-height:55px;overflow:hidden}
-.imi-exams-public #opis_preiskave.expanded{max-height:none}
-.imi-exams-public .show-more{margin:-10px 0 18px;text-align:right}
-.imi-exams-public .show-more a{color:#5FB11E;font-size:12px}
+.imi-exams-public .preiskava_tech_data>div{margin-bottom:14px;padding-bottom:6px}
+.imi-exams-public #opis_preiskave{width:100%}
+.imi-exams-public #opis_preiskave.collapsed{height:55px;overflow:hidden}
+.imi-exams-public #opis_preiskave.expanded{height:auto}
+.imi-exams-public .show-more{margin:10px 0 18px}
+.imi-exams-public .show-more a{background:#8DC85A;color:#fff!important;padding:5px 15px;font-weight:bold;font-size:14px}
 
 /* Packaging image popup mirrors the old magnific-popup behavior. */
 .imi-exams-public .exam-lightbox{display:none;position:fixed;inset:0;z-index:10000}
@@ -111,15 +108,13 @@ body.imi-exams-public{margin:0;background:#fff;color:#333;font-family:Arial,Helv
 .imi-exams-public .exam-lightbox img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:88vw;max-height:88vh;background:#fff;padding:10px;box-shadow:0 10px 45px #000}
 .imi-exams-public .exam-lightbox button{position:fixed;right:25px;top:15px;border:0;background:transparent;color:#fff;font-size:40px;cursor:pointer}
 
-@media(max-width:1000px){
- .imi-exams-public #glavni_meni{padding-left:15px;height:auto;min-height:59px}
- .imi-exams-public #vsebina_podstran,.imi-exams-public .legacy-examination{width:90%!important;max-width:none!important;margin:20px 5%!important;float:none}
- .imi-exams-public .exam-three-columns{display:block}.imi-exams-public .preiskava_opis_container,.imi-exams-public .preiskava_vzorci_container,.imi-exams-public .preiskava_tech_data{width:100%;margin-bottom:30px}
+@media(max-width:1050px){
+ .imi-exams-public #okvir{max-width:96%}
+ .imi-exams-public #vsebina_podstran,.imi-exams-public .legacy-examination{width:760px!important;max-width:calc(100% - 30px)!important;margin:20px auto!important;float:none}
 }
-@media(max-width:760px){
- .imi-exams-public .exams-header #logo{padding-left:10px}
- .imi-exams-public h1.site-title{left:105px}
- .imi-exams-public #glavni_meni ul li{float:none;height:auto;padding:8px 10px;border-left:0;border-bottom:1px solid #eee}
- .imi-exams-public .sample-choice-grid{grid-template-columns:1fr}
- .imi-exams-public .legacy-quick-search #exam-search{max-width:70%;font-size:17px}
+@media(max-width:800px){
+ .imi-exams-public .exams-header #logo{padding-left:10px}.imi-exams-public h1.site-title{left:105px}
+ .imi-exams-public #glavni_meni{height:auto;padding-left:0}.imi-exams-public #glavni_meni ul li{float:none;height:auto;padding:8px 10px;border-left:0;border-bottom:1px solid #eee}.imi-exams-public #glavni_meni ul li.domov{width:auto;height:auto;padding:8px 10px}
+ .imi-exams-public .exam-three-columns{display:block}.imi-exams-public .preiskava_opis_container,.imi-exams-public .preiskava_vzorci_container,.imi-exams-public .preiskava_tech_data{width:100%}
+ .imi-exams-public .sample-choice-grid{grid-template-columns:1fr;margin-left:0}.imi-exams-public .legacy-quick-search #exam-search{max-width:70%}.imi-exams-public .rezultati,.imi-exams-public .livesearchContainer{width:100%}
 }
