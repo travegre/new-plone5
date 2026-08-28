@@ -11,7 +11,7 @@ def _as_list(value):
     text = str(value or '')
     if not text:
         return []
-    # Exported Archetypes LinesFields arrive as tuple/list.  Keep newline as a
+    # Exported Archetypes LinesFields arrive as tuple/list. Keep newline as a
     # tolerant fallback for manually edited/migrated values.
     return [item for item in text.split('\n')]
 
@@ -65,4 +65,4 @@ class ExaminationView(BaseExaminationView):
     def packaging_url(self, code):
         site = self.context.getPhysicalRoot().get('preiskave')
         base = site.absolute_url() if site is not None else self.context.portal_url()
-        return base + '/embalazaSlike/' + str(code)
+        return base + '/++resource++imi.migration/embalazaSlike/' + str(code)
