@@ -11,6 +11,7 @@
   <browser:page name="dezurstva_admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".duty.DutyAdminView" template="duty_admin.pt" permission="cmf.ModifyPortalContent" />
   <browser:page name="izberi_dezurstvo" for="Products.CMFCore.interfaces.ISiteRoot" class=".duty.SelectDutyView" permission="cmf.AddPortalContent" />
   <browser:page name="kopiraj_dezurstvo" for="Products.CMFCore.interfaces.ISiteRoot" class=".duty.CopyDutyView" permission="cmf.AddPortalContent" />
+  <browser:page name="dezurstva-uvoz-zaposlenih" for="Products.CMFCore.interfaces.ISiteRoot" class=".staff_import.StaffImportView" permission="cmf.ModifyPortalContent" />
 
   <!-- IMI imenik -->
   <browser:page name="imenik-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.DirectoryHomeView" permission="zope2.View" />
