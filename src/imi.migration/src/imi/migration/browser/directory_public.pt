@@ -5,7 +5,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>IMENIK</title>
-  <link rel="stylesheet" tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/legacy-sites.css" />
   <link rel="stylesheet" tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/directory-legacy.css" />
 </head>
 <body class="imi-directory-public">
@@ -14,7 +13,7 @@
     <h1><a tal:attributes="href context/absolute_url">IMENIK</a></h1>
     <div class="forma">
       <form name="searchform" class="searchPage" action="#" onsubmit="return false;">
-        <div class="LSBox">
+        <div class="LSBox" id="directory-search-box">
           <p class="opozorilo">Za novo iskanje kliknite zgoraj na <em>IMENIK</em></p>
           <input class="searchPage" id="searchGadget" name="searchGadget" value="" autocomplete="off" autofocus="autofocus" />
           <div id="listing">
@@ -35,21 +34,63 @@
   var input = document.getElementById('searchGadget');
   var listing = document.getElementById('listing');
   var results = document.getElementById('directory-results');
+  var box = document.getElementById('directory-search-box');
   var searchUrl = results.getAttribute('data-search-url');
   var timer = null;
+
+  function resetResults() {
+    window.clearTimeout(timer);
+    results.innerHTML = '<div class="LSShadow"></div>';
+    listing.style.display = '';
+  }
+
   function search(value) {
     value = (value || '').trim();
-    if (value.length < 2) { results.innerHTML = '<div class="LSShadow"></div>'; listing.style.display = ''; return; }
+    if (value.length < 2) { resetResults(); return; }
     listing.style.display = 'none';
     fetch(searchUrl + '?q=' + encodeURIComponent(value), {credentials: 'same-origin'})
       .then(function (r) { return r.text(); })
       .then(function (html) { results.innerHTML = html; })
       .catch(function () { results.innerHTML = '<div class="LSShadow">Napaka pri iskanju.</div>'; });
   }
-  input.addEventListener('input', function () { window.clearTimeout(timer); var value = input.value; timer = window.setTimeout(function () { search(value); }, 140); });
-  document.querySelectorAll('.kategorija.klik').forEach(function (link) { link.addEventListener('click', function (event) { event.preventDefault(); input.value = link.textContent.trim(); search(input.value); input.focus(); }); });
-  document.querySelectorAll('.kategorija.nad').forEach(function (link) { link.addEventListener('click', function (event) { event.preventDefault(); var box = link.parentNode.querySelector('.listing3'); if (box) { box.style.display = box.style.display === 'block' ? 'none' : 'block'; } }); });
-  results.addEventListener('click', function (event) { var row = event.target.closest && event.target.closest('tr.tri'); if (!row) { return; } var detail = row.nextElementSibling; if (detail && detail.classList.contains('person-detail')) { detail.style.display = detail.style.display === 'table-row' ? 'none' : 'table-row'; } });
+
+  input.addEventListener('input', function () {
+    window.clearTimeout(timer);
+    var value = input.value;
+    timer = window.setTimeout(function () { search(value); }, 140);
+  });
+  input.addEventListener('blur', function () {
+    window.setTimeout(function () {
+      if (!box.contains(document.activeElement)) { resetResults(); }
+    }, 180);
+  });
+  document.addEventListener('mousedown', function (event) {
+    if (!box.contains(event.target)) { resetResults(); }
+  });
+
+  document.querySelectorAll('.kategorija.klik').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      input.value = link.textContent.trim();
+      search(input.value);
+      input.focus();
+    });
+  });
+  document.querySelectorAll('.kategorija.nad').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      var sub = link.parentNode.querySelector('.listing3');
+      if (sub) { sub.style.display = sub.style.display === 'block' ? 'none' : 'block'; }
+    });
+  });
+  results.addEventListener('click', function (event) {
+    var row = event.target.closest && event.target.closest('tr.tri');
+    if (!row) { return; }
+    var detail = row.nextElementSibling;
+    if (detail && detail.classList.contains('person-detail')) {
+      detail.style.display = detail.style.display === 'table-row' ? 'none' : 'table-row';
+    }
+  });
 }());
 </script>
 </body>
