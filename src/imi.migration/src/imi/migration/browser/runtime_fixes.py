@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """Runtime compatibility fixes for migrated legacy public sites."""
 from Acquisition import aq_parent
+from html import escape
 from Products.Five import BrowserView
 
 from .exams_compat import ExaminationView
+from .legacy_sites import ExamsLiveSearchView as BaseExamsLiveSearchView
 from .legacy_sites import KiestraPublicView as BaseKiestraPublicView
 from .legacy_sites import ReplacementsPublicView as BaseReplacementsPublicView
 
@@ -29,20 +31,11 @@ class KiestraPublicView(BaseKiestraPublicView):
     """Kiestra frontend independent of the old /nastavitve/dezurstva path."""
 
     def day_object(self):
-        brains = _brains(
-            self.portal,
-            'imi.kiestra.work_day',
-            id=self.selected_date_id(),
-        )
+        brains = _brains(self.portal, 'imi.kiestra.work_day', id=self.selected_date_id())
         return brains[0].getObject() if brains else None
 
     def last_change(self):
-        brains = _brains(
-            self.portal,
-            'imi.kiestra.work_day',
-            sort_on='modified',
-            sort_order='descending',
-        )
+        brains = _brains(self.portal, 'imi.kiestra.work_day', sort_on='modified', sort_order='descending')
         if not brains:
             return ''
         try:
@@ -65,30 +58,40 @@ class ReplacementsPublicView(BaseReplacementsPublicView):
             return None
 
     def day_object(self):
-        brains = _brains(
-            self.portal,
-            'imi.replacements.day',
-            id=self.selected_date_id(),
-        )
+        brains = _brains(self.portal, 'imi.replacements.day', id=self.selected_date_id())
         return brains[0].getObject() if brains else None
 
 
-class ExaminationPublicProxyView(BrowserView):
-    """Render an examination through the public site root.
+class ExamsLiveSearchView(BaseExamsLiveSearchView):
+    """Return livesearch links through the anonymous site-root proxy."""
 
-    This avoids traversing private legacy parent folders before reaching the
-    explicitly public examination browser view.
-    """
+    def __call__(self):
+        query = str(self.request.form.get('q') or '').strip()
+        results = self.filtered_exams(query)
+        self.request.response.setHeader('Content-Type', 'text/html; charset=utf-8')
+        if not results:
+            return '<fieldset class="livesearchContainer"><legend>Live search</legend><div id="LSNothingFound">No match found</div></fieldset>'
+        limit = 20
+        base = self.portal.absolute_url() + '/@@preiskava-public?id='
+        out = ['<fieldset class="livesearchContainer"><legend>Live search results: %d</legend><ul class="LSTable">' % len(results)]
+        for obj in results[:limit]:
+            out.append('<li class="LSRow"><a href="%s%s">%s</a><div class="LSDescr">%s</div></li>' % (
+                base, escape(obj.getId()), escape(obj.Title()), escape(obj.Description() or '')))
+        if len(results) > limit:
+            out.append('<li class="LSRow">prikazanih %d od %d zadetkov</li>' % (limit, len(results)))
+        out.append('</ul></fieldset>')
+        return ''.join(out)
+
+
+class ExaminationPublicProxyView(BrowserView):
+    """Render an examination through the public site root."""
 
     def _exam(self):
         exam_id = str(self.request.form.get('id') or '').strip()
         if not exam_id:
             return None
         portal = self.context
-        brains = portal.portal_catalog(
-            id=exam_id,
-            path='/'.join(portal.getPhysicalPath()),
-        )
+        brains = portal.portal_catalog(id=exam_id, path='/'.join(portal.getPhysicalPath()))
         for brain in brains:
             try:
                 obj = brain.getObject()
