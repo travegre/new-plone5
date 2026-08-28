@@ -75,7 +75,7 @@
 
       <aside class="preiskava_tech_data">
         <div><p class="text text-16">Šifra preiskave</p><p class="text text-17" tal:content="view/code"></p></div>
-        <div tal:condition="python:bool(view.text('laboratoriji'))"><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="view/text/laboratoriji"></p></div>
+        <div tal:condition="python:bool(view.text('laboratoriji'))"><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="python:view.text('laboratoriji')"></p></div>
         <div tal:condition="python:bool(view.rich('urnik'))"><p class="text text-16">Urnik izvajanja</p><div class="text text-17" tal:content="structure python:view.rich('urnik')"></div></div>
         <div tal:condition="python:bool(view.rich('trajanje'))"><p class="text text-16">Trajanje preiskave</p><div class="text text-17" tal:content="structure python:view.rich('trajanje')"></div></div>
         <div tal:condition="python:bool(view.rich('metode'))"><p class="text text-16">Metode preiskave</p><div class="text text-17" tal:content="structure python:view.rich('metode')"></div></div>
