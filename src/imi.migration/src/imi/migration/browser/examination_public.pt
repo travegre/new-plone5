@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title tal:content="context/Title">Preiskava</title>
+  <link rel="stylesheet" tal:attributes="href string:${context/portal_url}/++resource++imi.migration/legacy-sites.css" />
+</head>
+<body class="imi-exams-public">
+  <div id="okol" class="exams-header">
+    <a tal:attributes="href context/portal_url"><img id="logo" tal:attributes="src string:${context/portal_url}/logo.png" alt="IMI" /></a>
+    <h1><a tal:attributes="href context/portal_url">PREISKAVE</a></h1>
+  </div>
+  <main id="vsebina_podstran" class="examination-detail">
+    <p class="text text-10 exam-title" tal:content="context/Title">Preiskava</p>
+    <div class="preiskava_opis_container">
+      <p class="text text-12 siv-tekst">Področje preiskave</p>
+      <p class="text text-13" tal:content="python:', '.join(dict.fromkeys(context.podrocje or ()))"></p>
+      <tal:opis condition="python:bool(view.rich('opis'))">
+        <p class="text text-12 siv-tekst">Opis preiskave</p><div class="text text-13" tal:content="structure python:view.rich('opis')"></div>
+      </tal:opis>
+      <tal:file condition="context/datoteka|nothing">
+        <p class="text text-12 siv-tekst">Dodatna dokumentacija:</p>
+        <p class="text text-13"><a tal:attributes="href string:${context/absolute_url}/@@download/datoteka/${context/datoteka/filename}" tal:content="context/datoteka/filename">datoteka</a></p>
+      </tal:file>
+      <tal:opombe condition="python:bool(view.rich('opombe'))">
+        <p class="text text-12 siv-tekst">Opombe</p><div class="text text-13" tal:content="structure python:view.rich('opombe')"></div>
+      </tal:opombe>
+    </div>
+
+    <div class="preiskava_vzorci_container" tal:condition="view/samples">
+      <p class="text text-14">Vzorci in navodila</p>
+      <div class="div_vzorci"><div class="neki" tal:repeat="sample view/samples"><p class="naslov_vzorca text text-14" tal:content="sample">Vzorec</p></div></div>
+      <tal:odvzem condition="python:bool(view.text('vzorci_odvzem'))"><div class="vzorec_levo">Navodila za odvzem:</div><div class="vzorec_desno" tal:content="structure python:view.text('vzorci_odvzem')"></div></tal:odvzem>
+      <tal:transport condition="python:bool(view.text('vzorci_transport'))"><div class="vzorec_levo">Navodila za transport:</div><div class="vzorec_desno" tal:content="structure python:view.text('vzorci_transport')"></div></tal:transport>
+      <tal:kolicina condition="python:bool(view.text('vzorci_kolicina'))"><div class="vzorec_levo">Količina in embalaža:</div><div class="vzorec_desno" tal:content="structure python:view.text('vzorci_kolicina')"></div></tal:kolicina>
+      <tal:opomba condition="python:bool(view.text('vzorci_opomba'))"><div class="vzorec_levo">Opomba za klinika:</div><div class="vzorec_desno" tal:content="structure python:view.text('vzorci_opomba')"></div></tal:opomba>
+      <tal:embalaza condition="python:bool(view.text('embalaza_slika_sifra'))"><div class="vzorec_levo">Priporočena embalaža:</div><div class="vzorec_desno" tal:content="view/text/embalaza_slika_sifra"></div></tal:embalaza>
+      <tal:video condition="python:bool(view.text('vzorci_odvzem_video_sifra'))"><div class="vzorec_levo">Video:</div><div class="vzorec_desno"><a tal:attributes="href python:view.text('vzorci_odvzem_video_sifra')" tal:content="python:view.text('vzorci_odvzem_video_sifra')">Video</a></div></tal:video>
+      <tal:labs condition="python:bool(view.text('vzorci_lab'))"><div class="vzorec_levo" tal:content="structure python:view.text('vzorci_lab')"></div><div class="vzorec_desno" tal:condition="python:bool(view.text('vzorci_lab_tel'))">Telefon: <span tal:content="structure python:view.text('vzorci_lab_tel')"></span></div></tal:labs>
+    </div>
+
+    <div class="preiskava_tech_data">
+      <div><p class="text text-16">Šifra preiskave</p><p class="text text-17" tal:content="view/code"></p></div>
+      <div tal:condition="python:bool(view.text('laboratoriji'))"><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="structure python:view.text('laboratoriji')"></p></div>
+      <div tal:condition="python:bool(view.rich('urnik'))"><p class="text text-16">Urnik izvajanja</p><div class="text text-17" tal:content="structure python:view.rich('urnik')"></div></div>
+      <div tal:condition="python:bool(view.rich('trajanje'))"><p class="text text-16">Trajanje preiskave</p><div class="text text-17" tal:content="structure python:view.rich('trajanje')"></div></div>
+      <div tal:condition="python:bool(view.rich('metode'))"><p class="text text-16">Metode preiskave</p><div class="text text-17" tal:content="structure python:view.rich('metode')"></div></div>
+    </div>
+    <p class="exam-editor-link" tal:condition="view/is_editor"><a tal:attributes="href string:${context/absolute_url}/edit">Uredi</a></p>
+  </main>
+</body>
+</html>
