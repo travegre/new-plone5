@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title tal:content="context/Title">Preiskava</title>
+  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-legacy.css" />
+</head>
+<body class="imi-exams-public imi-exam-detail">
+<div id="zunanji_okvir"><div id="okvir">
+  <div class="exams-header">
+    <a tal:attributes="href view/portal/absolute_url"><img id="logo" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a>
+    <h1 class="site-title"><a tal:attributes="href view/portal/absolute_url">PREISKAVE</a></h1>
+  </div>
+  <nav id="glavni_meni"><ul>
+    <li class="domov"><a tal:attributes="href view/portal/absolute_url">Domov</a></li>
+    <li tal:repeat="item view/menu"><a tal:attributes="href python:item[2]" tal:content="python:item[1]">Meni</a></li>
+  </ul></nav><div class="clear"></div>
+
+  <main id="vsebina_podstran" class="legacy-examination">
+    <p class="text text-10 exam-main-title" tal:content="context/Title">Preiskava</p>
+
+    <div class="exam-three-columns">
+      <section class="preiskava_opis_container">
+        <p class="text text-12 siv-tekst">Področje preiskave</p>
+        <p class="text text-13" tal:content="python:', '.join(dict.fromkeys(context.podrocje or ()))"></p>
+
+        <tal:opis condition="python:bool(view.rich('opis'))">
+          <p class="text text-12 siv-tekst">Opis preiskave</p>
+          <div id="opis_preiskave" class="text text-13 opis" tal:content="structure python:view.rich('opis')"></div>
+          <div class="show-more"><a href="#" id="gumb_pokazi_vec">Prikaži več</a></div>
+        </tal:opis>
+
+        <tal:file condition="context/datoteka|nothing">
+          <p class="text text-12 siv-tekst">Dodatna dokumentacija:</p>
+          <p class="text text-13"><a tal:attributes="href string:${context/absolute_url}/@@download/datoteka/${context/datoteka/filename}" tal:content="context/datoteka/filename">datoteka</a></p>
+        </tal:file>
+
+        <tal:opombe condition="python:bool(view.rich('opombe'))">
+          <p class="text text-12 siv-tekst">Opombe</p>
+          <div class="text text-13" tal:content="structure python:view.rich('opombe')"></div>
+        </tal:opombe>
+      </section>
+
+      <section class="preiskava_vzorci_container" tal:condition="view/sample_rows">
+        <p class="text text-14 section-title">Vzorci in navodila</p>
+        <div class="div_vzorci">
+          <article class="neki sample-card" tal:repeat="sample view/sample_rows">
+            <p class="naslov_vzorca text text-14" tal:content="sample/name">Vzorec</p>
+            <div class="ostali_fajli">
+              <tal:collection condition="sample/collection"><div class="vzorec_levo">Navodila za odvzem:</div><div class="vzorec_desno" tal:content="structure sample/collection"></div></tal:collection>
+              <tal:transport condition="sample/transport"><div class="vzorec_levo">Navodila za transport:</div><div class="vzorec_desno" tal:content="structure sample/transport"></div></tal:transport>
+              <tal:amount condition="sample/amount"><div class="vzorec_levo">Količina in embalaža:</div><div class="vzorec_desno" tal:content="structure sample/amount"></div></tal:amount>
+              <tal:note condition="sample/note"><div class="vzorec_levo">Opomba za klinika:</div><div class="vzorec_desno" tal:content="structure sample/note"></div></tal:note>
+
+              <tal:pack condition="sample/packaging">
+                <div class="vzorec_levo">Priporočena embalaža:</div><div class="clear"></div>
+                <div class="packaging-images"><a class="packaging-image-link" tal:repeat="code sample/packaging" tal:attributes="href python:view.packaging_url(code)"><img class="embalaza_slika" tal:attributes="src python:view.packaging_url(code); alt code" /></a></div>
+              </tal:pack>
+
+              <tal:video condition="sample/video"><div class="vzorec_levo">Video:</div><div class="vzorec_desno"><a tal:attributes="href sample/video" target="_blank">Video navodilo</a></div></tal:video>
+
+              <div class="sample-labs" tal:condition="sample/labs">
+                <div class="sample-lab" tal:repeat="lab sample/labs">
+                  <div class="vzorec_levo lab" tal:condition="lab/name" tal:content="lab/name">Laboratorij</div>
+                  <div class="vzorec_desno lab" tal:condition="lab/phone">Telefon: <span class="tel" tal:content="lab/phone"></span></div>
+                  <div class="lab-code" tal:condition="lab/code"><span>Lab kratica:</span> <span tal:content="lab/code"></span></div>
+                </div>
+              </div>
+              <div class="clear"></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="preiskava_tech_data">
+        <div><p class="text text-16">Šifra preiskave</p><p class="text text-17" tal:content="view/code"></p></div>
+        <div tal:condition="python:bool(view.text('laboratoriji'))"><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="view/text/laboratoriji"></p></div>
+        <div tal:condition="python:bool(view.rich('urnik'))"><p class="text text-16">Urnik izvajanja</p><div class="text text-17" tal:content="structure python:view.rich('urnik')"></div></div>
+        <div tal:condition="python:bool(view.rich('trajanje'))"><p class="text text-16">Trajanje preiskave</p><div class="text text-17" tal:content="structure python:view.rich('trajanje')"></div></div>
+        <div tal:condition="python:bool(view.rich('metode'))"><p class="text text-16">Metode preiskave</p><div class="text text-17" tal:content="structure python:view.rich('metode')"></div></div>
+      </aside>
+    </div>
+  </main><div class="clear"></div>
+</div></div>
+
+<div id="image-lightbox" class="exam-lightbox" aria-hidden="true"><div class="exam-lightbox-bg"></div><img alt="Embalaža" /><button type="button">×</button></div>
+<script>
+(function(){
+  'use strict';
+  document.querySelectorAll('.naslov_vzorca').forEach(function(title){title.addEventListener('click',function(){var body=title.nextElementSibling;if(!body){return;}var open=title.classList.toggle('odprt');body.style.display=open?'block':'none';});});
+  var description=document.getElementById('opis_preiskave');var more=document.getElementById('gumb_pokazi_vec');
+  if(description&&more){if(description.scrollHeight<=60){more.parentNode.style.display='none';}else{description.classList.add('collapsed');more.addEventListener('click',function(e){e.preventDefault();var open=description.classList.toggle('expanded');more.textContent=open?'Prikaži manj':'Prikaži več';});}}
+  var lightbox=document.getElementById('image-lightbox');var image=lightbox.querySelector('img');function close(){lightbox.classList.remove('open');lightbox.setAttribute('aria-hidden','true');}
+  document.querySelectorAll('.packaging-image-link').forEach(function(link){link.addEventListener('click',function(e){e.preventDefault();image.src=link.href;lightbox.classList.add('open');lightbox.setAttribute('aria-hidden','false');});});
+  lightbox.querySelector('.exam-lightbox-bg').addEventListener('click',close);lightbox.querySelector('button').addEventListener('click',close);document.addEventListener('keydown',function(e){if(e.key==='Escape'){close();}});
+}());
+</script>
+</body></html>
