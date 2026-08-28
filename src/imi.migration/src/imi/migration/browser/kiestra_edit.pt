@@ -1,0 +1,22 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal" metal:use-macro="context/main_template/macros/master">
+<body><metal:main fill-slot="main">
+  <h1>Uredi dežurstvo</h1><h2 tal:content="context/Title">Datum</h2>
+  <link rel="stylesheet" tal:attributes="href string:${context/portal_url}/++resource++imi.migration/legacy-sites.css" />
+  <script tal:attributes="src string:${context/portal_url}/++resource++imi.migration/legacy-sites.js"></script>
+  <form method="post" class="kiestra-editor">
+    <div class="kiestra-editor-grid">
+      <section class="kiestra-editor-field" tal:repeat="row view/fields">
+        <h3 tal:content="row/label">Polje</h3>
+        <input class="staff-filter" type="search" placeholder="Filtriraj osebe" tal:attributes="data-target string:kiestra-${row/field}" />
+        <select multiple="multiple" size="8" tal:attributes="name row/field; id string:kiestra-${row/field}">
+          <option tal:repeat="option view/staff_options"
+                  tal:attributes="value python:option[0]; selected python:option[0] in row['selected']"
+                  tal:content="python:option[1]">Ime</option>
+        </select>
+        <label>Opomba</label><input type="text" tal:attributes="name row/note_field; value row/note" />
+      </section>
+    </div>
+    <div class="kiestra-constant"><label for="stalni_tekst">Stalni tekst</label><textarea id="stalni_tekst" name="stalni_tekst" rows="8" tal:content="view/constant_text"></textarea></div>
+    <div class="formControls"><input class="btn btn-primary" type="submit" value="Shrani" /> <a class="btn btn-default" tal:attributes="href string:${context/portal_url}/@@kiestra-admin">Nazaj</a></div>
+  </form>
+</metal:main></body></html>
