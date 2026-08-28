@@ -7,7 +7,7 @@
 </head>
 <body class="imi-exams-public">
   <div id="okol" class="exams-header">
-    <a tal:attributes="href context/portal_url"><img id="logo" tal:attributes="src string:${context/portal_url}/logo.png" alt="IMI" /></a>
+    <a tal:attributes="href context/portal_url"><img id="logo" tal:attributes="src string:${context/portal_url}/++resource++imi.migration/logo.png" alt="IMI" /></a>
     <h1><a tal:attributes="href context/portal_url">PREISKAVE</a></h1>
   </div>
   <main id="vsebina_podstran" class="examination-detail">
