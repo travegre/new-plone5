@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KIESTRA</title>
+  <link rel="stylesheet" tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/legacy-sites.css" />
+</head>
+<body class="imi-kiestra-public">
+<div id="last-change" tal:condition="view/last_change">Zadnja sprememba: <span tal:replace="view/last_change">datum</span></div>
+<div id="okolo"><div id="okol">
+  <table class="glava"><tr>
+    <td class="kiestra-logo"><img tal:attributes="src string:${context/absolute_url}/logo.png" alt="Kiestra" /></td>
+    <td class="kiestra-title"><h1><a tal:attributes="href context/absolute_url">KIESTRA</a></h1></td>
+    <td class="kiestra-date-nav">
+      <a class="legacy-back" tal:attributes="href string:${context/absolute_url}/@@kiestra-public?datum=${view/previous_date}">Nazaj</a>
+      <h2 tal:content="view/formatted_date">danes</h2>
+      <a class="legacy-next" tal:attributes="href string:${context/absolute_url}/@@kiestra-public?datum=${view/next_date}">Naprej</a>
+    </td>
+  </tr></table>
+  <div class="clear">&nbsp;</div><br />
+
+  <tal:day condition="view/day_object">
+    <table class="dezurstva kiestra-table">
+      <thead><tr class="head"><th tal:repeat="column view/columns" tal:content="column/label">Naloga</th></tr></thead>
+      <tbody>
+        <tr tal:repeat="row view/rows">
+          <td tal:repeat="name row" tal:content="name">Ime P.</td>
+        </tr>
+        <tr class="notes-row">
+          <td tal:repeat="note view/notes"><span tal:content="note">opomba</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="dezurstva stalni-tekst" tal:condition="view/constant_text"><tr><td tal:content="structure view/constant_text">stalni tekst</td></tr></table>
+  </tal:day>
+  <p tal:condition="not:view/day_object">Razpored za ta datum še ni določen.</p>
+
+  <div class="legacy-utility-row">
+    <div class="legacy-half left">
+      <form method="get" tal:attributes="action string:${context/absolute_url}/@@kiestra-public">
+        <p>Prikaži razpored na izbrani datum: </p>
+        <input name="datum" type="date" tal:attributes="value view/today_id" />
+        <input type="submit" value="Prikaži" />
+      </form>
+    </div>
+    <div class="legacy-half right">
+      <form method="get" tal:attributes="action string:${context/absolute_url}/@@kiestra-public">
+        <p>Prikaži vsa dežurstva za osebo:</p>
+        <select name="oseba" id="oseba"><option value=""></option>
+          <option tal:repeat="option view/staff_options" tal:attributes="value python:option[0]" tal:content="python:option[1]">Ime</option>
+        </select>
+        <input type="submit" value="Prikaži" />
+      </form>
+    </div>
+  </div>
+
+  <tal:person condition="view/selected_person">
+    <div class="person-history">
+      <h2>Dežurstva za osebo <span class="person-name" tal:content="view/selected_person_title">Ime</span></h2>
+      <div class="person-year-list" tal:repeat="year view/person_dates_by_year">
+        <h3 tal:content="year/year">2026</h3>
+        <div tal:repeat="month year/months"><h4 tal:content="month/name">avgust</h4>
+          <div class="person-date" tal:repeat="item month/dates"><a tal:attributes="href string:${context/absolute_url}/@@kiestra-public?datum=${item/id}" tal:content="item/label">datum</a></div>
+        </div>
+      </div>
+    </div>
+  </tal:person>
+</div></div>
+</body>
+</html>
