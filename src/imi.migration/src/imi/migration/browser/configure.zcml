@@ -55,7 +55,7 @@
   <browser:page name="nadomescanja-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_admin.ReplacementsAdminView" permission="cmf.ModifyPortalContent" />
   <browser:page name="nadomescanja-select" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.ReplacementsSelectView" permission="cmf.AddPortalContent" />
   <browser:page name="nadomescanja-copy" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.ReplacementsCopyView" permission="cmf.AddPortalContent" />
-  <browser:page name="nadomescanja-izvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.ReplacementsExportView" permission="zope.Public" />
+  <browser:page name="nadomescanja-izvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".runtime_fixes.ReplacementsExportView" permission="zope.Public" />
   <browser:page name="nadomescanja-change-request" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.ReplacementsChangeRequestView" permission="zope.Public" />
   <browser:page name="nadomescanja-edit" for="imi.migration.content.IReplacementDay" class=".legacy_sites.ReplacementEditView" permission="cmf.ModifyPortalContent" />
   <browser:page name="edit" for="imi.migration.content.IReplacementDay" class=".legacy_sites.ReplacementEditView" permission="cmf.ModifyPortalContent" />
