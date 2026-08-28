@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>IMENIK</title>
   <link rel="stylesheet" tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/legacy-sites.css" />
+  <link rel="stylesheet" tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/directory-legacy.css" />
 </head>
 <body class="imi-directory-public">
   <div id="okolo"><div id="okol">
@@ -18,11 +19,8 @@
           <input class="searchPage" id="searchGadget" name="searchGadget" value="" autocomplete="off" autofocus="autofocus" />
           <div id="listing">
             <div class="razvrsti" tal:repeat="category view/categories">
-              <a href="#" tal:attributes="class python:category['children'] and 'kategorija nad' or 'kategorija klik'"
-                 tal:content="category/title">Kategorija</a>
-              <div class="listing3" tal:condition="category/children">
-                <div tal:repeat="child category/children"><a href="#" class="kategorija klik" tal:content="child">Podkategorija</a></div>
-              </div>
+              <a href="#" tal:attributes="class python:category['children'] and 'kategorija nad' or 'kategorija klik'" tal:content="category/title">Kategorija</a>
+              <div class="listing3" tal:condition="category/children"><div tal:repeat="child category/children"><a href="#" class="kategorija klik" tal:content="child">Podkategorija</a></div></div>
             </div>
           </div>
           <div class="rezultati LSResult" id="directory-results"><div class="LSShadow"></div></div>
@@ -46,19 +44,10 @@
       .then(function (html) { results.innerHTML = html; })
       .catch(function () { results.innerHTML = '<div class="LSShadow">Napaka pri iskanju.</div>'; });
   }
-  input.addEventListener('input', function () {
-    window.clearTimeout(timer); var value = input.value;
-    timer = window.setTimeout(function () { search(value); }, 140);
-  });
-  document.querySelectorAll('.kategorija.klik').forEach(function (link) {
-    link.addEventListener('click', function (event) { event.preventDefault(); input.value = link.textContent.trim(); search(input.value); input.focus(); });
-  });
-  document.querySelectorAll('.kategorija.nad').forEach(function (link) {
-    link.addEventListener('click', function (event) {
-      event.preventDefault(); var box = link.parentNode.querySelector('.listing3');
-      if (box) { box.style.display = box.style.display === 'block' ? 'none' : 'block'; }
-    });
-  });
+  input.addEventListener('input', function () { window.clearTimeout(timer); var value = input.value; timer = window.setTimeout(function () { search(value); }, 140); });
+  document.querySelectorAll('.kategorija.klik').forEach(function (link) { link.addEventListener('click', function (event) { event.preventDefault(); input.value = link.textContent.trim(); search(input.value); input.focus(); }); });
+  document.querySelectorAll('.kategorija.nad').forEach(function (link) { link.addEventListener('click', function (event) { event.preventDefault(); var box = link.parentNode.querySelector('.listing3'); if (box) { box.style.display = box.style.display === 'block' ? 'none' : 'block'; } }); });
+  results.addEventListener('click', function (event) { var row = event.target.closest && event.target.closest('tr.tri'); if (!row) { return; } var detail = row.nextElementSibling; if (detail && detail.classList.contains('person-detail')) { detail.style.display = detail.style.display === 'table-row' ? 'none' : 'table-row'; } });
 }());
 </script>
 </body>
