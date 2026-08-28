@@ -18,6 +18,11 @@ from .exams_compat import ExaminationView as BaseExaminationView
 from .runtime_fixes import _walk
 
 
+SLO_LETTERS = (u'A', u'B', u'C', u'Č', u'D', u'E', u'F', u'G', u'H', u'I',
+               u'J', u'K', u'L', u'M', u'N', u'O', u'P', u'R', u'S', u'Š',
+               u'T', u'U', u'V', u'Z', u'Ž', u'Q', u'X', u'Y', u'W')
+
+
 def _rich(value):
     if value is None:
         return u''
@@ -148,15 +153,28 @@ class ExamsBase(BrowserView):
             ('samples', u'Vzorci', base + '/@@preiskave_vzorci_view'),
         ]
 
+    def _initial(self, title):
+        title = (title or '').strip()
+        if not title:
+            return u''
+        return title[0].upper()
+
     def alphabet_groups(self, exams=None):
         exams = self.all_exams() if exams is None else exams
         groups = OrderedDict()
         for obj in exams:
-            title = (obj.Title() or '').strip()
-            if title:
-                groups.setdefault(title[0].upper(), []).append(obj)
-        return [{'letter': key, 'items': groups[key]}
-                for key in sorted(groups, key=lambda x: x.casefold())]
+            letter = self._initial(obj.Title())
+            if letter:
+                groups.setdefault(letter, []).append(obj)
+        ordered = []
+        used = set()
+        for letter in SLO_LETTERS:
+            if letter in groups:
+                ordered.append({'letter': letter, 'items': groups[letter]})
+                used.add(letter)
+        for letter in sorted((letter for letter in groups if letter not in used), key=lambda value: value.casefold()):
+            ordered.append({'letter': letter, 'items': groups[letter]})
+        return ordered
 
     def selected_facet(self):
         return str(self.request.form.get('podrocje') or '').strip()
