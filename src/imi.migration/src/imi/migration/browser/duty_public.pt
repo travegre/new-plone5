@@ -24,7 +24,7 @@
 
   <div id="okolo">
     <div id="okol">
-      <a tal:attributes="href context/absolute_url"><img id="logo" tal:attributes="src string:${context/absolute_url}/logo.png" src="logo.png" alt="IMI" /></a>
+      <a tal:attributes="href context/absolute_url"><img id="logo" tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a>
       <h1><a tal:attributes="href context/absolute_url"> DEŽURSTVA IN PRIPRAVLJENOST</a></h1>
 
       <tal:normal condition="not:view/selected_person">
