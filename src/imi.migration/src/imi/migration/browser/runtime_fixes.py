@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Runtime compatibility fixes for migrated legacy public sites.
-
-The Plone 4 skins assumed hard-coded acquisition paths such as
-``nastavitve/dezurstva``.  In the multi-site Plone 5 target those names can be
-reserved through acquisition and migrated day objects may live at another
-preserved path.  Public views should therefore locate their typed content via
-the site catalog instead of depending on one physical folder name.
-"""
+"""Runtime compatibility fixes for migrated legacy public sites."""
 from Acquisition import aq_parent
+from Products.Five import BrowserView
 
+from .exams_compat import ExaminationView
 from .legacy_sites import KiestraPublicView as BaseKiestraPublicView
 from .legacy_sites import ReplacementsPublicView as BaseReplacementsPublicView
 
@@ -20,6 +15,14 @@ def _brains(portal, portal_type, **kw):
     }
     query.update(kw)
     return portal.portal_catalog(**query)
+
+
+def _walk(container):
+    for obj in container.objectValues():
+        yield obj
+        if hasattr(obj, 'objectValues'):
+            for child in _walk(obj):
+                yield child
 
 
 class KiestraPublicView(BaseKiestraPublicView):
@@ -68,3 +71,41 @@ class ReplacementsPublicView(BaseReplacementsPublicView):
             id=self.selected_date_id(),
         )
         return brains[0].getObject() if brains else None
+
+
+class ExaminationPublicProxyView(BrowserView):
+    """Render an examination through the public site root.
+
+    This avoids traversing private legacy parent folders before reaching the
+    explicitly public examination browser view.
+    """
+
+    def _exam(self):
+        exam_id = str(self.request.form.get('id') or '').strip()
+        if not exam_id:
+            return None
+        portal = self.context
+        brains = portal.portal_catalog(
+            id=exam_id,
+            path='/'.join(portal.getPhysicalPath()),
+        )
+        for brain in brains:
+            try:
+                obj = brain.getObject()
+            except Exception:
+                continue
+            if getattr(obj, 'portal_type', None) == 'imi.exams.examination':
+                return obj
+        base = portal.get('preiskave-1')
+        if base is not None:
+            for obj in _walk(base):
+                if obj.getId() == exam_id and getattr(obj, 'portal_type', None) == 'imi.exams.examination':
+                    return obj
+        return None
+
+    def __call__(self):
+        obj = self._exam()
+        if obj is None:
+            self.request.response.setStatus(404)
+            return u'Preiskava ne obstaja.'
+        return ExaminationView(obj, self.request)()
