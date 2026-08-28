@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Finalize clean root application views for the four non-Dežurstva sites.
+"""Finalize clean public root application views for all migrated sites.
 
 Do not manufacture the old /nastavitve/dezurstva path here. In this multi-site
 Zope application the top-level /dezurstva site makes that id acquisition-visible
@@ -14,14 +14,16 @@ from zope.component.hooks import setSite
 
 
 SITE_LAYOUTS = (
-    ('portal', '@@imenik-home'),
-    ('kiestra', '@@kiestra-home'),
-    ('preiskave', '@@preiskave-home'),
-    ('nadomescanja', '@@nadomescanja-home'),
+    ('portal', '@@imenik-public'),
+    ('dezurstva', '@@dezurstva-public'),
+    ('kiestra', '@@kiestra-public'),
+    ('preiskave', '@@preiskave-public'),
+    ('nadomescanja', '@@nadomescanja-public'),
 )
 
 REQUIRED_ROOT_OBJECTS = {
     'portal': ('data2',),
+    'dezurstva': ('dezurstva-1', 'seznam_zaposlenih'),
     'preiskave': ('preiskave-1',),
     'nadomescanja': ('laboratoriji', 'sprememba-nadomescanja'),
 }
@@ -64,7 +66,7 @@ def run(app):
         transaction.abort()
         raise SystemExit('Finalizer aborted:\n  ' + '\n  '.join(failures))
     transaction.commit()
-    print('Other-site root layouts finalized.')
+    print('All migrated site roots finalized to public frontend views.')
 
 
 if 'app' not in globals():
