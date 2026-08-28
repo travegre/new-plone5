@@ -1,7 +1,8 @@
-/* Direct Plone-5 port of the old imiimenik.css values. */
+/* Faithful Plone-5 port of the old imiimenik.css values. */
 .imi-directory-public #okol { width:1000px; margin:30px auto; text-align:center; padding-bottom:30px; }
 .imi-directory-public #okolo { min-height:1500px; }
-.imi-directory-public #searchGadget { color:#414152; padding:5px; margin:0 0 40px 0; width:auto; max-width:none; font:inherit; border:1px solid #ccc; }
+.imi-directory-public #searchGadget { color:#414152; padding:8px 10px; margin:0 0 40px 0; width:420px; max-width:90%; font-size:22px; line-height:30px; border:1px solid #ccc; box-sizing:border-box; }
+.imi-directory-public #searchGadget:focus { color:#414152; }
 .imi-directory-public #logo { margin:20px 0 10px 0; }
 .imi-directory-public .rezultati { padding-top:0; color:#414152; clear:both; position:absolute; z-index:20; width:1000px; }
 .imi-directory-public fieldset { border:2px solid #E7E7E9; background:white; padding:20px 5px; }
@@ -20,12 +21,11 @@
 .imi-directory-public .person-detail .stevilka { color:#5FB11E; font-size:90px; line-height:220px; text-align:center; }
 .imi-directory-public .kategorija { cursor:pointer; color:#624C9C; font-size:inherit; }
 .imi-directory-public .kategorija:hover { color:#777; }
-.imi-directory-public #listing { width:1000px; position:absolute; height:auto; z-index:10; padding-top:30px; margin:0; columns:auto; }
-.imi-directory-public #listing div.razvrsti { padding:0 15px; margin-bottom:10px; text-align:left; }
-.imi-directory-public #listing div.razvrsti:nth-child(3n+1) { width:300px; float:left; clear:left; }
-.imi-directory-public #listing div.razvrsti:nth-child(3n+2) { width:300px; float:left; }
-.imi-directory-public #listing div.razvrsti:nth-child(3n) { width:300px; float:left; }
+.imi-directory-public #listing { width:1000px; position:absolute; height:auto; z-index:10; padding-top:30px; margin:0; }
+.imi-directory-public #listing div.razvrsti { display:block; float:none; width:auto; padding:0 15px; margin:1em 0 10px 0; text-align:left; }
+.imi-directory-public #listing .listing3 { display:none; margin:.6em 0 1em 2em; }
+.imi-directory-public #listing .listing3 .kategorija { color:#333; }
 .imi-directory-public .forma { clear:both; width:auto; max-width:none; }
 .imi-directory-public .LSBox { position:relative; }
 .imi-directory-public .opozorilo { text-align:left; margin:0 0 3px 285px; font-size:12px; color:#777; }
-@media(max-width:1050px){.imi-directory-public #okol,.imi-directory-public #listing,.imi-directory-public .rezultati{width:95%;}.imi-directory-public .opozorilo{margin-left:0}.imi-directory-public #listing div.razvrsti{width:28%!important}}
+@media(max-width:1050px){.imi-directory-public #okol,.imi-directory-public #listing,.imi-directory-public .rezultati{width:95%;}.imi-directory-public .opozorilo{margin-left:0}.imi-directory-public #searchGadget{width:90%;}}
