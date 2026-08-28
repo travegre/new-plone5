@@ -2,98 +2,54 @@
 @import url("schedules-legacy.css");
 @import url("preiskave-legacy.css");
 
-/* Shared visual vocabulary from the old site-specific podoba CSS. */
+/* Shared helpers only. Site-specific layout/typography belongs in the
+   preserved site CSS above and must not be redesigned here. */
 :root { --imi-purple:#624C9C; --imi-green:#5fb11e; --imi-text:#414152; }
 html, body { margin:0; padding:0; }
-body.imi-directory-public,
+
 body.imi-kiestra-public,
 body.imi-replacements-public {
   background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAIAAAA/Y+msAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAcSURBVHjaYnr69Ol/MIAzGJD5EJIBWR7CBggwAMnZM/mCB9LIAAAAAElFTkSuQmCC);
-  color:var(--imi-text); font:16px Tahoma,sans-serif;
+  color:var(--imi-text);
+  font:16px Tahoma,sans-serif;
 }
-#okol { width:95%; margin:30px auto; text-align:center; padding-bottom:30px; }
-#okolo { padding-bottom:50px; min-height:900px; }
-#logo { margin:0; max-width:100%; }
-h1,h2 { margin:20px 0; text-align:center; color:var(--imi-purple); text-decoration:none; font-family:Helvetica,Arial,sans-serif; }
-h2 { margin:0; }
-h1 a { color:var(--imi-purple)!important; font-size:32px; text-decoration:none; }
-a { color:var(--imi-green); font-size:16px; text-decoration:none; }
-#last-change { position:absolute; top:5px; right:10px; }
+
 .clear { clear:both; }
 .legacy-date-nav { width:100%; }
 .legacy-date-nav .legacy-back { margin-top:4px; width:28%; margin-right:5%; float:left; text-align:right; font-size:24px; font-family:Tahoma,sans-serif; }
 .legacy-date-nav h2 { width:33%; float:left; text-align:center; }
 .legacy-date-nav .legacy-next { margin-top:4px; width:25%; margin-left:5%; float:left; text-align:left; font-size:24px; font-family:Tahoma,sans-serif; }
 .legacy-half { width:49%; display:inline-block; vertical-align:top; }
-.legacy-half.left { float:left; }.legacy-half.right { float:right; }
+.legacy-half.left { float:left; }
+.legacy-half.right { float:right; }
 .legacy-utility-row { width:100%; overflow:hidden; margin-top:35px; }
 .legacy-utility-row form { text-align:left; }
 .person-name { color:var(--imi-green); }
 .person-history { clear:both; padding-top:25px; }
 .person-year-list { width:40%; margin:0 auto 30px; text-align:center; }
 .person-date { display:block; text-align:center; }
-table.dezurstva, table.glava { border-collapse:collapse; width:100%; }
-table.dezurstva { border:1px solid var(--imi-purple); border-bottom:1px solid var(--imi-purple); }
-table.dezurstva td, table.dezurstva th { padding:6px 10px; border:1px solid var(--imi-purple); }
-table.dezurstva tr.head th { font:bold 1.3em Tahoma,sans-serif; padding:1.5em .5em; border-bottom:2px solid var(--imi-purple); color:var(--imi-purple); }
-table.dezurstva td { text-align:left; font-weight:bold; font-size:2em; border-top:none; border-bottom:none; }
-table.dezurstva td span { color:var(--imi-green); font-weight:normal; font-size:.9em; }
-table.glava, table.glava td { border:none; }
-.kiestra-logo { width:80px; }.kiestra-logo img { max-width:80px; }.kiestra-title { width:40%; }
-.kiestra-date-nav { width:60%; }
-.kiestra-table .notes-row td { border-top:1px solid #000; color:var(--imi-green); font-weight:normal; font-size:1.8em; }
-.stalni-tekst { margin-top:15px; }.stalni-tekst td { padding:50px 30px!important; }
-.replacements-table td { border-top:1px solid var(--imi-purple); border-bottom:1px solid var(--imi-purple); }
-.replacements-table td.grey { color:#999; }
-.change-request-link { text-align:center; font-size:16px; }
 .date-range { display:none; }
 .export-row .submit, #nad-obdobje { display:none; }
+.change-request-link { text-align:center; font-size:16px; }
+
 .kiestra-editor-grid { display:grid; grid-template-columns:repeat(3,minmax(230px,1fr)); gap:20px; align-items:start; }
 .kiestra-editor-field { border:1px solid #ddd; padding:15px; border-radius:3px; }
 .kiestra-editor-field h3 { margin-top:0; }
-.kiestra-editor-field .staff-filter,.kiestra-editor-field select,.kiestra-editor-field input[type=text] { width:100%; box-sizing:border-box; margin:5px 0 10px; }
+.kiestra-editor-field .staff-filter,
+.kiestra-editor-field select,
+.kiestra-editor-field input[type=text] { width:100%; box-sizing:border-box; margin:5px 0 10px; }
 .kiestra-editor-field select { min-height:180px; }
-.kiestra-constant { margin-top:25px; }.kiestra-constant textarea { width:100%; box-sizing:border-box; }
+.kiestra-constant { margin-top:25px; }
+.kiestra-constant textarea { width:100%; box-sizing:border-box; }
 .replacement-editor-table select { min-width:300px; }
 .formControls { margin-top:25px; }
-.imi-directory-public .forma { width:95%; max-width:1400px; margin:0 auto; }
-.imi-directory-public .opozorilo { color:#888; }
-.imi-directory-public #searchGadget { width:70%; max-width:900px; padding:12px; font:20px Tahoma,sans-serif; border:1px solid #bbb; }
-.imi-directory-public #listing { columns:3; column-gap:30px; margin:30px auto; text-align:left; }
-.imi-directory-public .razvrsti { break-inside:avoid; margin:1em; }
-.imi-directory-public .kategorija { cursor:pointer; font-size:18px; }
-.imi-directory-public .listing3 { display:none; margin:.6em 0 1em 2em; }
-.imi-directory-public .listing3 a { color:#333; }
-.imi-directory-public .LSResult { margin:20px auto; overflow-x:auto; }
-.imi-directory-public table.tabela { width:100%; border-collapse:collapse; background:#fff; }
-.imi-directory-public table.tabela th,.imi-directory-public table.tabela td { border-bottom:1px solid #ddd; padding:8px; text-align:left; }
-.imi-directory-public tr.person-detail { display:none; background:#f7f7f7; }
-.imi-directory-public tr.tri { cursor:pointer; }.imi-directory-public tr.tri:hover { background:#f1f1f1; }
-.imi-directory-public .ime { color:var(--imi-purple); font-size:24px; font-weight:bold; }
-.imi-directory-public .stevilka { color:var(--imi-green); font-size:20px; }
-body.imi-exams-public { margin:0; color:#333; font-family:Arial,Helvetica,sans-serif; background:#fff; }
-.exams-header { text-align:center; margin:25px auto 10px; }
-.exams-header h1 { margin:5px 0; }.exams-header h1 a { color:var(--imi-purple)!important; }
-.vsebina { width:90%; margin:0 auto; }.nav_subitems { list-style:none; padding:0; text-align:center; }
-.nav_subitems li { display:inline-block; margin:5px 12px; }
-#vsebina_podstran { width:90%; max-width:1200px; margin:25px auto; }
-.exams-search { text-align:center; margin:25px auto; }.exams-search input[type=search] { width:60%; padding:10px; }
-.exam-results { margin-top:25px; }.exam-result { padding:10px 0; border-bottom:1px solid #ddd; }
-.exam-result h2 { text-align:left; }.LSResult .LSTable { list-style:none; padding:0; }
-.LSRow { padding:7px 0; border-bottom:1px solid #ddd; }.LSDescr { color:#666; }
-.exam-title { font-size:2em; font-weight:bold; color:var(--imi-purple); }
-.preiskava_opis_container,.preiskava_vzorci_container,.preiskava_tech_data { margin:25px 0; padding:20px; border:1px solid #e2e2e2; }
-.siv-tekst { color:#777; font-weight:bold; margin-bottom:4px; }
-.text-13,.text-17 { margin-top:0; }.text-14 { color:var(--imi-purple); font-weight:bold; }
-.vzorec_levo { float:left; width:35%; clear:left; font-weight:bold; padding:5px 0; }
-.vzorec_desno { float:left; width:65%; padding:5px 0; }.preiskava_vzorci_container:after { content:""; display:block; clear:both; }
-.exam-editor-link { text-align:right; }
 .legacy-easyform { width:40%; margin:20px auto; text-align:left; }
-.legacy-easyform .field { margin:40px 0; }.legacy-easyform input,.legacy-easyform select,.legacy-easyform textarea { max-width:100%; }
+.legacy-easyform .field { margin:40px 0; }
+.legacy-easyform input,.legacy-easyform select,.legacy-easyform textarea { max-width:100%; }
 .legacy-easyform input[type=text],.legacy-easyform input[type=email],.legacy-easyform select,.legacy-easyform textarea { width:100%; padding:6px; box-sizing:border-box; }
+
 @media (max-width:900px) {
   .legacy-half,.legacy-half.left,.legacy-half.right { width:100%; float:none; display:block; }
   .kiestra-editor-grid { grid-template-columns:1fr; }
-  .imi-directory-public #listing { columns:1; }
   .legacy-easyform,.person-year-list { width:90%; }
 }
