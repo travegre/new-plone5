@@ -3,10 +3,12 @@
 from datetime import datetime
 from html import escape
 
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+
 from .duty_compat import DutyPublicView as BaseDutyPublicView
 from .legacy_sites import ExamsPublicView as BaseExamsPublicView
 from .legacy_sites import ExamsListView as BaseExamsListView
-from .runtime_fixes import ExaminationPublicProxyView, _walk
+from .runtime_fixes import _walk
 
 
 class DutyPublicView(BaseDutyPublicView):
@@ -56,7 +58,6 @@ class ExamsMixin(object):
             return result
         matched = []
         for obj in result:
-            # Start with the fields users actually search in; do not depend on indexes.
             values = [obj.Title(), obj.Description(), getattr(obj, 'sifra', ''),
                       getattr(obj, 'laboratoriji', ''), getattr(obj, 'vzorci', '')]
             for name in ('podrocje', 'sinonim', 'metode', 'opis', 'opombe'):
@@ -77,7 +78,7 @@ class ExamsPublicView(ExamsMixin, BaseExamsPublicView):
 
 
 class ExamsListView(ExamsMixin, BaseExamsListView):
-    """Keep each old menu mode distinct instead of returning one undifferentiated table."""
+    template = ViewPageTemplateFile('exams_list_public.pt')
 
     def mode_heading(self):
         return self.title()
