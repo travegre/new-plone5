@@ -8,7 +8,7 @@ from zope.component.hooks import setSite
 SITE_CHECKS = {
     'portal': {
         'layout': '@@imenik-home',
-        'views': ('@@imenik-home', '@@imenik-public', '@@imenik-livesearch', '@@imenik-admin'),
+        'views': ('@@imenik-home', '@@imenik-public', '@@imenik-livesearch', '@@imenik-admin', '@@imenik-uvoz'),
         'types': ('imi.directory.person',),
     },
     'kiestra': {
@@ -19,7 +19,7 @@ SITE_CHECKS = {
     'preiskave': {
         'layout': '@@preiskave-home',
         'views': ('@@preiskave-home', '@@preiskave-public', '@@preiskave-admin', '@@preiskave-livesearch',
-                  '@@preiskave_view', '@@preiskave_hitro_view', '@@preiskave_lab_view',
+                  '@@preiskave-uvoz', '@@preiskave_view', '@@preiskave_hitro_view', '@@preiskave_lab_view',
                   '@@preiskave_nove_view', '@@preiskave_nujne_view', '@@preiskave_podrocja_view',
                   '@@preiskave_sklopi_view', '@@preiskave_vzorci_view'),
         'types': ('imi.exams.examination',),
@@ -67,6 +67,14 @@ def run(app):
                 failures.append('/%s %s' % (site_id, item))
             print('  content: %s' % ', '.join('%s=%d' % item for item in sorted(counts.items())))
 
+            if site_id == 'portal' and site.get('data2') is None:
+                failures.append('/portal/data2 missing (IMENIK import target)')
+            if site_id == 'preiskave':
+                exam_container = site.get('preiskave-1')
+                exam_container = exam_container.get('katalog-preiskav') if exam_container is not None else None
+                if exam_container is None:
+                    failures.append('/preiskave/preiskave-1/katalog-preiskav missing (import target)')
+
             # Type-specific browser views on one representative object.
             if site_id == 'kiestra':
                 brains = site.portal_catalog(portal_type='imi.kiestra.work_day')
@@ -91,20 +99,32 @@ def run(app):
         finally:
             setSite(None)
 
-    # Cross-site staff dependency used by Kiestra and Nadomeščanja.
+    # Cross-site staff dependency used by Dežurstva/Nadomeščanja/Kiestra.
     if 'dezurstva' in app.objectIds():
-        directory = app['dezurstva'].get('seznam_zaposlenih')
-        staff_count = len(directory.objectIds()) if directory is not None else 0
-        print('/dezurstva/seznam_zaposlenih staff objects=%d' % staff_count)
-        if staff_count == 0:
-            failures.append('shared staff directory is empty')
+        site = app['dezurstva']
+        setSite(site)
+        try:
+            try:
+                site.restrictedTraverse('@@dezurstva-uvoz-zaposlenih')
+                print('/dezurstva staff import view: OK')
+            except Exception as exc:
+                failures.append('/dezurstva @@dezurstva-uvoz-zaposlenih (%s)' % exc)
+            directory = site.get('seznam_zaposlenih')
+            staff_count = len(directory.objectIds()) if directory is not None else 0
+            print('/dezurstva/seznam_zaposlenih staff objects=%d' % staff_count)
+            if directory is None:
+                failures.append('/dezurstva/seznam_zaposlenih missing (staff import target)')
+            elif staff_count == 0:
+                failures.append('shared staff directory is empty')
+        finally:
+            setSite(None)
 
     if failures:
         print('\nVERIFICATION FAILED (%d):' % len(failures))
         for failure in failures:
             print('  - %s' % failure)
         raise SystemExit(1)
-    print('\nAll remaining-site registrations and layouts: OK')
+    print('\nAll remaining-site registrations, layouts, and import targets: OK')
 
 
 if 'app' not in globals():
