@@ -1,0 +1,19 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal" metal:use-macro="context/main_template/macros/master">
+<body><metal:main fill-slot="main">
+  <div class="preiskave-admin-list">
+    <h1 tal:content="view/title">Preiskave</h1>
+    <form method="get" tal:condition="python:view.mode() == 'preiskave_hitro_view'">
+      <input type="search" name="q" tal:attributes="value view/query" /> <input type="submit" value="Išči" />
+    </form>
+    <p tal:condition="not:view/results">Ni zadetkov.</p>
+    <table class="listing" tal:condition="view/results">
+      <thead><tr><th>Preiskava</th><th>Šifra</th><th>Laboratoriji</th><th>Področje</th></tr></thead>
+      <tbody><tr tal:repeat="exam view/results">
+        <td><a tal:attributes="href exam/absolute_url" tal:content="exam/Title">Preiskava</a></td>
+        <td tal:content="exam/sifra|nothing"></td>
+        <td tal:content="exam/laboratoriji|nothing"></td>
+        <td tal:content="python:', '.join(exam.podrocje or ())"></td>
+      </tr></tbody>
+    </table>
+  </div>
+</metal:main></body></html>
