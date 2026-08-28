@@ -10,7 +10,7 @@
 </head>
 <body class="imi-directory-public">
   <div id="okolo"><div id="okol">
-    <a tal:attributes="href context/absolute_url"><img id="logo" tal:attributes="src string:${context/absolute_url}/logo.png" alt="IMI" /></a>
+    <a tal:attributes="href context/absolute_url"><img id="logo" tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a>
     <h1><a tal:attributes="href context/absolute_url">IMENIK</a></h1>
     <div class="forma">
       <form name="searchform" class="searchPage" action="#" onsubmit="return false;">
