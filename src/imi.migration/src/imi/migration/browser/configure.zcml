@@ -26,6 +26,7 @@
   <browser:page name="kiestra-select" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_editors.KiestraSelectView" permission="cmf.AddPortalContent" />
   <browser:page name="kiestra-copy" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_editors.KiestraCopyView" permission="cmf.AddPortalContent" />
   <browser:page name="kiestra-edit" for="imi.migration.content.IKiestraWorkDay" class=".legacy_editors.KiestraEditView" permission="cmf.ModifyPortalContent" />
+  <browser:page name="edit" for="imi.migration.content.IKiestraWorkDay" class=".legacy_editors.KiestraEditView" permission="cmf.ModifyPortalContent" />
 
   <!-- Preiskave -->
   <browser:page name="preiskave-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.ExamsHomeView" permission="zope2.View" />
@@ -53,5 +54,6 @@
   <browser:page name="nadomescanja-izvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.ReplacementsExportView" permission="zope2.View" />
   <browser:page name="nadomescanja-change-request" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.ReplacementsChangeRequestView" permission="zope2.View" />
   <browser:page name="nadomescanja-edit" for="imi.migration.content.IReplacementDay" class=".legacy_sites.ReplacementEditView" permission="cmf.ModifyPortalContent" />
+  <browser:page name="edit" for="imi.migration.content.IReplacementDay" class=".legacy_sites.ReplacementEditView" permission="cmf.ModifyPortalContent" />
 
 </configure>
