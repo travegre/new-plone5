@@ -16,7 +16,6 @@
   <browser:page name="imenik-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.DirectoryHomeView" permission="zope2.View" />
   <browser:page name="imenik-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.DirectoryPublicView" permission="zope2.View" />
   <browser:page name="imenik-livesearch" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.DirectorySearchView" permission="zope2.View" />
-  <!-- preserve the old endpoint name for callers/bookmarks -->
   <browser:page name="livesearch_reply" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.DirectorySearchView" permission="zope2.View" />
   <browser:page name="imenik-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.DirectoryPublicView" template="directory_admin.pt" permission="cmf.ModifyPortalContent" />
 
@@ -42,8 +41,8 @@
   <browser:page name="preiskave_podrocja_view" for="*" class=".legacy_sites.ExamsListView" permission="zope2.View" />
   <browser:page name="preiskave_sklopi_view" for="*" class=".legacy_sites.ExamsListView" permission="zope2.View" />
   <browser:page name="preiskave_vzorci_view" for="*" class=".legacy_sites.ExamsListView" permission="zope2.View" />
-  <browser:page name="preiskava_view" for="imi.migration.content.IExamination" class=".legacy_sites.ExaminationView" permission="zope2.View" />
-  <browser:page name="view" for="imi.migration.content.IExamination" class=".legacy_sites.ExaminationView" permission="zope2.View" />
+  <browser:page name="preiskava_view" for="imi.migration.content.IExamination" class=".exams_compat.ExaminationView" permission="zope2.View" />
+  <browser:page name="view" for="imi.migration.content.IExamination" class=".exams_compat.ExaminationView" permission="zope2.View" />
 
   <!-- Nadomeščanja -->
   <browser:page name="nadomescanja-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.ReplacementsHomeView" permission="zope2.View" />
