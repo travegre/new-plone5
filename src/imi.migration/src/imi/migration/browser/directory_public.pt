@@ -23,7 +23,8 @@
               <div class="listing3" tal:condition="category/children"><div tal:repeat="child category/children"><a href="#" class="kategorija klik" tal:content="child">Podkategorija</a></div></div>
             </div>
           </div>
-          <div class="rezultati LSResult" id="directory-results"><div class="LSShadow"></div></div>
+          <div class="rezultati LSResult" id="directory-results"
+               tal:attributes="data-search-url string:${context/absolute_url}/@@imenik-livesearch"><div class="LSShadow"></div></div>
         </div>
       </form>
     </div>
@@ -34,12 +35,13 @@
   var input = document.getElementById('searchGadget');
   var listing = document.getElementById('listing');
   var results = document.getElementById('directory-results');
+  var searchUrl = results.getAttribute('data-search-url');
   var timer = null;
   function search(value) {
     value = (value || '').trim();
     if (value.length < 2) { results.innerHTML = '<div class="LSShadow"></div>'; listing.style.display = ''; return; }
     listing.style.display = 'none';
-    fetch('@@imenik-livesearch?q=' + encodeURIComponent(value), {credentials: 'same-origin'})
+    fetch(searchUrl + '?q=' + encodeURIComponent(value), {credentials: 'same-origin'})
       .then(function (r) { return r.text(); })
       .then(function (html) { results.innerHTML = html; })
       .catch(function () { results.innerHTML = '<div class="LSShadow">Napaka pri iskanju.</div>'; });
