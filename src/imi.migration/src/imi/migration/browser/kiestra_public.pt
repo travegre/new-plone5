@@ -10,7 +10,7 @@
 <div id="last-change" tal:condition="view/last_change">Zadnja sprememba: <span tal:replace="view/last_change">datum</span></div>
 <div id="okolo"><div id="okol">
   <table class="glava"><tr>
-    <td class="kiestra-logo"><img tal:attributes="src string:${context/absolute_url}/logo.png" alt="Kiestra" /></td>
+    <td class="kiestra-logo"><img tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/logo.png" alt="Kiestra" /></td>
     <td class="kiestra-title"><h1><a tal:attributes="href context/absolute_url">KIESTRA</a></h1></td>
     <td class="kiestra-date-nav" tal:condition="not:view/selected_person">
       <a class="legacy-back" tal:attributes="href string:${context/absolute_url}/@@kiestra-public?datum=${view/previous_date}">Nazaj</a>
