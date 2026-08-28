@@ -16,8 +16,8 @@
   <!-- IMI imenik -->
   <browser:page name="imenik-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.DirectoryPublicView" permission="zope.Public" />
   <browser:page name="imenik-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.DirectoryPublicView" permission="zope.Public" />
-  <browser:page name="imenik-livesearch" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.DirectorySearchView" permission="zope.Public" />
-  <browser:page name="livesearch_reply" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_sites.DirectorySearchView" permission="zope.Public" />
+  <browser:page name="imenik-livesearch" for="Products.CMFCore.interfaces.ISiteRoot" class=".runtime_fixes.DirectorySearchView" permission="zope.Public" />
+  <browser:page name="livesearch_reply" for="Products.CMFCore.interfaces.ISiteRoot" class=".runtime_fixes.DirectorySearchView" permission="zope.Public" />
   <browser:page name="imenik-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_admin.DirectoryAdminView" permission="cmf.ModifyPortalContent" />
   <browser:page name="imenik-uvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".imports.DirectoryImportView" permission="cmf.ModifyPortalContent" />
 
