@@ -28,6 +28,15 @@
       </form>
     </div>
   </div></div>
+
+  <div id="directory-modal" class="directory-modal" aria-hidden="true">
+    <div class="directory-modal-backdrop"></div>
+    <div class="directory-modal-dialog" role="dialog" aria-modal="true" aria-label="Kontakt">
+      <button type="button" class="directory-modal-close" aria-label="Zapri">×</button>
+      <div class="directory-modal-content"></div>
+    </div>
+  </div>
+
 <script>
 (function () {
   'use strict';
@@ -36,6 +45,8 @@
   var results = document.getElementById('directory-results');
   var box = document.getElementById('directory-search-box');
   var searchUrl = results.getAttribute('data-search-url');
+  var modal = document.getElementById('directory-modal');
+  var modalContent = modal.querySelector('.directory-modal-content');
   var timer = null;
 
   function resetResults() {
@@ -43,7 +54,18 @@
     results.innerHTML = '<div class="LSShadow"></div>';
     listing.style.display = '';
   }
-
+  function openModal(html) {
+    modalContent.innerHTML = html;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('directory-modal-open');
+  }
+  function closeModal() {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    modalContent.innerHTML = '';
+    document.body.classList.remove('directory-modal-open');
+  }
   function search(value) {
     value = (value || '').trim();
     if (value.length < 2) { resetResults(); return; }
@@ -57,12 +79,11 @@
   input.addEventListener('input', function () {
     window.clearTimeout(timer);
     var value = input.value;
-    timer = window.setTimeout(function () { search(value); }, 140);
+    timer = window.setTimeout(function () { search(value); }, 180);
   });
   document.addEventListener('mousedown', function (event) {
-    if (!box.contains(event.target)) { resetResults(); }
+    if (!box.contains(event.target) && !modal.contains(event.target)) { resetResults(); }
   });
-
   document.querySelectorAll('.kategorija.klik').forEach(function (link) {
     link.addEventListener('click', function (event) {
       event.preventDefault();
@@ -84,8 +105,13 @@
     event.preventDefault();
     var detail = row.nextElementSibling;
     if (detail && detail.classList.contains('person-detail')) {
-      detail.style.display = detail.style.display === 'table-row' ? 'none' : 'table-row';
+      openModal(detail.querySelector('td').innerHTML);
     }
+  });
+  modal.querySelector('.directory-modal-close').addEventListener('click', closeModal);
+  modal.querySelector('.directory-modal-backdrop').addEventListener('click', closeModal);
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && modal.classList.contains('open')) { closeModal(); }
   });
 }());
 </script>
