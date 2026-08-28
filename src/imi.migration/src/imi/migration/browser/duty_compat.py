@@ -147,8 +147,8 @@ class DutyChangeRequestView(BrowserView):
         portal_url = api.portal.get().absolute_url()
         css_url = portal_url + '/++resource++imi.migration/duty-public.css'
         easyform_css = portal_url + '/++resource++easyform.css'
-        logo_url = portal_url + '/logo.png'
-        home_url = portal_url + '/@@dezurstva-public'
+        logo_url = portal_url + '/++resource++imi.migration/logo.png'
+        home_url = portal_url
         return u'''<!DOCTYPE html>
 <html><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Sprememba dežurstva</title>
