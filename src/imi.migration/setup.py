@@ -28,5 +28,6 @@ setup(
         'plone.app.dexterity',
         'collective.easyform==3.2.1',
         'openpyxl==3.0.10',
+        'xlrd==2.0.1',
     ],
 )
