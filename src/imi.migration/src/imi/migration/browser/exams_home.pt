@@ -10,8 +10,8 @@
   <div class="vsebina"><div id="podmeni"><ul class="nav_subitems"><li tal:repeat="folder view/subfolders"><a tal:attributes="href folder/url" tal:content="folder/title">Mapa</a></li></ul></div></div>
   <main id="vsebina_podstran" class="exams-home-content">
     <form class="exams-search" method="get" tal:attributes="action context/absolute_url"><label for="exam-search">Iskanje preiskav</label> <input id="exam-search" name="q" type="search" autocomplete="off" tal:attributes="value view/query" /> <input type="submit" value="Išči" /></form>
-    <div id="exam-live-results" class="LSResult"></div>
+    <div id="exam-live-results" class="LSResult" tal:attributes="data-search-url string:${context/absolute_url}/@@preiskave-livesearch"></div>
     <div class="exam-results" tal:condition="view/results"><article class="exam-result" tal:repeat="exam view/results"><h2><a tal:attributes="href exam/absolute_url" tal:content="exam/Title">Preiskava</a></h2><p tal:condition="exam/Description" tal:content="exam/Description">Opis</p></article></div>
   </main>
-<script>(function(){var input=document.getElementById('exam-search'),result=document.getElementById('exam-live-results'),timer=null;if(!input||!result){return;}input.addEventListener('input',function(){window.clearTimeout(timer);var q=input.value.trim();if(q.length<2){result.innerHTML='';return;}timer=window.setTimeout(function(){fetch('@@preiskave-livesearch?q='+encodeURIComponent(q),{credentials:'same-origin'}).then(function(r){return r.text();}).then(function(html){result.innerHTML=html;});},140);});}());</script>
+<script>(function(){var input=document.getElementById('exam-search'),result=document.getElementById('exam-live-results'),timer=null;if(!input||!result){return;}var searchUrl=result.getAttribute('data-search-url');input.addEventListener('input',function(){window.clearTimeout(timer);var q=input.value.trim();if(q.length<2){result.innerHTML='';return;}timer=window.setTimeout(function(){fetch(searchUrl+'?q='+encodeURIComponent(q),{credentials:'same-origin'}).then(function(r){return r.text();}).then(function(html){result.innerHTML=html;});},140);});}());</script>
 </body></html>
