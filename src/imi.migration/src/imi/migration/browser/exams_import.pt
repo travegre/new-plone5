@@ -6,6 +6,7 @@
   <h1>Uvoz preiskav</h1>
   <p>Ta funkcija nadomešča stari objekt <code>imiuvozipreiskavo</code>. Uporablja isti dve datoteki: preiskave in vzorci.</p>
   <form method="post" enctype="multipart/form-data" tal:attributes="action string:${context/absolute_url}/@@preiskave-uvoz">
+    <input tal:replace="structure context/@@authenticator/authenticator" />
     <div class="field">
       <label for="datoteka1">Datoteka s preiskavami</label>
       <input id="datoteka1" name="datoteka1" type="file" accept=".xls,.xlsx,.xlsm" required="required" />
