@@ -59,7 +59,7 @@
       <h1 tal:content="view/title">Področja</h1>
       <div id="listing_preiskav">
         <span class="trenutno">Trenutno izbrani <span tal:replace="view/facet_label">filter</span></span><br />
-        <form class="facet-form" method="get" tal:attributes="action string:${view/portal/absolute_url}/@@${view/mode}">
+        <form class="facet-form" method="get" tal:attributes="action view/mode_url">
           <select class="podrocje_select" name="podrocje" onchange="this.form.submit()">
             <option value="" tal:attributes="selected python:not view.selected_facet()" tal:content="view/facet_all_label">VSE</option>
             <option tal:repeat="facet view/facet_values" tal:attributes="value facet; selected python:facet == view.selected_facet()" tal:content="facet">Facet</option>
