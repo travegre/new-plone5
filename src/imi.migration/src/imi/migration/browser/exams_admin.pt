@@ -4,6 +4,7 @@
   <p>
     <a class="btn btn-primary" tal:attributes="href string:${context/absolute_url}/folder_contents">Vsebine</a>
     <a class="btn btn-default" tal:attributes="href string:${context/absolute_url}/@@preiskave-public">Poglej javne preiskave</a>
+    <a class="btn btn-default" tal:attributes="href string:${context/absolute_url}/@@preiskave-uvoz">Uvoz preiskav</a>
   </p>
   <h2>Pregledi preiskav</h2>
   <ul>
