@@ -155,9 +155,7 @@ class ExamsBase(BrowserView):
 
     def _initial(self, title):
         title = (title or '').strip()
-        if not title:
-            return u''
-        return title[0].upper()
+        return title[0].upper() if title else u''
 
     def alphabet_groups(self, exams=None):
         exams = self.all_exams() if exams is None else exams
@@ -202,6 +200,13 @@ class ExamsBase(BrowserView):
     def facet_all_label(self):
         return {'labs': u'- VSI LABORATORIJI -', 'areas': u'VSA PODROČJA', 'groups': u'- VSI SKLOPI -'}.get(self.mode_key(), '')
 
+    def facet_hint(self):
+        return {
+            'labs': u'Skrčite število preiskav samo na en izbran laboratorij',
+            'areas': u'Skrčite število preiskav samo na eno izbrano področje',
+            'groups': u'Skrčite število preiskav samo na en izbran sklop',
+        }.get(self.mode_key(), u'')
+
     def facet_exams(self):
         selected = self.selected_facet()
         if not selected:
@@ -209,7 +214,7 @@ class ExamsBase(BrowserView):
         mode = self.mode_key()
         result = []
         for obj in self.all_exams():
-            if mode == 'labs' and selected in _parts(getattr(obj, 'laboratoriji', ''), ('|',)):
+            if mode == 'labs' and selected in str(getattr(obj, 'laboratoriji', '') or ''):
                 result.append(obj)
             elif mode == 'areas' and selected in tuple(str(v) for v in (getattr(obj, 'podrocje', ()) or ())):
                 result.append(obj)
@@ -221,7 +226,7 @@ class ExamsBase(BrowserView):
         by_year = {}
         for obj in self.all_exams():
             year = str(getattr(obj, 'nova_pre', '') or '').strip()
-            if not year or year.lower() in ('0', 'false', 'ne'):
+            if not year or year.casefold() in ('0', 'false', 'ne'):
                 continue
             by_year.setdefault(year, []).append(obj)
         def year_sort(value):
