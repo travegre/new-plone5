@@ -3,8 +3,8 @@
     xmlns:browser="http://namespaces.zope.org/browser">
 
   <!-- Dežurstva -->
-  <browser:page name="dezurstva-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".duty_compat.DutyPublicView" permission="zope.Public" />
-  <browser:page name="dezurstva-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".duty_compat.DutyPublicView" permission="zope.Public" />
+  <browser:page name="dezurstva-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".public_fixes.DutyPublicView" permission="zope.Public" />
+  <browser:page name="dezurstva-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".public_fixes.DutyPublicView" permission="zope.Public" />
   <browser:page name="dezurstva-izvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".duty_compat.DutyExportView" permission="zope2.View" />
   <browser:page name="dezurstva-change-request" for="Products.CMFCore.interfaces.ISiteRoot" class=".duty_compat.DutyChangeRequestView" permission="zope.Public" />
   <browser:page name="dezurstva-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".duty.DutyAdminView" template="duty_admin.pt" permission="cmf.ModifyPortalContent" />
@@ -33,7 +33,7 @@
   <!-- Preiskave -->
   <browser:page name="preiskave-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".exams_runtime.ExamsPublicView" permission="zope.Public" />
   <browser:page name="preiskave-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".exams_runtime.ExamsPublicView" permission="zope.Public" />
-  <browser:page name="preiskave-livesearch" for="Products.CMFCore.interfaces.ISiteRoot" class=".runtime_fixes.ExamsLiveSearchView" permission="zope.Public" />
+  <browser:page name="preiskave-livesearch" for="Products.CMFCore.interfaces.ISiteRoot" class=".exams_runtime.ExamsLiveSearchView" permission="zope.Public" />
   <browser:page name="preiskava-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".runtime_fixes.ExaminationPublicProxyView" permission="zope.Public" />
   <browser:page name="preiskave-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_admin.ExamsAdminView" permission="cmf.ModifyPortalContent" />
   <browser:page name="preiskave-uvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".imports.ExamsImportView" permission="cmf.ModifyPortalContent" />
