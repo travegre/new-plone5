@@ -6,6 +6,7 @@
   <h1>Uvoz podatkov v IMENIK</h1>
   <p>Ta funkcija nadomešča stari objekt <code>uvoz</code>. Sprejme isti dve podpičji ločeni datoteki kot Plone 4.</p>
   <form method="post" enctype="multipart/form-data" tal:attributes="action string:${context/absolute_url}/@@imenik-uvoz">
+    <input tal:replace="structure context/@@authenticator/authenticator" />
     <div class="field">
       <label for="datoteka">Datoteka</label>
       <input id="datoteka" name="datoteka" type="file" required="required" />
