@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NADOMEŠČANJA - ENOTE</title>
+  <link rel="stylesheet" tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/legacy-sites.css" />
+  <script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/legacy-sites.js"></script>
+</head>
+<body class="imi-replacements-public">
+<div id="last-change" tal:condition="view/last_change">Zadnja sprememba: <span tal:replace="view/last_change">datum</span></div>
+<div id="okolo"><div id="okol">
+  <a tal:attributes="href context/absolute_url"><img id="logo" tal:attributes="src string:${context/absolute_url}/logo.png" alt="IMI" /></a>
+  <h1><a tal:attributes="href context/absolute_url">NADOMEŠČANJA - ENOTE</a></h1>
+
+  <tal:normal condition="not:view/selected_person">
+    <div class="legacy-date-nav">
+      <a class="legacy-back" tal:attributes="href string:${context/absolute_url}/@@nadomescanja-public?datum=${view/previous_date}">Nazaj</a>
+      <h2 tal:content="view/formatted_date">danes</h2>
+      <a class="legacy-next" tal:attributes="href string:${context/absolute_url}/@@nadomescanja-public?datum=${view/next_date}">Naprej</a>
+    </div><div class="clear">&nbsp;</div><br />
+
+    <table class="dezurstva replacements-table">
+      <thead><tr class="head"><th>Enota</th><th>Vodja</th><th>Nadomešča</th></tr></thead>
+      <tbody><tr tal:repeat="row view/public_rows">
+        <td tal:content="row/abbreviation">Enota</td>
+        <td tal:attributes="class python:row['replaced'] and 'grey' or ''" tal:content="row/leader">Vodja</td>
+        <td tal:content="row/replacement">Nadomešča</td>
+      </tr></tbody>
+    </table>
+
+    <div class="legacy-utility-row">
+      <div class="legacy-half left"><form method="get" tal:attributes="action string:${context/absolute_url}/@@nadomescanja-public">
+        <p>Prikaži nadomeščanja na izbrani datum: </p><input name="datum" type="date" tal:attributes="value view/today_id" /><input type="submit" value="Prikaži" />
+      </form></div>
+      <div class="legacy-half right"><form method="get" tal:attributes="action string:${context/absolute_url}/@@nadomescanja-public">
+        <p>Prikaži vsa nadomeščanja kjer nadomešča oseba:</p>
+        <select name="oseba" id="oseba"><option value=""></option><option tal:repeat="option view/staff_options" tal:attributes="value python:option[0]" tal:content="python:option[1]">Ime</option></select>
+        <input type="submit" value="Prikaži" />
+      </form></div>
+    </div><div class="clear">&nbsp;</div>
+
+    <p><a class="change-request-link" tal:attributes="href string:${context/absolute_url}/@@nadomescanja-change-request?datum=${view/selected_date_id}">Za spremembo nadomeščanja lahko zaprosite tukaj</a></p>
+    <p>&nbsp;</p><hr /><br /><h2>IZVOZ</h2><div class="clear">&nbsp;</div>
+    <div class="legacy-utility-row export-row">
+      <div class="legacy-half left"><form method="get" tal:attributes="action string:${context/absolute_url}/@@nadomescanja-izvoz" id="nad-izvoz-1">
+        <p>Izberite obdobje: </p><select name="izvoz-1-izbira" id="nad-izvoz-1-izbira">
+          <option value=""></option><option value="teden">za prejšnji teden</option><option value="tedenplus2">za naslednja 2 tedna</option><option value="tekoci">za tekoči mesec</option><option value="pretekli">za pretekli mesec</option><option value="oddo">izvozi od do</option>
+        </select>
+        <span class="date-range">od <input name="od" type="date" tal:attributes="value view/today_id" /> do <input name="do" type="date" tal:attributes="value view/today_id" /></span><input class="submit" type="submit" value="Izvozi" />
+      </form></div>
+      <div class="legacy-half right"><form method="get" tal:attributes="action string:${context/absolute_url}/@@nadomescanja-izvoz" id="nad-izvoz-2">
+        <p>Izberite osebo in nato obdobje:</p><select name="izvoz-2-oseba" id="nad-izvoz-2-oseba"><option value=""></option><option tal:repeat="option view/staff_options" tal:attributes="value python:option[0]" tal:content="python:option[1]">Ime</option></select>
+        <div id="nad-obdobje"><p>Izberite obdobje: </p><select name="izvoz-2-izbira" id="nad-izvoz-2-izbira">
+          <option value=""></option><option value="teden">za prejšnji teden</option><option value="tedenplus2">za naslednja 2 tedna</option><option value="tekoci">za tekoči mesec</option><option value="pretekli">za pretekli mesec</option><option value="oddo">izvozi od do</option>
+        </select><span class="date-range">od <input name="od" type="date" tal:attributes="value view/today_id" /> do <input name="do" type="date" tal:attributes="value view/today_id" /></span><input class="submit" type="submit" value="Izvozi" /></div>
+      </form></div>
+    </div>
+  </tal:normal>
+
+  <tal:person condition="view/selected_person">
+    <h2>Nadomeščanje je izvedla oseba <span class="person-name" tal:content="view/selected_person_title">Ime</span></h2>
+    <p>&nbsp;</p><div class="person-year-list" tal:repeat="year view/person_dates_by_year">
+      <h3 tal:content="year/year">2026</h3><div tal:repeat="month year/months"><h4 tal:content="month/name">avgust</h4><div class="person-date" tal:repeat="item month/dates"><a tal:attributes="href string:${context/absolute_url}/@@nadomescanja-public?datum=${item/id}" tal:content="item/label">datum</a></div></div>
+    </div><p><a tal:attributes="href string:${context/absolute_url}/@@nadomescanja-public">Nazaj</a></p>
+  </tal:person>
+</div></div>
+</body></html>
