@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Finalize root application views for the four non-Dežurstva sites.
+"""Finalize clean root application views for the four non-Dežurstva sites.
 
-The legacy Kiestra and Nadomeščanja applications stored their day objects under
-/nastavitve/dezurstva.  Some migrated target databases do not contain those
-folder objects even though the browser code expects the same operational path.
-Create the folders when absent instead of aborting the whole layout update.
+Do not manufacture the old /nastavitve/dezurstva path here. In this multi-site
+Zope application the top-level /dezurstva site makes that id acquisition-visible
+and therefore reserved below other folders. The migration/import code is
+responsible for preserving real business content; this finalizer only sets root
+layouts and validates non-conflicting required roots.
 """
 
 import transaction
-from plone import api
 from zope.component.hooks import setSite
 
 
@@ -27,35 +27,6 @@ REQUIRED_ROOT_OBJECTS = {
 }
 
 
-def ensure_folder(container, obj_id, title):
-    existing = container.get(obj_id)
-    if existing is not None:
-        return existing, False
-    folder = api.content.create(
-        container=container,
-        type='Folder',
-        id=obj_id,
-        title=title,
-        safe_id=False,
-    )
-    try:
-        folder.exclude_from_nav = True
-    except Exception:
-        pass
-    try:
-        folder.reindexObject()
-    except Exception:
-        pass
-    return folder, True
-
-
-def ensure_schedule_container(site):
-    """Ensure the old /nastavitve/dezurstva storage path exists."""
-    nastavitve, created_parent = ensure_folder(site, 'nastavitve', 'Nastavitve')
-    dezurstva, created_child = ensure_folder(nastavitve, 'dezurstva', 'Dežurstva')
-    return dezurstva, created_parent, created_child
-
-
 def run(app):
     failures = []
     for site_id, layout in SITE_LAYOUTS:
@@ -65,13 +36,6 @@ def run(app):
         site = app[site_id]
         setSite(site)
         try:
-            # These are operational storage folders in the legacy applications,
-            # not optional public content.
-            if site_id in ('kiestra', 'nadomescanja'):
-                _, made_parent, made_child = ensure_schedule_container(site)
-                if made_parent or made_child:
-                    print('/%s created operational path /nastavitve/dezurstva' % site_id)
-
             set_default = getattr(site, 'setDefaultPage', None)
             if callable(set_default):
                 set_default(None)
@@ -100,7 +64,7 @@ def run(app):
         transaction.abort()
         raise SystemExit('Finalizer aborted:\n  ' + '\n  '.join(failures))
     transaction.commit()
-    print('Other-site root layouts and operational folders finalized.')
+    print('Other-site root layouts finalized.')
 
 
 if 'app' not in globals():
