@@ -9,7 +9,7 @@
 <body class="imi-replacements-public">
 <div id="last-change" tal:condition="view/last_change">Zadnja sprememba: <span tal:replace="view/last_change">datum</span></div>
 <div id="okolo"><div id="okol">
-  <a tal:attributes="href context/absolute_url"><img id="logo" tal:attributes="src string:${context/absolute_url}/logo.png" alt="IMI" /></a>
+  <a tal:attributes="href context/absolute_url"><img id="logo" tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a>
   <h1><a tal:attributes="href context/absolute_url">NADOMEŠČANJA - ENOTE</a></h1>
 
   <tal:normal condition="not:view/selected_person">
