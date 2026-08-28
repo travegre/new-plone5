@@ -1,0 +1,35 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="context/main_template/macros/master">
+<body><metal:main fill-slot="main">
+  <h1>Uvoz preiskav</h1>
+  <p>Ta funkcija nadomešča stari objekt <code>imiuvozipreiskavo</code>. Uporablja isti dve datoteki: preiskave in vzorci.</p>
+  <form method="post" enctype="multipart/form-data" tal:attributes="action string:${context/absolute_url}/@@preiskave-uvoz">
+    <div class="field">
+      <label for="datoteka1">Datoteka s preiskavami</label>
+      <input id="datoteka1" name="datoteka1" type="file" accept=".xls,.xlsx,.xlsm" required="required" />
+    </div>
+    <div class="field">
+      <label for="datoteka2">Datoteka z vzorci</label>
+      <input id="datoteka2" name="datoteka2" type="file" accept=".xls,.xlsx,.xlsm" required="required" />
+    </div>
+    <p class="formHelp">Podprti so stari .xls in novi .xlsx/.xlsm. Obstoječe preiskave se posodobijo, nove pa se ustvarijo v katalogu preiskav.</p>
+    <div class="formControls"><button class="btn btn-primary" type="submit">Uvozi</button></div>
+  </form>
+
+  <div tal:condition="view/error" class="portalMessage error"><strong>Napaka:</strong> <span tal:replace="view/error"></span></div>
+  <div tal:condition="view/report">
+    <h2>Rezultat uvoza</h2>
+    <dl>
+      <dt>Datoteka s preiskavami</dt><dd tal:content="view/report/exams_filename"></dd>
+      <dt>Datoteka z vzorci</dt><dd tal:content="view/report/samples_filename"></dd>
+      <dt>Vrstic preiskav</dt><dd tal:content="view/report/exam_rows"></dd>
+      <dt>Vrstic vzorcev</dt><dd tal:content="view/report/sample_rows"></dd>
+      <dt>Ustvarjenih</dt><dd tal:content="view/report/created"></dd>
+      <dt>Posodobljenih</dt><dd tal:content="view/report/updated"></dd>
+    </dl>
+    <div tal:condition="view/report/errors"><h3>Napake</h3><ul><li tal:repeat="error view/report/errors" tal:content="error"></li></ul></div>
+  </div>
+  <p><a tal:attributes="href context/absolute_url">Nazaj na PREISKAVE</a></p>
+</metal:main></body></html>
