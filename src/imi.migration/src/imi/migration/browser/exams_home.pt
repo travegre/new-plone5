@@ -6,7 +6,7 @@
   <link rel="stylesheet" tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/preiskave-legacy.css" />
 </head>
 <body class="imi-exams-public">
-  <div id="okol" class="exams-header"><a tal:attributes="href context/absolute_url"><img id="logo" tal:attributes="src string:${context/absolute_url}/logo.png" alt="IMI" /></a><h1><a tal:attributes="href context/absolute_url">PREISKAVE</a></h1></div>
+  <div id="okol" class="exams-header"><a tal:attributes="href context/absolute_url"><img id="logo" tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a><h1><a tal:attributes="href context/absolute_url">PREISKAVE</a></h1></div>
   <div class="vsebina"><div id="podmeni"><ul class="nav_subitems"><li tal:repeat="folder view/subfolders"><a tal:attributes="href folder/url" tal:content="folder/title">Mapa</a></li></ul></div></div>
   <main id="vsebina_podstran" class="exams-home-content">
     <form class="exams-search" method="get" tal:attributes="action context/absolute_url"><label for="exam-search">Iskanje preiskav</label> <input id="exam-search" name="q" type="search" autocomplete="off" tal:attributes="value view/query" /> <input type="submit" value="Išči" /></form>
