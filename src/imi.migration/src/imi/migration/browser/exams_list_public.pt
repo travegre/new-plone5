@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title tal:content="view/title">PREISKAVE</title>
+  <link rel="stylesheet" tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/preiskave-legacy.css" />
+</head>
+<body class="imi-exams-public">
+<div id="zunanji_okvir"><div id="okvir">
+  <div class="exams-header"><a tal:attributes="href context/absolute_url"><img id="logo" tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a></div>
+  <div id="glavni_meni"><ul>
+    <li class="domov"><a tal:attributes="href context/absolute_url">Domov</a></li>
+    <li><a tal:attributes="href string:${context/absolute_url}/@@preiskave_view">Preiskave</a></li>
+    <li><a tal:attributes="href string:${context/absolute_url}/@@preiskave_hitro_view">Hitro iskanje</a></li>
+    <li><a tal:attributes="href string:${context/absolute_url}/@@preiskave_lab_view">Laboratoriji</a></li>
+    <li><a tal:attributes="href string:${context/absolute_url}/@@preiskave_nove_view">Nove</a></li>
+    <li><a tal:attributes="href string:${context/absolute_url}/@@preiskave_nujne_view">Nujne</a></li>
+    <li><a tal:attributes="href string:${context/absolute_url}/@@preiskave_podrocja_view">Področja</a></li>
+    <li><a tal:attributes="href string:${context/absolute_url}/@@preiskave_sklopi_view">Sklopi</a></li>
+    <li><a tal:attributes="href string:${context/absolute_url}/@@preiskave_vzorci_view">Vzorci</a></li>
+  </ul></div>
+  <div class="clear"></div>
+  <main id="vsebina_podstran">
+    <h1 tal:content="view/title">Preiskave</h1>
+    <form method="get" tal:condition="python:view.mode() == 'preiskave_hitro_view'">
+      <input type="search" name="q" tal:attributes="value view/query" /> <input type="submit" value="Išči" />
+    </form>
+    <div class="preiskave-facets" tal:condition="view/facets">
+      <p tal:repeat="facet view/facets" tal:content="facet">Facet</p>
+    </div>
+    <p tal:condition="not:view/results">Ni zadetkov.</p>
+    <div class="exam-results" tal:condition="view/results">
+      <article class="exam-result" tal:repeat="exam view/results">
+        <h2><a tal:attributes="href string:${context/absolute_url}/@@preiskava-public?id=${exam/getId}" tal:content="exam/Title">Preiskava</a></h2>
+        <p tal:condition="exam/Description" tal:content="exam/Description">Opis</p>
+      </article>
+    </div>
+  </main>
+  <div class="clear"></div>
+</div></div>
+</body></html>
