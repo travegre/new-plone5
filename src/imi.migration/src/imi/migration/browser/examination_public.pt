@@ -15,28 +15,32 @@
     <div class="preiskava_opis_container">
       <p class="text text-12 siv-tekst">Področje preiskave</p>
       <p class="text text-13" tal:content="python:', '.join(dict.fromkeys(context.podrocje or ()))"></p>
-      <tal:opis condition="python:bool(view.rich('opis'))">
-        <p class="text text-12 siv-tekst">Opis preiskave</p><div class="text text-13" tal:content="structure python:view.rich('opis')"></div>
-      </tal:opis>
-      <tal:file condition="context/datoteka|nothing">
-        <p class="text text-12 siv-tekst">Dodatna dokumentacija:</p>
-        <p class="text text-13"><a tal:attributes="href string:${context/absolute_url}/@@download/datoteka/${context/datoteka/filename}" tal:content="context/datoteka/filename">datoteka</a></p>
-      </tal:file>
-      <tal:opombe condition="python:bool(view.rich('opombe'))">
-        <p class="text text-12 siv-tekst">Opombe</p><div class="text text-13" tal:content="structure python:view.rich('opombe')"></div>
-      </tal:opombe>
+      <tal:opis condition="python:bool(view.rich('opis'))"><p class="text text-12 siv-tekst">Opis preiskave</p><div class="text text-13" tal:content="structure python:view.rich('opis')"></div></tal:opis>
+      <tal:file condition="context/datoteka|nothing"><p class="text text-12 siv-tekst">Dodatna dokumentacija:</p><p class="text text-13"><a tal:attributes="href string:${context/absolute_url}/@@download/datoteka/${context/datoteka/filename}" tal:content="context/datoteka/filename">datoteka</a></p></tal:file>
+      <tal:opombe condition="python:bool(view.rich('opombe'))"><p class="text text-12 siv-tekst">Opombe</p><div class="text text-13" tal:content="structure python:view.rich('opombe')"></div></tal:opombe>
     </div>
 
-    <div class="preiskava_vzorci_container" tal:condition="view/samples">
+    <div class="preiskava_vzorci_container" tal:condition="view/sample_rows">
       <p class="text text-14">Vzorci in navodila</p>
-      <div class="div_vzorci"><div class="neki" tal:repeat="sample view/samples"><p class="naslov_vzorca text text-14" tal:content="sample">Vzorec</p></div></div>
-      <tal:odvzem condition="python:bool(view.text('vzorci_odvzem'))"><div class="vzorec_levo">Navodila za odvzem:</div><div class="vzorec_desno" tal:content="structure python:view.text('vzorci_odvzem')"></div></tal:odvzem>
-      <tal:transport condition="python:bool(view.text('vzorci_transport'))"><div class="vzorec_levo">Navodila za transport:</div><div class="vzorec_desno" tal:content="structure python:view.text('vzorci_transport')"></div></tal:transport>
-      <tal:kolicina condition="python:bool(view.text('vzorci_kolicina'))"><div class="vzorec_levo">Količina in embalaža:</div><div class="vzorec_desno" tal:content="structure python:view.text('vzorci_kolicina')"></div></tal:kolicina>
-      <tal:opomba condition="python:bool(view.text('vzorci_opomba'))"><div class="vzorec_levo">Opomba za klinika:</div><div class="vzorec_desno" tal:content="structure python:view.text('vzorci_opomba')"></div></tal:opomba>
-      <tal:embalaza condition="python:bool(view.text('embalaza_slika_sifra'))"><div class="vzorec_levo">Priporočena embalaža:</div><div class="vzorec_desno" tal:content="view/text/embalaza_slika_sifra"></div></tal:embalaza>
-      <tal:video condition="python:bool(view.text('vzorci_odvzem_video_sifra'))"><div class="vzorec_levo">Video:</div><div class="vzorec_desno"><a tal:attributes="href python:view.text('vzorci_odvzem_video_sifra')" tal:content="python:view.text('vzorci_odvzem_video_sifra')">Video</a></div></tal:video>
-      <tal:labs condition="python:bool(view.text('vzorci_lab'))"><div class="vzorec_levo" tal:content="structure python:view.text('vzorci_lab')"></div><div class="vzorec_desno" tal:condition="python:bool(view.text('vzorci_lab_tel'))">Telefon: <span tal:content="structure python:view.text('vzorci_lab_tel')"></span></div></tal:labs>
+      <div class="div_vzorci">
+        <div class="neki sample-card" tal:repeat="sample view/sample_rows">
+          <p class="naslov_vzorca text text-14" tal:content="sample/name">Vzorec</p>
+          <tal:collection condition="sample/collection"><div class="vzorec_levo">Navodila za odvzem:</div><div class="vzorec_desno" tal:content="structure sample/collection"></div></tal:collection>
+          <tal:transport condition="sample/transport"><div class="vzorec_levo">Navodila za transport:</div><div class="vzorec_desno" tal:content="structure sample/transport"></div></tal:transport>
+          <tal:amount condition="sample/amount"><div class="vzorec_levo">Količina in embalaža:</div><div class="vzorec_desno" tal:content="structure sample/amount"></div></tal:amount>
+          <tal:note condition="sample/note"><div class="vzorec_levo">Opomba za klinika:</div><div class="vzorec_desno" tal:content="structure sample/note"></div></tal:note>
+          <tal:pack condition="sample/packaging"><div class="vzorec_levo">Priporočena embalaža:</div><div class="packaging-images"><a tal:repeat="code sample/packaging" tal:attributes="href python:view.packaging_url(code)"><img class="embalaza_slika" tal:attributes="src python:view.packaging_url(code); alt code" /></a></div></tal:pack>
+          <tal:video condition="sample/video"><div class="vzorec_levo">Video:</div><div class="vzorec_desno"><a tal:attributes="href sample/video" tal:content="sample/video">Video</a></div></tal:video>
+          <div class="sample-labs" tal:condition="sample/labs">
+            <div class="sample-lab" tal:repeat="lab sample/labs">
+              <div class="vzorec_levo lab" tal:content="lab/name">Laboratorij</div>
+              <div class="vzorec_desno lab" tal:condition="lab/phone">Telefon: <span class="tel" tal:content="lab/phone"></span></div>
+              <div class="vzorec_levo" tal:condition="lab/code">Lab kratica:</div><div class="vzorec_desno" tal:condition="lab/code" tal:content="lab/code"></div>
+            </div>
+          </div>
+          <div class="clear"></div>
+        </div>
+      </div>
     </div>
 
     <div class="preiskava_tech_data">
