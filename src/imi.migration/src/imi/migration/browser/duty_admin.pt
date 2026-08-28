@@ -8,6 +8,7 @@
     </metal:title>
 
     <metal:core fill-slot="content-core">
+      <p><img class="imi-admin-logo" tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></p>
       <p><a class="btn btn-default" tal:attributes="href string:${context/absolute_url}/@@dezurstva-uvoz-zaposlenih">Uvoz zaposlenih</a></p>
 
       <form action="@@izberi_dezurstvo"
