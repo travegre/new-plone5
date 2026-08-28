@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """Faithful public runtime for the legacy Preiskave site.
 
-The Plone-4 skin did not use one generic listing.  Each menu entry had its own
-view semantics (quick livesearch, laboratory/area/group selectors, new/urgent
-views and the multi-level sample browser).  Keep those semantics explicit here
-while reading the migrated Dexterity objects directly from the ZODB tree.
+The Plone-4 skin did not use one generic listing. Each menu entry had its own
+view semantics while sharing one public shell. This module ports those
+behaviours against the migrated Dexterity objects without relying on catalog
+indexes or workflow visibility.
 """
 from collections import OrderedDict
 from html import escape
@@ -42,18 +42,17 @@ def _lines(value):
 
 
 def _parts(value, separators=('|',)):
-    result = []
-    for piece in [str(value or '')]:
-        work = [piece]
-        for sep in separators:
-            next_work = []
-            for item in work:
-                next_work.extend(item.split(sep))
-            work = next_work
+    work = [str(value or '')]
+    for sep in separators:
+        next_work = []
         for item in work:
-            item = item.strip()
-            if item and item not in result:
-                result.append(item)
+            next_work.extend(item.split(sep))
+        work = next_work
+    result = []
+    for item in work:
+        item = item.strip()
+        if item and item not in result:
+            result.append(item)
     return result
 
 
@@ -111,6 +110,12 @@ class ExamsBase(BrowserView):
         url = str(self.request.get('URL') or '')
         return url.rstrip('/').rsplit('/', 1)[-1]
 
+    def mode_url(self):
+        mode = self.mode()
+        if mode.startswith('@@'):
+            mode = mode[2:]
+        return self.portal.absolute_url() + '/@@' + mode
+
     def mode_key(self):
         return {
             'preiskave_view': 'all', 'content_view': 'all',
@@ -121,7 +126,7 @@ class ExamsBase(BrowserView):
             'preiskave_podrocja_view': 'areas',
             'preiskave_sklopi_view': 'groups',
             'preiskave_vzorci_view': 'samples',
-        }.get(self.mode(), 'home')
+        }.get(self.mode().replace('@@', ''), 'home')
 
     def title(self):
         return {
@@ -148,11 +153,10 @@ class ExamsBase(BrowserView):
         groups = OrderedDict()
         for obj in exams:
             title = (obj.Title() or '').strip()
-            if not title:
-                continue
-            letter = title[0].upper()
-            groups.setdefault(letter, []).append(obj)
-        return [{'letter': key, 'items': groups[key]} for key in sorted(groups, key=lambda x: x.casefold())]
+            if title:
+                groups.setdefault(title[0].upper(), []).append(obj)
+        return [{'letter': key, 'items': groups[key]}
+                for key in sorted(groups, key=lambda x: x.casefold())]
 
     def selected_facet(self):
         return str(self.request.form.get('podrocje') or '').strip()
@@ -220,12 +224,9 @@ class ExamsBase(BrowserView):
             samples = _lines(getattr(obj, 'vzorci', ''))
             flags = _lines(getattr(obj, 'preiskava_vzorec_nujno', ()))
             for index, flag in enumerate(flags):
-                if str(flag).strip().casefold() not in ('da', 'yes', 'true', '1'):
+                if str(flag).strip().casefold() not in ('da', 'yes', 'true', '1') or index >= len(samples):
                     continue
-                if index >= len(samples):
-                    continue
-                sample = samples[index].split('###')[0].strip()
-                rows.append({'exam': obj, 'sample': sample})
+                rows.append({'exam': obj, 'sample': samples[index].split('###')[0].strip()})
         rows.sort(key=lambda row: ((row['exam'].Title() or '').casefold(), row['sample'].casefold()))
         return rows
 
@@ -245,9 +246,8 @@ class ExamsBase(BrowserView):
                 if '###' not in raw:
                     continue
                 parts = raw.split('###')
-                name = parts[0].strip()
-                levels = [parts[i].strip() if i < len(parts) else '' for i in range(2, 7)]
-                rows.append({'exam': obj, 'name': name, 'levels': levels})
+                rows.append({'exam': obj, 'name': parts[0].strip(),
+                             'levels': [parts[i].strip() if i < len(parts) else '' for i in range(2, 7)]})
         return rows
 
     def sample_choices(self):
@@ -303,9 +303,8 @@ class ExamsBase(BrowserView):
             return []
         result = []
         for row in self.sample_records():
-            if all(not selected[i] or row['levels'][i] == selected[i] for i in range(5)):
-                if row['exam'] not in result:
-                    result.append(row['exam'])
+            if all(not selected[i] or row['levels'][i] == selected[i] for i in range(5)) and row['exam'] not in result:
+                result.append(row['exam'])
         return result
 
     def areas(self):
@@ -358,7 +357,6 @@ class ExamsLiveSearchView(ExamsBase):
 
 
 class ExaminationPublicView(BaseExaminationView):
-    """Legacy examination detail inside the same public Preiskave shell."""
     template = ViewPageTemplateFile('preiskave_detail_legacy.pt')
 
     @property
