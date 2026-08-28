@@ -1,0 +1,21 @@
+/* Exact legacy schedule-page typography/table metrics; compatibility layout stays in legacy-sites.css. */
+.imi-kiestra-public #okol,.imi-replacements-public #okol{width:95%;margin:30px auto;text-align:center;padding-bottom:30px}
+.imi-kiestra-public #okolo,.imi-replacements-public #okolo{padding-bottom:50px}
+.imi-kiestra-public #logo,.imi-replacements-public #logo{margin:0}
+.imi-kiestra-public h1,.imi-kiestra-public h2,.imi-replacements-public h1,.imi-replacements-public h2{margin:20px 0;text-align:center;color:#624C9C;text-decoration:none;font-family:Helvetica,Arial,sans-serif}
+.imi-kiestra-public h2,.imi-replacements-public h2{margin:0}
+.imi-kiestra-public h1 a,.imi-replacements-public h1 a{text-decoration:none;color:#624C9C!important;font-size:32px;margin:0}
+.imi-kiestra-public,.imi-replacements-public{color:#414152;font-size:16px;text-decoration:none;font-family:Tahoma,sans-serif}
+.imi-kiestra-public a,.imi-replacements-public a{color:#5fb11e;font-size:16px;text-decoration:none}
+.imi-kiestra-public table,.imi-replacements-public table{border:1px solid #624c9c;width:100%}
+.imi-kiestra-public table.dezurstva,.imi-replacements-public table.dezurstva{border-bottom:1px solid #624c9c}
+.imi-kiestra-public table td,.imi-kiestra-public table th{padding:6px 10px;border:1px solid #624c9c;border-collapse:collapse}
+.imi-replacements-public table td,.imi-replacements-public table th{padding:12px 10px;border:1px solid #624c9c;border-collapse:collapse}
+.imi-kiestra-public table.dezurstva tr.head th,.imi-replacements-public table.dezurstva tr.head th{font-weight:bold;font-family:Tahoma,sans-serif;font-size:1.3em;padding:1.5em .5em;border-bottom:2px solid #624c9c;color:#624c9c}
+.imi-kiestra-public table.dezurstva td,.imi-kiestra-public table.dezurstva_opombe td,.imi-replacements-public table.dezurstva td,.imi-replacements-public table.dezurstva_opombe td{text-align:left;font-weight:bold;border-top:none;font-size:2em}
+.imi-kiestra-public table.dezurstva td,.imi-replacements-public table.dezurstva td{background:white}
+.imi-kiestra-public table.dezurstva_opombe,.imi-replacements-public table.dezurstva_opombe{border-bottom:2px solid #624c9c}
+.imi-kiestra-public table.dezurstva td span,.imi-kiestra-public table.dezurstva_opombe td span,.imi-replacements-public table.dezurstva td span,.imi-replacements-public table.dezurstva_opombe td span{color:#5fb11e;font-weight:normal;font-size:.9em}
+.imi-replacements-public table.dezurstva td.grey{color:#aaa}
+.imi-kiestra-public table.glava,.imi-kiestra-public table.glava td,.imi-replacements-public table.glava,.imi-replacements-public table.glava td{border:none}
+.imi-kiestra-public #last-change,.imi-replacements-public #last-change{position:absolute;top:5px;right:10px}
