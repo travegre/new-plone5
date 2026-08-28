@@ -4,6 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
   <title tal:content="view/title">PREISKAVE</title>
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-legacy.css" />
+  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-launch.css" />
 </head>
 <body class="imi-exams-public" tal:attributes="data-mode view/mode_key">
 <div id="zunanji_okvir"><div id="okvir">
@@ -13,20 +14,20 @@
     <tal:home condition="python:view.mode_key() == 'home'">
       <h1>PREISKAVE</h1>
       <div class="search-choice-grid">
-        <a class="search-opcija quick" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_hitro_view"><span class="search-choice-icon">⌕</span><p>Hitro iskanje</p></a>
-        <a class="search-opcija areas" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_podrocja_view"><span class="search-choice-icon">▦</span><p>Po področjih</p></a>
-        <a class="search-opcija samples" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_vzorci_view"><span class="search-choice-icon">◉</span><p>Po vzorcih</p></a>
-        <a class="search-opcija labs" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_lab_view"><span class="search-choice-icon">⚗</span><p>Po laboratorijih</p></a>
+        <a class="search-opcija quick" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_hitro_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-quick.png" alt="" /><p>Hitro iskanje</p></a>
+        <a class="search-opcija areas" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_podrocja_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-podrocja.png" alt="" /><p>Po področjih</p></a>
+        <a class="search-opcija samples" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_vzorci_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-vzorci.png" alt="" /><p>Po vzorcih</p></a>
+        <a class="search-opcija labs" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_lab_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-lab.png" alt="" /><p>Po laboratorijih</p></a>
       </div>
     </tal:home>
 
     <tal:all condition="python:view.mode_key() == 'all'">
       <h1>Preiskave</h1>
       <div class="search-choice-grid legacy-preiskave-launch">
-        <a class="search-opcija quick" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_hitro_view"><span class="search-choice-icon">⌕</span><p>Hitro iskanje</p></a>
-        <a class="search-opcija areas" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_podrocja_view"><span class="search-choice-icon">▦</span><p>Po področjih</p></a>
-        <a class="search-opcija samples" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_vzorci_view"><span class="search-choice-icon">◉</span><p>Po vzorcih</p></a>
-        <a class="search-opcija labs" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_lab_view"><span class="search-choice-icon">⚗</span><p>Po laboratorijih</p></a>
+        <a class="search-opcija quick" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_hitro_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-quick.png" alt="" /><p>Hitro iskanje</p></a>
+        <a class="search-opcija areas" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_podrocja_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-podrocja.png" alt="" /><p>Po področjih</p></a>
+        <a class="search-opcija samples" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_vzorci_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-vzorci.png" alt="" /><p>Po vzorcih</p></a>
+        <a class="search-opcija labs" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_lab_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-lab.png" alt="" /><p>Po laboratorijih</p></a>
       </div>
     </tal:all>
 
