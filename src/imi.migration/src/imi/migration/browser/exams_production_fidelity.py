@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Production-render fidelity overrides for the migrated Preiskave site."""
 from html import escape
-import re
-import unicodedata
 from urllib.parse import quote, quote_plus
 
 from Products.Five import BrowserView
@@ -13,32 +11,21 @@ from .exams_runtime import ExaminationPublicView as BaseExaminationPublicView
 from .runtime_fixes import _walk
 
 
-def _plain(value):
-    if value is None:
-        return u''
-    raw = getattr(value, 'raw', None)
-    if raw is not None:
-        value = raw
-    elif isinstance(value, (tuple, list)):
-        value = u' '.join(str(item or '') for item in value)
-    text = str(value or '')
-    return re.sub(r'<[^>]+>', ' ', text)
-
-
-def _fold(value):
-    text = unicodedata.normalize('NFKD', _plain(value))
-    return ''.join(ch for ch in text if not unicodedata.combining(ch)).casefold()
-
-
-def _tokens(value):
-    return re.findall(r'[\w]+', _fold(value), flags=re.UNICODE)
-
-
 def _is_published(obj):
     try:
         return api.content.get_state(obj=obj) == 'published'
     except Exception:
         return False
+
+
+def _legacy_moj_query(query):
+    """Build the exact query shape used by the Plone-4 livesearch script."""
+    value = str(query or '')
+    for char in '?-+*':
+        value = value.replace(char, ' ')
+    value = ' AND '.join(value.split())
+    value = value.replace('(', '"("').replace(')', '")"')
+    return value + '*' if value else ''
 
 
 def _dynamic_menu(portal, request):
@@ -86,45 +73,48 @@ class ProductionMenuMixin(object):
 
 
 class ProductionSearchMixin(object):
-    """Temporary object-scan implementation of the probed Plone-4 ``moj`` fields.
+    """Use the migrated equivalent of the Plone-4 ``moj`` ZCTextIndex."""
 
-    There are deliberately no query-specific ordering exceptions here.  Until
-    the real ZCTextIndex is recreated in Plone 5.2, result membership follows
-    the six legacy source fields while ordering follows migrated traversal.
-    """
-    searchable_fields = (
-        'Title', 'vzorci', 'sinonim', 'podrocje', 'sklop', 'vzorci_lab',
-    )
+    def _catalog(self):
+        catalog = self.portal.portal_catalog
+        if 'moj' not in catalog.indexes():
+            raise RuntimeError(
+                'Preiskave catalog index "moj" is not installed. '
+                'Run the legacy catalog index migration.')
+        return catalog
 
-    def _moj_tokens(self, obj):
-        tokens = []
-        for field in self.searchable_fields:
-            value = obj.Title() if field == 'Title' else getattr(obj, field, '')
-            tokens.extend(_tokens(value))
-        return tokens
-
-    def _moj_candidates(self):
+    def _base_path(self):
         base = self.base_folder()
         if base is None:
+            return None
+        return '/'.join(base.getPhysicalPath())
+
+    def _moj_candidates(self):
+        path = self._base_path()
+        if path is None:
             return []
-        return [obj for obj in _walk(base)
-                if getattr(obj, 'portal_type', None) == 'imi.exams.examination']
+        brains = self._catalog()(
+            portal_type='imi.exams.examination',
+            path=path,
+        )
+        return [brain.getObject() for brain in brains]
 
     def filtered_exams(self, query=None):
         query = str(query if query is not None else
-                    (self.request.form.get('q') or self.request.form.get('moj') or '')).strip()
-        clean_query = query
-        for char in '?-+*':
-            clean_query = clean_query.replace(char, ' ')
-        wanted = [_fold(word) for word in clean_query.split() if word]
-        if not wanted:
+                    (self.request.form.get('q') or
+                     self.request.form.get('moj') or '')).strip()
+        transformed = _legacy_moj_query(query)
+        if not transformed:
             return self._moj_candidates()
-        result = []
-        for obj in self._moj_candidates():
-            indexed = self._moj_tokens(obj)
-            if all(any(token.startswith(word) for token in indexed) for word in wanted):
-                result.append(obj)
-        return result
+        path = self._base_path()
+        if path is None:
+            return []
+        brains = self._catalog()(
+            moj=transformed,
+            portal_type='imi.exams.examination',
+            path=path,
+        )
+        return [brain.getObject() for brain in brains]
 
 
 class ExamsHomeView(ProductionMenuMixin, legacy.ExamsHomeView):
