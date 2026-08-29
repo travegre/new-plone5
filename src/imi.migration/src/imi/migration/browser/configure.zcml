@@ -31,8 +31,8 @@
   <browser:page name="edit" for="imi.migration.content.IKiestraWorkDay" class=".legacy_editors.KiestraEditView" permission="cmf.ModifyPortalContent" />
 
   <!-- Preiskave -->
-  <browser:page name="preiskave-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".exams_runtime.ExamsPublicView" permission="zope.Public" />
-  <browser:page name="preiskave-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".exams_runtime.ExamsPublicView" permission="zope.Public" />
+  <browser:page name="preiskave-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".exams_legacy_modes.ExamsHomeView" permission="zope.Public" />
+  <browser:page name="preiskave-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".exams_legacy_modes.ExamsHomeView" permission="zope.Public" />
   <browser:page name="preiskave-livesearch" for="Products.CMFCore.interfaces.ISiteRoot" class=".exams_legacy_modes.LegacyExamsLiveSearchView" permission="zope.Public" />
   <browser:page name="preiskava-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".exams_runtime.ExaminationPublicProxyView" permission="zope.Public" />
   <browser:page name="preiskave-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy_admin.ExamsAdminView" permission="cmf.ModifyPortalContent" />
@@ -46,6 +46,7 @@
   <browser:page name="preiskave_podrocja_view" for="*" class=".exams_legacy_modes.ExamsAreasView" permission="zope.Public" />
   <browser:page name="preiskave_sklopi_view" for="*" class=".exams_legacy_modes.ExamsGroupsView" permission="zope.Public" />
   <browser:page name="preiskave_vzorci_view" for="*" class=".exams_legacy_modes.ExamsSamplesView" permission="zope.Public" />
+  <browser:page name="preiskave_skrbniki_view" for="*" class=".exams_legacy_modes.ExamsGuardiansView" permission="zope.Public" />
   <browser:page name="preiskava_view" for="imi.migration.content.IExamination" class=".exams_runtime.ExaminationPublicView" permission="zope.Public" />
   <browser:page name="view" for="imi.migration.content.IExamination" class=".exams_runtime.ExaminationPublicView" permission="zope.Public" />
 
