@@ -27,20 +27,20 @@
     <tal:home condition="python:view.mode_key() == 'home'">
       <h1>PREISKAVE</h1>
       <div class="search-choice-grid slikce_filtrov row">
-        <a class="search-opcija quick" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_hitro_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-quick.png" alt="" /><p>Hitro iskanje</p></a>
-        <a class="search-opcija areas" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_podrocja_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-podrocja.png" alt="" /><p>Po področjih</p></a>
-        <a class="search-opcija samples" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_vzorci_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-vzorci.png" alt="" /><p>Po vzorcih</p></a>
-        <a class="search-opcija labs" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_lab_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-lab.png" alt="" /><p>Po laboratorijih</p></a>
+        <a tal:repeat="item view/launch_items" tal:attributes="class python:'search-opcija ' + item[0]; href python:item[2]">
+          <img class="search-choice-image" tal:attributes="src python:view.portal.absolute_url() + '/++resource++imi.migration/' + item[3]" alt="" />
+          <p tal:content="python:item[1]">Iskanje</p>
+        </a>
       </div>
     </tal:home>
 
     <tal:all condition="python:view.mode_key() == 'all'">
       <h1>Preiskave</h1>
       <div class="search-choice-grid slikce_filtrov row legacy-preiskave-launch">
-        <a class="search-opcija quick" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_hitro_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-quick.png" alt="" /><p>Hitro iskanje</p></a>
-        <a class="search-opcija areas" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_podrocja_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-podrocja.png" alt="" /><p>Po področjih</p></a>
-        <a class="search-opcija samples" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_vzorci_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-vzorci.png" alt="" /><p>Po vzorcih</p></a>
-        <a class="search-opcija labs" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_lab_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-lab.png" alt="" /><p>Po laboratorijih</p></a>
+        <a tal:repeat="item view/launch_items" tal:attributes="class python:'search-opcija ' + item[0]; href python:item[2]">
+          <img class="search-choice-image" tal:attributes="src python:view.portal.absolute_url() + '/++resource++imi.migration/' + item[3]" alt="" />
+          <p tal:content="python:item[1]">Iskanje</p>
+        </a>
       </div>
     </tal:all>
 
