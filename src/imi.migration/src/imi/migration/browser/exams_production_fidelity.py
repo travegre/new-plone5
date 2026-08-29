@@ -215,6 +215,16 @@ class LegacyExamsLiveSearchView(ProductionSearchMixin,
                     '<div class="LSIEFix"><div id="LSNothingFound">No match found</div>'
                     '<div class="LSRow"></div></div></fieldset>')
         out = [
+            '<style>'
+            '#exam-live-results .LSRow a.livesearch-show-all{'
+            'color:#654fa4!important;background:#fff!important;'
+            'border:1px solid rgba(255,255,255,.9)!important;'
+            'padding:7px 14px!important;font-weight:700!important;'
+            'display:inline-block!important;width:auto!important;float:none!important}'
+            '#exam-live-results .LSRow a.livesearch-show-all:hover,'
+            '#exam-live-results .LSRow a.livesearch-show-all:focus{'
+            'color:#fff!important;background:#2e2c31!important}'
+            '</style>',
             '<fieldset class="livesearchContainer">',
             '<legend id="livesearchLegend">Live search results: %d</legend>' % len(results),
             '<div class="LSIEFix"><ul class="LSTable">',
