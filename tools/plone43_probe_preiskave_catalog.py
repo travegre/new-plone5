@@ -1,18 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Read-only probe for the legacy Preiskave ``moj`` catalog index.
-
-Run this with the *Plone 4.3* instance, not the Plone 5.2 instance. The script
-prints the concrete index class, source fields/attributes and reference query
-counts so the 5.2 compatibility search can reproduce the old ZCTextIndex
-instead of guessing its configuration.
-
-Example::
-
-    bin/instance run /path/to/new-plone5/tools/plone43_probe_preiskave_catalog.py
-
-It does not modify the ZODB.
-"""
+"""Read-only probe for the legacy Preiskave ``moj`` catalog index."""
 from __future__ import print_function
 
 
@@ -49,15 +37,26 @@ def describe_index(index):
 
 
 def legacy_query(q):
-    """Exact query rewrite used by preiskave.podoba/livesearch_reply.py."""
     for char in '?-+*':
         q = q.replace(char, ' ')
-    words = q.split()
-    value = ' AND '.join(words)
-    # quote_bad_chars() only quoted literal parentheses; ordinary words such as
-    # ``test`` were left untouched. Then one trailing wildcard was appended.
+    value = ' AND '.join(q.split())
     value = value.replace('(', '"("').replace(')', '")"')
     return value + '*'
+
+
+def brain_id(brain):
+    for name in ('getId', 'id'):
+        try:
+            value = getattr(brain, name)
+            value = value() if callable(value) else value
+            if value:
+                return value
+        except Exception:
+            pass
+    try:
+        return brain.getPath().rstrip('/').rsplit('/', 1)[-1]
+    except Exception:
+        return ''
 
 
 def run(app):
@@ -69,8 +68,7 @@ def run(app):
         print('Available indexes:', sorted(indexes.keys()))
         return
 
-    index = indexes['moj']
-    describe_index(index)
+    describe_index(indexes['moj'])
 
     print('\nREFERENCE COUNTS')
     for query in ('test*', '"test"*', 'test', 'test AND test*'):
@@ -86,9 +84,14 @@ def run(app):
         results = catalog(moj=transformed, portal_type='imipreiskava')
         print('\nlegacy q=%r transformed query %r -> %d' %
               (q, transformed, len(results)))
-        print('First 20 titles:')
-        for brain in results[:20]:
-            print('  - %s' % brain.Title)
+        print('FULL LEGACY RESULT ORDER')
+        for position, brain in enumerate(results, 1):
+            try:
+                path = brain.getPath()
+            except Exception:
+                path = ''
+            print('%03d\t%s\t%s\t%s' %
+                  (position, brain_id(brain), path, brain.Title))
     except Exception as exc:
         print('legacy q=test query failed: %r' % exc)
 
