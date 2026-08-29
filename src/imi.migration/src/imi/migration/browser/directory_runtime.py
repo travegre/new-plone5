@@ -4,25 +4,57 @@ from html import escape
 
 from plone import api
 
-from .runtime_fixes import DirectorySearchView as CachedDirectorySearchView
+from .runtime_fixes import DirectorySearchView as LegacyDirectorySearchView
 
 
-class DirectorySearchView(CachedDirectorySearchView):
-    """Keep cached search, but emit the complete legacy contact detail block."""
+def _legacy_query(value):
+    """Convert IMENIK input exactly as the Plone-4 livesearch script did."""
+    value = str(value or '')
+    for char in ('?', '-', '+', '*', u'\u3000'):
+        value = value.replace(char, ' ')
+    value = ' AND '.join(value.split())
+    value = value.replace('(', '"("').replace(')', '")"')
+    return value + '*' if value else ''
+
+
+class DirectorySearchView(LegacyDirectorySearchView):
+    """Catalog-backed port of the Plone-4 IMENIK livesearch.
+
+    The original queried the normal ``SearchableText`` ZCTextIndex for
+    ``produkti`` and only used the custom ``priimek`` index for sorting.  Do
+    the same with migrated ``imi.directory.person`` objects.  No per-process
+    object cache or full content-tree traversal is involved.
+    """
+
+    def _results(self, portal, query):
+        transformed = _legacy_query(query)
+        if not transformed:
+            return []
+        base = portal.get('data2')
+        if base is None:
+            return []
+        brains = portal.portal_catalog(
+            SearchableText=transformed,
+            portal_type='imi.directory.person',
+            path='/'.join(base.getPhysicalPath()),
+        )
+        objects = [brain.getObject() for brain in brains]
+        # The 4.3 script requested descending ``priimek`` from ZCatalog and
+        # then tsort() sorted the rendered rows by rel2.  Its visible result is
+        # ascending surname order with empty surnames forced to the end.
+        objects.sort(
+            key=lambda obj: (
+                (getattr(obj, 'priimek', '') or u'ŽŽŽŽŽ').lower(),
+                (getattr(obj, 'ime', '') or '').lower(),
+            )
+        )
+        return objects
 
     def __call__(self):
         portal = api.portal.get()
         query = str(self.request.form.get('q') or self.request.form.get('searchGadget') or '').strip()
-        words = [w.lower() for w in query.replace('*', ' ').replace('+', ' ').split() if w]
-        objects = []
-        if words:
-            for haystack, obj in self._cache(portal):
-                if all(word in haystack for word in words):
-                    objects.append(obj)
-        objects.sort(key=lambda obj: ((getattr(obj, 'priimek', '') or 'ŽŽŽŽŽ').lower(),
-                                      (getattr(obj, 'ime', '') or '').lower()))
+        objects = self._results(portal, query)
         total = len(objects)
-        objects = objects[:100]
 
         self.request.response.setHeader('Content-Type', 'text/html; charset=utf-8')
         if not objects:
