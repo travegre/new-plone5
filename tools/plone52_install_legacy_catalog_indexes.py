@@ -13,6 +13,19 @@ from imi.migration.setuphandlers import install_catalog_indexes
 SITES = ('portal', 'dezurstva', 'kiestra', 'preiskave', 'nadomescanja')
 
 
+def _reindex_objects(site, portal_type, idxs):
+    brains = site.portal_catalog(
+        portal_type=portal_type,
+        path='/'.join(site.getPhysicalPath()),
+    )
+    count = 0
+    for brain in brains:
+        obj = brain.getObject()
+        obj.reindexObject(idxs=list(idxs))
+        count += 1
+    return count
+
+
 def run(app):
     for site_id in SITES:
         print('\n' + '=' * 78)
@@ -24,7 +37,11 @@ def run(app):
             continue
 
         try:
-            changed = install_catalog_indexes(site, reindex=True)
+            # Create/correct definitions first.  Object-level reindexing below
+            # is intentional: it goes through Plone's IndexableObjectWrapper,
+            # so named plone.indexer adapters such as SearchableText and moj
+            # are actually used for Dexterity content.
+            changed = install_catalog_indexes(site, reindex=False)
         except Exception as exc:
             print('ERROR installing indexes:', repr(exc))
             transaction.abort()
@@ -33,13 +50,19 @@ def run(app):
         expected = SITE_INDEXES[site_id]
         catalog = site.portal_catalog
 
-        # IMENIK 4.3 searched the standard SearchableText index.  The migrated
-        # Dexterity type now has an explicit SearchableText adapter reproducing
-        # the old Archetypes searchable=True fields, so refresh this existing
-        # standard index once after deploying the adapter.
         if site_id == 'portal':
-            print('REINDEX: SearchableText')
-            catalog.manage_reindexIndex(ids=['SearchableText'])
+            count = _reindex_objects(
+                site, 'imi.directory.person', ('SearchableText', 'priimek'))
+            print('REINDEXED IMENIK PERSONS:', count)
+        elif site_id == 'preiskave':
+            count = _reindex_objects(
+                site,
+                'imi.exams.examination',
+                tuple(expected.keys()),
+            )
+            print('REINDEXED PREISKAVE EXAMS:', count)
+        elif changed:
+            catalog.manage_reindexIndex(ids=list(changed))
 
         print('CHANGED:', list(changed))
         print('CUSTOM INDEXES:')
