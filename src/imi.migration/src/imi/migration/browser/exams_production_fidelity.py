@@ -3,11 +3,13 @@
 
 Keep the route implementations from exams_legacy_modes while matching the
 legacy public rendering and the old custom ``moj`` ZCTextIndex livesearch.
-Navigation itself remains content-driven: folder titles and ordering come from
-Plone, exactly as they did in the Plone-4 main template.
+Navigation is content-driven: folder titles and ordering come from Plone, as
+in the Plone-4 main template.
 """
+from html import escape
 import re
 import unicodedata
+from urllib.parse import quote, quote_plus
 
 from Products.Five import BrowserView
 from plone import api
@@ -26,8 +28,6 @@ def _plain(value):
     elif isinstance(value, (tuple, list)):
         value = u' '.join(str(item or '') for item in value)
     text = str(value or '')
-    # RichText in these fields is simple, but remove markup so token matching
-    # behaves like a text index instead of matching tag/attribute fragments.
     return re.sub(r'<[^>]+>', ' ', text)
 
 
@@ -37,30 +37,48 @@ def _fold(value):
 
 
 def _tokens(value):
-    # ZCTextIndex tokenisation is word based. The legacy script transformed
-    # each query word to an AND term and appended ``*`` to the query, i.e. a
-    # prefix match, rather than the arbitrary substring test used in 5.2.
     return re.findall(r'[\w]+', _fold(value), flags=re.UNICODE)
+
+
+def _dynamic_menu(portal, request):
+    """Return only menu entries backed by actual migrated Plone folders.
+
+    Route matching remains an implementation concern, but visible labels and
+    order are always read from the current content objects.  There are no
+    synthetic fallback menu items: rename, reorder or remove a folder in Plone
+    and the public menu follows immediately.
+    """
+    provider = legacy.ExamsHomeView(portal, request)
+    base_url = portal.absolute_url()
+    rows = []
+    used = set()
+    for child in provider._legacy_children():
+        match = provider._menu_match(child)
+        if match is None:
+            continue
+        key, _fallback, route, _aliases = match
+        if key in used:
+            continue
+        try:
+            label = str(child.Title() or child.getId())
+        except Exception:
+            continue
+        rows.append((key, label, base_url + '/@@' + route))
+        used.add(key)
+    return rows
 
 
 class ProductionMenuMixin(object):
     def menu(self):
-        # Do not duplicate or freeze menu labels here.  The Plone-4 shell built
-        # navigation from the actual child folders; exams_legacy_modes ports
-        # that behaviour and therefore picks up folder-title/order changes at
-        # request time.  Instantiate the menu view explicitly so this also
-        # works on an individual examination context, which has no base_folder
-        # method of its own.
-        return legacy.ExamsHomeView(self.portal, self.request).menu()
+        return _dynamic_menu(self.portal, self.request)
 
 
 class ProductionSearchMixin(object):
     """Approximate the old ``portal_catalog(moj='word AND word*')`` index.
 
-    The old Archetypes schema marks the fields below ``searchable=True``.
-    Non-searchable technical/display fields (sifra, laboratoriji, metode,
-    opis, opombe, trajanje, urnik, podrocje) must not enlarge quick-search
-    results as the previous generic 5.2 concatenation did.
+    Only the old Archetypes fields marked ``searchable=True`` are included,
+    plus Title/Description which Archetypes/ATContentTypes supplied to its text
+    indexes. Non-searchable display fields must not enlarge the result set.
     """
     searchable_fields = (
         'sklop', 'sinonim', 'vzorci', 'vzorci_lab', 'vzorci_lab_tel',
@@ -142,7 +160,54 @@ class ExamsGuardiansView(ProductionMenuMixin, legacy.ExamsGuardiansView):
 class LegacyExamsLiveSearchView(ProductionSearchMixin,
                                 ProductionMenuMixin,
                                 legacy.LegacyExamsLiveSearchView):
-    pass
+    """Reproduce the old livesearch_reply.py response contract."""
+    limit = 20
+    max_title = 100
+    max_description = 93
+
+    def __call__(self):
+        query = str(self.request.form.get('q') or self.request.form.get('moj') or '').strip()
+        results = self.filtered_exams(query) if len(query) > 1 else []
+        self.request.response.setHeader('Content-Type', 'text/html; charset=utf-8')
+
+        if not results:
+            return (
+                '<fieldset class="livesearchContainer">'
+                '<legend id="livesearchLegend">Live search</legend>'
+                '<div class="LSIEFix"><div id="LSNothingFound">No match found</div>'
+                '<div class="LSRow"></div></div></fieldset>'
+            )
+
+        out = [
+            '<fieldset class="livesearchContainer">',
+            '<legend id="livesearchLegend">Live search results: %d</legend>' % len(results),
+            '<div class="LSIEFix"><ul class="LSTable">',
+        ]
+        for obj in results[:self.limit]:
+            full_title = str(obj.Title() or '')
+            display_title = full_title
+            if len(display_title) > self.max_title:
+                display_title = display_title[:self.max_title] + '...'
+            description = str(obj.Description() or '')
+            if len(description) > self.max_description:
+                description = description[:self.max_description] + '...'
+            href = self.exam_url(obj) + '&searchterm=' + quote_plus(query)
+            out.append(
+                '<li class="LSRow"><a href="%s" title="%s">%s</a>'
+                '<div class="LSDescr">%s</div></li>' % (
+                    escape(href), escape(full_title), escape(display_title),
+                    escape(description)))
+
+        out.append('<li class="LSRow"><br /></li>')
+        if len(results) > self.limit:
+            out.append(
+                '<li class="LSRow"><span>prikazanih %d od %d zadetkov</span> '
+                '<a href="%s/@@preiskave_hitro_view?moj=%s" style="font-weight:normal">'
+                'prikaži vse zadetke</a></li>' % (
+                    self.limit, len(results), self.portal.absolute_url(),
+                    quote(query)))
+        out.append('</ul></div></fieldset>')
+        return ''.join(out)
 
 
 class ExaminationPublicView(ProductionMenuMixin, BaseExaminationPublicView):
