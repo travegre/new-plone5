@@ -161,7 +161,9 @@ class ExamsAllView(ProductionMenuMixin, legacy.ExamsAllView):
 
 
 class ExamsQuickView(ProductionSearchMixin, ProductionMenuMixin, legacy.ExamsQuickView):
-    pass
+    def results(self):
+        """Use the same result set/order for the full page as for livesearch."""
+        return self.filtered_exams(self.query()) if self.query() else []
 
 
 class ExamsLabsView(ProductionMenuMixin, legacy.ExamsLabsView):
@@ -229,8 +231,8 @@ class LegacyExamsLiveSearchView(ProductionSearchMixin,
                        (escape(href), escape(full_title), escape(display_title), escape(description)))
         out.append('<li class="LSRow"><br /></li>')
         if len(results) > self.limit:
-            out.append('<li class="LSRow"><span>prikazanih %d od %d zadetkov</span> '
-                       '<a href="%s/@@preiskave_hitro_view?moj=%s" style="font-weight:normal">'
+            out.append('<li class="LSRow livesearch-more-row"><span>prikazanih %d od %d zadetkov</span> '
+                       '<a class="livesearch-show-all" href="%s/@@preiskave_hitro_view?moj=%s">'
                        'prikaži vse zadetke</a></li>' %
                        (self.limit, len(results), self.portal.absolute_url(), quote(query)))
         out.append('</ul></div></fieldset>')
