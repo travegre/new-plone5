@@ -6,6 +6,7 @@
   <title>Skrbniki</title>
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-legacy.css" />
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-fidelity.css" />
+  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-launch.css" />
 </head>
 <body class="imi-exams-public" data-mode="guardians">
 <div id="zunanji_okvir"><div id="okvir">
