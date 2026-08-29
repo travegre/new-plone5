@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 """Read-only probe for the legacy Preiskave ``moj`` catalog index.
 
-Run this with the *Plone 4.3* instance, not the Plone 5.2 instance.  The script
-prints the concrete index class, source fields/attributes and a few reference
-query counts so the 5.2 compatibility search can reproduce the old ZCTextIndex
+Run this with the *Plone 4.3* instance, not the Plone 5.2 instance. The script
+prints the concrete index class, source fields/attributes and reference query
+counts so the 5.2 compatibility search can reproduce the old ZCTextIndex
 instead of guessing its configuration.
 
-Example when this repository is mounted next to the old buildout::
+Example::
 
     bin/instance run /path/to/new-plone5/tools/plone43_probe_preiskave_catalog.py
 
@@ -48,6 +48,18 @@ def describe_index(index):
                 print('  %s = <error: %r>' % (key, exc))
 
 
+def legacy_query(q):
+    """Exact query rewrite used by preiskave.podoba/livesearch_reply.py."""
+    for char in '?-+*':
+        q = q.replace(char, ' ')
+    words = q.split()
+    value = ' AND '.join(words)
+    # quote_bad_chars() only quoted literal parentheses; ordinary words such as
+    # ``test`` were left untouched. Then one trailing wildcard was appended.
+    value = value.replace('(', '"("').replace(')', '")"')
+    return value + '*'
+
+
 def run(app):
     site = app.unrestrictedTraverse('preiskave')
     catalog = site.portal_catalog
@@ -68,12 +80,12 @@ def run(app):
         except Exception as exc:
             print('%r -> ERROR %r' % (query, exc))
 
-    # This is the exact transformation used by livesearch_reply.py for q=test.
     q = 'test'
-    r = '"%s"*' % q
+    transformed = legacy_query(q)
     try:
-        results = catalog(moj=r, portal_type='imipreiskava')
-        print('\nlegacy q=test transformed query %r -> %d' % (r, len(results)))
+        results = catalog(moj=transformed, portal_type='imipreiskava')
+        print('\nlegacy q=%r transformed query %r -> %d' %
+              (q, transformed, len(results)))
         print('First 20 titles:')
         for brain in results[:20]:
             print('  - %s' % brain.Title)
