@@ -17,14 +17,26 @@ def _raw_text(value):
 
 @indexer(IExamination)
 def examination_sklop(obj):
-    """Expose RichText ``sklop`` as the plain string the legacy indexes saw."""
     return _raw_text(getattr(obj, 'sklop', None))
 
 
 @indexer(IExamination)
 def examination_sinonim(obj):
-    """Expose RichText ``sinonim`` as the plain string the legacy index saw."""
     return _raw_text(getattr(obj, 'sinonim', None))
+
+
+@indexer(IExamination)
+def examination_moj(obj):
+    """Combined full-text value used by the legacy Preiskave ``moj`` index."""
+    values = [
+        obj.Title() or '',
+        getattr(obj, 'vzorci', '') or '',
+        _raw_text(getattr(obj, 'sinonim', None)),
+        u' '.join(getattr(obj, 'podrocje', ()) or ()),
+        _raw_text(getattr(obj, 'sklop', None)),
+        getattr(obj, 'vzorci_lab', '') or '',
+    ]
+    return u' '.join(str(value) for value in values if value)
 
 
 DIRECTORY_SEARCHABLE_FIELDS = (
@@ -36,12 +48,7 @@ DIRECTORY_SEARCHABLE_FIELDS = (
 
 @indexer(IDirectoryPerson)
 def directory_searchable_text(obj):
-    """Reproduce Archetypes ``searchable=True`` fields from IMENIK 4.3.
-
-    The old ``produkti`` type contributed its normal title/description plus
-    every field marked ``searchable=True`` to the standard SearchableText
-    ZCTextIndex.  ``maticna`` and ``star`` were deliberately not searchable.
-    """
+    """Reproduce Archetypes ``searchable=True`` fields from IMENIK 4.3."""
     values = [obj.Title() or '', obj.Description() or '']
     for field in DIRECTORY_SEARCHABLE_FIELDS:
         values.append(getattr(obj, field, '') or '')
