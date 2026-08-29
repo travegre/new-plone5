@@ -1,225 +1,283 @@
-/* Katalog launch tiles plus final production-screenshot corrections.
-   This file is loaded before preiskave-fidelity.css, therefore the correction
-   selectors intentionally have greater specificity than that compatibility
-   layer. */
-.imi-exams-public .search-choice-grid{display:flex;align-items:flex-start;width:100%;padding:50px;margin:0 auto;gap:0}.imi-exams-public .search-opcija{width:25%;padding:0 15px;text-align:center;color:#414152!important}.imi-exams-public .search-choice-image{display:block;width:100%;height:auto;max-width:200px;max-height:223px;object-fit:contain;margin:0 auto 10px}.imi-exams-public .search-opcija p{font-family:"Droid Serif","Lucida Grande",Georgia,serif;font-size:1.5em;font-weight:400;color:#ae3dcc!important;margin:10px 0 0}.imi-exams-public .search-opcija:hover p{color:#ae3dcc!important}
+/* Final source-fidelity overrides for the migrated Preiskave public UI.
+   Values here come from the Plone-4 main_template/imipreiskave.css instead of
+   screenshot down-scaling guesses. */
 
 html body.imi-exams-public {
   background:#fff !important;
-  color:#3f3f3f !important;
+  color:#333 !important;
   font-family:Arial,Helvetica,sans-serif !important;
-  font-size:14px !important;
+  font-size:16px !important;
 }
 html body.imi-exams-public #zunanji_okvir,
 html body.imi-exams-public #okvir {
   width:100% !important;
   max-width:none !important;
   min-height:0 !important;
+  margin:0 !important;
   background:#fff !important;
 }
 
+/* Header: the 4.3 template rendered logo.png at its intrinsic 469x92 size. */
 html body.imi-exams-public .exams-header {
-  height:222px !important;
-  min-height:222px !important;
+  box-sizing:border-box !important;
+  height:277px !important;
+  min-height:277px !important;
   position:relative !important;
   background:#fff !important;
   text-align:center !important;
 }
 html body.imi-exams-public .exams-header > a {
-  display:block !important;
-  width:360px !important;
+  display:inline-block !important;
+  width:auto !important;
+  max-width:none !important;
   margin:0 auto !important;
-  padding-top:30px !important;
+  padding:30px 0 0 !important;
 }
 html body.imi-exams-public .exams-header #logo {
-  box-sizing:border-box !important;
+  box-sizing:content-box !important;
   display:block !important;
-  width:360px !important;
-  max-width:360px !important;
+  width:auto !important;
+  max-width:none !important;
   height:auto !important;
-  margin:0 auto !important;
+  margin:20px auto 10px !important;
   padding:0 !important;
 }
 html body.imi-exams-public h1.site-title {
   position:static !important;
-  margin:43px 0 0 !important;
+  margin:45px 0 0 !important;
   padding:0 !important;
   line-height:1 !important;
   text-align:center !important;
 }
 html body.imi-exams-public h1.site-title a {
   color:#624c9c !important;
-  font:700 31px/34px Arial,Helvetica,sans-serif !important;
+  font:700 36px/40px Arial,Helvetica,sans-serif !important;
+  text-decoration:none !important;
 }
 
+/* Legacy .vsebina/#podmeni geometry: 80% menu width, 10% left margin,
+   52px link line height and .875em labels over the grey-white gradient. */
 html body.imi-exams-public #podmeni {
   box-sizing:border-box !important;
+  clear:both !important;
   width:100% !important;
-  height:76px !important;
-  min-height:76px !important;
+  height:95px !important;
+  min-height:95px !important;
   margin:0 !important;
-  padding:0 !important;
-  background:linear-gradient(#eeeeee,#fafafa) !important;
+  padding:23px 0 0 !important;
+  background:linear-gradient(360deg,#fff 0%,#ddd 100%) !important;
   border:0 !important;
   text-align:center !important;
 }
 html body.imi-exams-public #podmeni ul.nav_subitems {
   display:flex !important;
-  width:auto !important;
-  height:76px !important;
+  width:79.9830729166% !important;
+  height:52px !important;
   justify-content:center !important;
   align-items:center !important;
-  gap:0 !important;
-  margin:0 auto !important;
+  margin:0 0 0 10% !important;
   padding:0 !important;
+  list-style:none !important;
 }
 html body.imi-exams-public #podmeni ul.nav_subitems > li {
   box-sizing:border-box !important;
-  display:block !important;
+  display:inline-block !important;
   width:auto !important;
   height:auto !important;
   margin:0 !important;
-  padding:0 9px !important;
-  background:transparent !important;
+  padding:6.5px !important;
+  border-radius:3px !important;
+  background:none !important;
 }
 html body.imi-exams-public #podmeni ul.nav_subitems > li > a {
-  color:#111 !important;
-  background:transparent !important;
-  font:400 11px/18px Arial,Helvetica,sans-serif !important;
+  color:#000 !important;
+  background:none !important;
+  font:400 .875em/52px Arial,Helvetica,sans-serif !important;
   white-space:nowrap !important;
+  text-decoration:none !important;
 }
+/* The old main_template did not mark the current folder with oznacen. */
 html body.imi-exams-public #podmeni ul.nav_subitems > li.oznacen,
-html body.imi-exams-public #podmeni ul.nav_subitems > li:hover { background:transparent !important; }
-html body.imi-exams-public #podmeni ul.nav_subitems > li.oznacen > a,
-html body.imi-exams-public #podmeni ul.nav_subitems > li:hover > a { color:#ae3dcc !important; }
+html body.imi-exams-public #podmeni ul.nav_subitems > li.oznacen:hover,
+html body.imi-exams-public #podmeni ul.nav_subitems > li:hover {
+  background:none !important;
+}
+html body.imi-exams-public #podmeni ul.nav_subitems > li.oznacen > a {
+  color:#000 !important;
+}
+html body.imi-exams-public #podmeni ul.nav_subitems > li:hover > a {
+  color:rgb(165,69,191) !important;
+}
 
 html body.imi-exams-public #vsebina_podstran {
   box-sizing:border-box !important;
   float:none !important;
-  width:1160px !important;
-  max-width:calc(100vw - 130px) !important;
-  margin:0 auto !important;
-  padding:49px 0 70px !important;
+  clear:both !important;
+  width:90% !important;
+  max-width:none !important;
+  margin:0 0 0 5% !important;
+  padding:61px 0 70px !important;
   background:#fff !important;
 }
 html body.imi-exams-public #vsebina_podstran > h1 {
-  margin:0 0 43px !important;
+  margin:0 0 50px !important;
   padding:0 !important;
   border:0 !important;
-  color:#ae3dcc !important;
-  font:700 32px/39px Georgia,"Times New Roman",serif !important;
+  color:rgb(165,69,191) !important;
+  font-family:"Droid Serif",Georgia,"Times New Roman",serif !important;
+  font-size:2.25em !important;
+  font-weight:700 !important;
+  line-height:1.15 !important;
   text-align:center !important;
 }
 
+/* Hitro iskanje: source width/padding/40px button rather than the previous
+   approximately 80%-scaled reconstruction. */
 html body.imi-exams-public .legacy-quick-search {
   width:100% !important;
   margin:0 !important;
   text-align:center !important;
 }
-html body.imi-exams-public .legacy-quick-search .LSBox { padding:0 !important; text-align:center !important; }
-html body.imi-exams-public #exam-search {
-  box-sizing:border-box !important;
-  width:258px !important;
-  height:26px !important;
-  margin:0 !important;
-  padding:2px 4px !important;
-  border:1px solid #777 !important;
-  font:14px/20px Arial,Helvetica,sans-serif !important;
+html body.imi-exams-public .legacy-quick-search .LSBox {
+  float:none !important;
+  padding:0 !important;
+  position:relative !important;
+  text-align:center !important;
 }
+html body.imi-exams-public #exam-search {
+  box-sizing:content-box !important;
+  width:310px !important;
+  height:auto !important;
+  margin:0 0 7px !important;
+  padding:5px !important;
+  border:1px inset !important;
+  background:#fff !important;
+  color:#414152 !important;
+  font:16px/20px Arial,Helvetica,sans-serif !important;
+  text-align:left !important;
+}
+html body.imi-exams-public #exam-search:focus { outline:none !important; }
 html body.imi-exams-public .legacy-quick-search .searchButton {
   box-sizing:border-box !important;
-  height:33px !important;
-  margin:-4px 0 0 7px !important;
-  padding:0 9px !important;
+  height:40px !important;
+  margin:-8px 0 0 5px !important;
+  padding:0 10px !important;
   background:#fff !important;
   border:1px solid #888 !important;
-  font:12px/31px Arial,Helvetica,sans-serif !important;
+  color:#333 !important;
+  font:13px/38px Arial,Helvetica,sans-serif !important;
 }
 html body.imi-exams-public .legacy-quick-search .LSBox > span { display:none !important; }
+
+/* 4.3 used a full-width result panel beneath the search with 5% inner padding. */
 html body.imi-exams-public #exam-live-results {
   box-sizing:border-box !important;
   position:relative !important;
-  left:50% !important;
-  width:1325px !important;
-  max-width:calc(100vw - 140px) !important;
-  margin:38px 0 0 !important;
-  transform:translateX(-50%) !important;
+  left:0 !important;
+  width:100% !important;
+  max-width:none !important;
+  margin:55px 0 0 !important;
+  transform:none !important;
   padding:0 !important;
+  clear:both !important;
+  z-index:20 !important;
 }
 html body.imi-exams-public #exam-live-results .livesearchContainer {
   box-sizing:border-box !important;
+  position:relative !important;
   width:100% !important;
   margin:0 !important;
-  padding:75px 85px 55px !important;
+  padding:5% !important;
   border:0 !important;
-  background:#654fa4 !important;
+  background:#624c9c !important;
 }
 html body.imi-exams-public #exam-live-results #livesearchLegend {
   position:absolute !important;
-  top:-18px !important;
-  left:50% !important;
+  top:-19px !important;
+  left:25% !important;
   box-sizing:border-box !important;
-  width:680px !important;
-  max-width:65% !important;
+  width:50% !important;
+  max-width:none !important;
   margin:0 !important;
-  padding:5px 10px !important;
-  transform:translateX(-50%) !important;
-  border:1px solid #eee !important;
-  background:#2e2c31 !important;
+  padding:10px !important;
+  transform:none !important;
+  border:1px solid #e7e7e9 !important;
+  background:rgba(0,0,0,.7) !important;
   color:#fff !important;
-  font:400 14px/22px Arial,Helvetica,sans-serif !important;
+  font:400 14px/18px Arial,Helvetica,sans-serif !important;
   text-align:center !important;
 }
-html body.imi-exams-public #exam-live-results .LSTable { width:100% !important; }
+html body.imi-exams-public #exam-live-results .LSIEFix {
+  box-sizing:border-box !important;
+  width:100% !important;
+  margin:0 !important;
+  padding:0 !important;
+  background:transparent !important;
+}
+html body.imi-exams-public #exam-live-results .LSTable {
+  width:100% !important;
+  margin:0 !important;
+  padding:0 !important;
+  list-style:none !important;
+}
 html body.imi-exams-public #exam-live-results .LSRow {
   box-sizing:border-box !important;
-  min-height:30px !important;
+  width:100% !important;
+  min-height:0 !important;
   margin:0 !important;
-  padding:6px 4px !important;
-  border-bottom:1px solid rgba(255,255,255,.42) !important;
+  padding:5px 0 !important;
+  overflow:hidden !important;
+  border:0 !important;
+  border-bottom:1px solid rgba(255,255,255,.5) !important;
   background:transparent !important;
   color:#fff !important;
   text-align:center !important;
 }
-html body.imi-exams-public #exam-live-results .LSRow:hover { background:transparent !important; }
-html body.imi-exams-public #exam-live-results .LSRow a,
-html body.imi-exams-public #exam-live-results .LSRow span {
+html body.imi-exams-public #exam-live-results .LSRow > a:not(.livesearch-show-all) {
+  display:block !important;
+  width:100% !important;
+  margin-top:5px !important;
   color:#fff !important;
   font:400 14px/18px Arial,Helvetica,sans-serif !important;
   text-decoration:none !important;
+  white-space:normal !important;
+}
+html body.imi-exams-public #exam-live-results .LSRow span {
+  color:#fff !important;
+  font:400 14px/18px Arial,Helvetica,sans-serif !important;
 }
 html body.imi-exams-public #exam-live-results .LSDescr { display:none !important; }
 html body.imi-exams-public #exam-live-results .livesearch-more-row {
   border-bottom:0 !important;
-  padding-top:14px !important;
+  padding-top:18px !important;
 }
-html body.imi-exams-public #exam-live-results .livesearch-show-all {
+html body.imi-exams-public #exam-live-results .LSRow a.livesearch-show-all,
+html body.imi-exams-public #exam-live-results .livesearch-more-row a.livesearch-show-all {
   display:inline-block !important;
-  margin-left:10px !important;
+  width:auto !important;
+  margin:0 0 0 12px !important;
   padding:7px 14px !important;
-  border:1px solid rgba(255,255,255,.9) !important;
-  border-radius:2px !important;
+  border:1px solid #fff !important;
+  border-radius:3px !important;
   background:#fff !important;
-  color:#654fa4 !important;
+  color:#624c9c !important;
   font:700 13px/18px Arial,Helvetica,sans-serif !important;
   text-decoration:none !important;
   cursor:pointer !important;
 }
-html body.imi-exams-public #exam-live-results .livesearch-show-all:hover,
-html body.imi-exams-public #exam-live-results .livesearch-show-all:focus {
+html body.imi-exams-public #exam-live-results .LSRow a.livesearch-show-all:hover,
+html body.imi-exams-public #exam-live-results .LSRow a.livesearch-show-all:focus {
   background:#2e2c31 !important;
   color:#fff !important;
+  border-color:#2e2c31 !important;
   outline:0 !important;
 }
 
-/* The old livesearch footer opened a normal full search-result page.  The
-   migrated quick view already renders that result set; make it visible instead
-   of discarding it after navigation. */
 html body.imi-exams-public .quick-full-results {
   display:block !important;
-  width:900px !important;
-  max-width:100% !important;
-  margin:46px auto 0 !important;
+  width:90% !important;
+  max-width:none !important;
+  margin:55px auto 0 !important;
   padding:0 !important;
   text-align:left !important;
 }
@@ -227,7 +285,7 @@ html body.imi-exams-public .quick-full-results .result-count {
   margin:0 0 18px !important;
   padding:0 0 9px !important;
   border-bottom:1px solid #ddd !important;
-  color:#654fa4 !important;
+  color:#624c9c !important;
   font:400 16px/22px Arial,Helvetica,sans-serif !important;
 }
 html body.imi-exams-public .quick-full-results .plain-exam-list {
@@ -237,75 +295,135 @@ html body.imi-exams-public .quick-full-results .plain-exam-list {
 }
 html body.imi-exams-public .quick-full-results .plain-exam-list li {
   margin:0 !important;
-  padding:7px 8px !important;
+  padding:7px 8px 7px 16px !important;
   border-bottom:1px solid #e2e2e2 !important;
+  background:url("puscica_velika.png") 0 10px no-repeat !important;
 }
 html body.imi-exams-public .quick-full-results .plain-exam-list a {
-  color:#373052 !important;
-  font:400 13px/18px Arial,Helvetica,sans-serif !important;
+  color:rgb(59,47,91) !important;
+  font:400 14px/19px Arial,Helvetica,sans-serif !important;
   text-decoration:none !important;
 }
-html body.imi-exams-public .quick-full-results .plain-exam-list a:hover { color:#ae3dcc !important; }
+html body.imi-exams-public .quick-full-results .plain-exam-list a:hover { color:rgb(165,69,191) !important; }
 
-html body.imi-exams-public #listing_preiskav { width:100% !important; padding-top:7px !important; }
-html body.imi-exams-public .trenutno { font:400 8px/12px Arial,Helvetica,sans-serif !important; color:#666 !important; }
-html body.imi-exams-public .podrocje_select {
-  width:240px !important;
-  height:23px !important;
-  margin:1px 0 31px !important;
-  padding:0 !important;
-  color:#383158 !important;
-  font:400 12px/21px Arial,Helvetica,sans-serif !important;
+/* Katalog launch artwork: use original assets without shrinking them to 58px. */
+html body.imi-exams-public .search-choice-grid {
+  display:flex !important;
+  align-items:flex-start !important;
+  width:100% !important;
+  margin:0 auto !important;
+  padding:92px 0 0 !important;
+  gap:0 !important;
+  text-align:center !important;
 }
-html body.imi-exams-public .vijolcno { margin-left:17px !important; color:#383158 !important; font:400 11px/23px Arial,Helvetica,sans-serif !important; }
-html body.imi-exams-public ul.izbirnik_crk { min-height:25px !important; margin:0 0 0 31px !important; }
-html body.imi-exams-public .preiskave_crke { margin-right:14px !important; padding:1px 0 !important; color:#333 !important; font:400 11px/18px Arial,Helvetica,sans-serif !important; }
-html body.imi-exams-public .preiskave_crke:hover,
-html body.imi-exams-public .preiskave_crke.odprt { color:#ae3dcc !important; }
-html body.imi-exams-public .locnica_druga { height:8px !important; margin:0 0 11px !important; border-bottom:1px solid #ddd !important; }
-html body.imi-exams-public .velika_crka { margin:7px 0 4px !important; color:#ae3dcc !important; font:400 17px/22px Georgia,"Times New Roman",serif !important; }
-html body.imi-exams-public .alphabet-listing > ul { padding-left:7px !important; }
-html body.imi-exams-public .alphabet-listing > ul li { margin:0 0 2px !important; line-height:16px !important; }
-html body.imi-exams-public .alphabet-listing > ul li:before,
-html body.imi-exams-public .urgent-samples li:before { content:'›' !important; margin-right:3px !important; color:#777 !important; }
-html body.imi-exams-public .alphabet-listing > ul li a,
-html body.imi-exams-public .urgent-samples a { color:#373052 !important; font:400 12px/16px Arial,Helvetica,sans-serif !important; }
-
-html body.imi-exams-public .vzorci_drobtine { margin:0 0 17px 12px !important; color:#222 !important; font:400 12px/18px Arial,Helvetica,sans-serif !important; }
-html body.imi-exams-public .sample-choice-grid { grid-template-columns:repeat(3,180px) !important; column-gap:16px !important; margin:0 0 0 12px !important; }
-html body.imi-exams-public .sample-choice-grid .razvrsti { margin-bottom:7px !important; }
-html body.imi-exams-public .sample-choice-grid .razvrsti a { color:#ae3dcc !important; font:400 14px/18px Arial,Helvetica,sans-serif !important; }
-html body.imi-exams-public .sample-exam-results { margin-top:38px !important; padding-top:0 !important; }
-
-html body.imi-exams-public .legacy-preiskave-launch.search-choice-grid {
-  width:720px !important;
-  max-width:100% !important;
-  margin:52px auto 0 !important;
-  padding:0 !important;
+html body.imi-exams-public .search-opcija {
+  box-sizing:border-box !important;
+  width:25% !important;
+  padding:0 15px !important;
+  text-align:center !important;
+  color:#414152 !important;
 }
-html body.imi-exams-public .legacy-preiskave-launch .search-opcija { box-sizing:border-box !important; padding:0 20px !important; }
+html body.imi-exams-public .search-choice-image,
 html body.imi-exams-public .legacy-preiskave-launch .search-choice-image {
+  display:block !important;
   width:auto !important;
-  height:58px !important;
-  max-width:85px !important;
-  margin:0 auto 25px !important;
+  max-width:none !important;
+  height:auto !important;
+  max-height:none !important;
+  margin:0 auto 10px !important;
+  object-fit:contain !important;
 }
-html body.imi-exams-public .legacy-preiskave-launch .search-opcija p { color:#ae3dcc !important; font:400 24px/30px Georgia,"Times New Roman",serif !important; }
+html body.imi-exams-public .search-opcija p,
+html body.imi-exams-public .legacy-preiskave-launch .search-opcija p {
+  margin:20px 0 0 !important;
+  color:rgb(165,69,191) !important;
+  font:400 1.5em/1.25 "Droid Serif",Georgia,serif !important;
+}
+html body.imi-exams-public .legacy-preiskave-launch.search-choice-grid {
+  width:100% !important;
+  max-width:none !important;
+  margin:0 auto !important;
+  padding:92px 0 0 !important;
+}
 
-/* Use the exact Plone-4 expand/collapse artwork copied from preiskave.podoba. */
+/* Alphabet/facet dimensions from the original stylesheet. */
+html body.imi-exams-public #listing_preiskav {
+  width:100% !important;
+  padding-top:30px !important;
+  clear:both !important;
+}
+html body.imi-exams-public #divi_preiskav {
+  clear:both !important;
+  padding-top:50px !important;
+  text-align:left !important;
+}
+html body.imi-exams-public .trenutno {
+  color:#666 !important;
+  font:400 10px/18px Arial,Helvetica,sans-serif !important;
+}
+html body.imi-exams-public .podrocje_select {
+  color:rgb(59,47,91) !important;
+}
+html body.imi-exams-public .vijolcno {
+  color:rgb(59,47,91) !important;
+}
+html body.imi-exams-public ul.izbirnik_crk { margin:0 !important; padding:0 !important; }
+html body.imi-exams-public .preiskave_crke {
+  cursor:pointer !important;
+}
+html body.imi-exams-public .preiskave_crke:hover,
+html body.imi-exams-public .preiskave_crke.odprt { color:rgb(165,69,191) !important; }
+html body.imi-exams-public .velika_crka { color:rgb(165,69,191) !important; }
+html body.imi-exams-public .alphabet-listing > ul { padding-left:10px !important; }
+html body.imi-exams-public .alphabet-listing > ul li,
+html body.imi-exams-public .urgent-samples li {
+  padding-left:8px !important;
+  background:url("puscica_velika.png") 0 5px no-repeat !important;
+}
+html body.imi-exams-public .alphabet-listing > ul li:before,
+html body.imi-exams-public .urgent-samples li:before { display:none !important; content:none !important; }
+html body.imi-exams-public .alphabet-listing > ul li a,
+html body.imi-exams-public .urgent-samples a {
+  color:rgb(59,47,91) !important;
+  font-size:14px !important;
+}
+
+html body.imi-exams-public #listing_preiskav.vzorci .sample-choice-grid {
+  grid-template-columns:repeat(3,31.9791666666%) !important;
+  gap:0 !important;
+  margin:0 !important;
+}
+html body.imi-exams-public #listing_preiskav.vzorci .sample-choice-grid .razvrsti {
+  margin-bottom:12px !important;
+  text-align:left !important;
+}
+html body.imi-exams-public #listing_preiskav.vzorci .sample-choice-grid .razvrsti a {
+  color:rgb(165,69,191) !important;
+  font-size:17px !important;
+  line-height:19px !important;
+}
+
+/* Exact old expand/collapse artwork. */
 html body.imi-exams-public .naslov_vzorca {
-  background:url("fajli_dol_new.png") no-repeat right 2px !important;
-  padding-right:34px !important;
+  padding-right:0 !important;
+  border:0 !important;
+  background:url("fajli_dol_new.png") no-repeat right center !important;
+  color:rgb(165,69,191) !important;
+  font-size:1em !important;
 }
 html body.imi-exams-public .naslov_vzorca.odprt {
-  background-image:url("fajli_gor_new.png") !important;
+  background:url("fajli_gor_new.png") no-repeat right center !important;
 }
 html body.imi-exams-public .naslov_vzorca::after { display:none !important; content:none !important; }
 
-@media(max-width:900px){
-  html body.imi-exams-public #vsebina_podstran{width:auto!important;max-width:none!important;margin:0 25px!important}
-  html body.imi-exams-public #exam-live-results{width:calc(100vw - 30px)!important;max-width:none!important}
-  html body.imi-exams-public #podmeni ul.nav_subitems{flex-wrap:wrap!important;height:auto!important;padding:10px!important}
-  html body.imi-exams-public #podmeni{height:auto!important;min-height:76px!important}
-  .imi-exams-public .search-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:30px 10px}.imi-exams-public .search-opcija{width:auto}
+@media(max-width:900px) {
+  html body.imi-exams-public { font-size:14px !important; }
+  html body.imi-exams-public .exams-header { height:auto !important; min-height:230px !important; }
+  html body.imi-exams-public .exams-header #logo { max-width:90vw !important; }
+  html body.imi-exams-public #podmeni { height:auto !important; min-height:95px !important; padding:15px 0 !important; }
+  html body.imi-exams-public #podmeni ul.nav_subitems { width:94% !important; height:auto !important; margin:0 3% !important; flex-wrap:wrap !important; }
+  html body.imi-exams-public #vsebina_podstran { width:auto !important; margin:0 25px !important; }
+  html body.imi-exams-public #exam-live-results { width:calc(100vw - 30px) !important; margin-left:calc((100% - (100vw - 30px))/2) !important; }
+  html body.imi-exams-public .search-choice-grid { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; padding-top:40px !important; }
+  html body.imi-exams-public .search-opcija { width:auto !important; }
 }
