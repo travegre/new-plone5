@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 """Finalize public application views for all migrated sites.
 
-Site roots receive their public application view.  Preiskave additionally keeps
-its legacy content-driven navigation: the visible menu is made from the actual
-folders under /preiskave/preiskave-1, and those folders get the corresponding
-ported browser view as their default layout.  Titles and ordering remain normal
-Plone content and can be changed by editors.
+Site roots receive their public application view. Preiskave additionally keeps
+its legacy content-driven navigation: visible labels still come from the real
+folders under /preiskave/preiskave-1, while their layouts and the original
+folder order are restored once from the 4.3 public site.
 """
 
 import transaction
@@ -17,7 +16,8 @@ SITE_LAYOUTS = (
     ('portal', '@@imenik-public'),
     ('dezurstva', '@@dezurstva-public'),
     ('kiestra', '@@kiestra-public'),
-    ('preiskave', '@@preiskave-public'),
+    # The legacy Preiskave site opens directly on Hitro iskanje.
+    ('preiskave', '@@preiskave_hitro_view'),
     ('nadomescanja', '@@nadomescanja-public'),
 )
 
@@ -28,8 +28,6 @@ REQUIRED_ROOT_OBJECTS = {
     'nadomescanja': ('laboratoriji', 'sprememba-nadomescanja'),
 }
 
-# Folder ids are stable content identifiers from the migrated 4.3 tree.  The
-# public label is *not* stored here: menu labels come from each folder.Title().
 PREISKAVE_FOLDER_LAYOUTS = {
     'hitro-iskanje': '@@preiskave_hitro_view',
     'preiskave-po-podrocjih': '@@preiskave_podrocja_view',
@@ -41,6 +39,21 @@ PREISKAVE_FOLDER_LAYOUTS = {
     'nove-preiskave': '@@preiskave_nove_view',
     'skrbniki': '@@preiskave_skrbniki_view',
 }
+
+# Original public order visible in the Plone-4 site. Titles are intentionally
+# not stored here; editors remain free to rename the folders and menu labels
+# continue to come from folder.Title().
+PREISKAVE_FOLDER_ORDER = (
+    'hitro-iskanje',
+    'preiskave-po-podrocjih',
+    'preiskave-po-vzorcih',
+    'katalog-preiskav',
+    'preiskave-po-laboratorijih',
+    'preiskave-po-sklopih',
+    'nujne-preiskave',
+    'nove-preiskave',
+    'skrbniki',
+)
 
 
 def set_layout(obj, layout, failures, label):
@@ -56,16 +69,27 @@ def set_layout(obj, layout, failures, label):
     return True
 
 
+def restore_preiskave_order(base):
+    mover = getattr(base, 'moveObjectToPosition', None)
+    if not callable(mover):
+        return
+    for position, folder_id in enumerate(PREISKAVE_FOLDER_ORDER):
+        if folder_id in base.objectIds():
+            try:
+                mover(folder_id, position)
+            except Exception:
+                pass
+
+
 def finalize_preiskave_folders(site, failures):
     base = site.get('preiskave-1')
     if base is None:
         return
+    restore_preiskave_order(base)
     configured = 0
     for folder_id, layout in PREISKAVE_FOLDER_LAYOUTS.items():
         folder = base.get(folder_id)
         if folder is None:
-            # The public menu is content-driven, so absence is not itself a
-            # finalizer failure; it simply means no such menu entry is shown.
             continue
         if set_layout(folder, layout, failures,
                       '/preiskave/preiskave-1/%s' % folder_id):
