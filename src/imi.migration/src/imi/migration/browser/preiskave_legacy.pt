@@ -141,6 +141,20 @@
 <script>
 (function(){
   'use strict';
+  function fade(element, show, duration){
+    duration=duration||220;
+    if(show){
+      element.style.display='block';
+      element.style.opacity='0';
+      element.style.transition='opacity '+duration+'ms';
+      requestAnimationFrame(function(){requestAnimationFrame(function(){element.style.opacity='1';});});
+    }else{
+      element.style.opacity='1';
+      element.style.transition='opacity '+duration+'ms';
+      requestAnimationFrame(function(){element.style.opacity='0';});
+      window.setTimeout(function(){element.style.display='none';},duration);
+    }
+  }
   document.querySelectorAll('.izbirnik_crk').forEach(function(selector){
     var letters=selector.querySelectorAll('.preiskave_crke');
     var scope=selector.parentNode;
@@ -148,12 +162,16 @@
       letter.addEventListener('click',function(){
         var target=letter.getAttribute('data-letter');
         var active=letter.classList.contains('odprt');
+        var groups=scope.querySelectorAll('[data-group]');
         letters.forEach(function(x){x.classList.remove('odprt');});
-        scope.querySelectorAll('[data-group]').forEach(function(group){group.style.display='';});
-        if(!active){
-          letter.classList.add('odprt');
-          scope.querySelectorAll('[data-group]').forEach(function(group){if(group.getAttribute('data-group')!==target){group.style.display='none';}});
+        if(active){
+          groups.forEach(function(group){fade(group,true);});
+          return;
         }
+        letter.classList.add('odprt');
+        groups.forEach(function(group){
+          fade(group,group.getAttribute('data-group')===target);
+        });
       });
     });
   });
