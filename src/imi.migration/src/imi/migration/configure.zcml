@@ -37,6 +37,7 @@
       description="Installs the Dexterity content models used by the Plone 4.3 migration."
       directory="profiles/default"
       provides="Products.GenericSetup.interfaces.EXTENSION"
+      post_handler=".setuphandlers.post_install"
       />
 
 </configure>
