@@ -1,55 +1,102 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Probe actual 5.2 catalog contents for IMENIK and PREISKAVE."""
+"""Probe actual 5.2 search indexes without request security filtering."""
 from __future__ import print_function
-from collections import Counter
+
+from plone.indexer.wrapper import IndexableObjectWrapper
 
 
 def _path(obj):
     return '/'.join(obj.getPhysicalPath()) if obj is not None else None
 
 
-def _dump(site, base_id, label):
+def _index_info(catalog, name):
+    idx = catalog._catalog.indexes.get(name)
+    if idx is None:
+        print('INDEX %s: MISSING' % name)
+        return
+    try:
+        attrs = list(idx.getIndexSourceNames() or ())
+    except Exception:
+        attrs = list(getattr(idx, '_indexed_attrs', ()) or ())
+    print('INDEX %s: %s attrs=%r lexicon=%r' % (
+        name, getattr(idx, 'meta_type', idx.__class__.__name__), attrs,
+        getattr(idx, 'lexicon_id', None)))
+
+
+def _wrapper_value(obj, catalog, name):
+    try:
+        return getattr(IndexableObjectWrapper(obj, catalog), name)
+    except Exception as exc:
+        return 'ERROR %r' % (exc,)
+
+
+def _probe_imenik(app):
+    site = app.unrestrictedTraverse('portal')
     catalog = site.portal_catalog
-    base = site.get(base_id)
-    print('\n=== %s ===' % label)
-    print('SITE PATH:', _path(site))
-    print('BASE %s:' % base_id, repr(base), 'PATH:', _path(base))
+    base = site.get('data2')
+    path = _path(base)
+    print('\n=== IMENIK SEARCH ===')
+    _index_info(catalog, 'SearchableText')
+    _index_info(catalog, 'priimek')
+    brains = list(catalog.unrestrictedSearchResults(
+        portal_type='imi.directory.person', path={'query': path, 'depth': -1}))
+    print('PERSON BRAINS unrestricted:', len(brains))
+    if not brains:
+        return
+    obj = brains[0].getObject()
+    print('SAMPLE:', _path(obj), repr(obj.Title()))
+    print('WRAPPER SearchableText:', repr(_wrapper_value(obj, catalog, 'SearchableText'))[:1500])
+    for raw in (getattr(obj, 'priimek', ''), getattr(obj, 'ime', ''), obj.Title()):
+        raw = str(raw or '').strip()
+        if not raw:
+            continue
+        q = raw.split()[0] + '*'
+        try:
+            result = catalog.unrestrictedSearchResults(
+                SearchableText=q, portal_type='imi.directory.person',
+                path={'query': path, 'depth': -1})
+            print('QUERY SearchableText %r -> %d' % (q, len(result)))
+        except Exception as exc:
+            print('QUERY SearchableText %r ERROR: %r' % (q, exc))
 
-    restricted = list(catalog())
-    unrestricted = list(catalog.unrestrictedSearchResults())
-    print('CATALOG TOTAL restricted:', len(restricted))
-    print('CATALOG TOTAL unrestricted:', len(unrestricted))
-    print('RAW CATALOG LENGTH:', len(catalog._catalog.data))
 
-    counts = Counter(str(b.portal_type) for b in unrestricted)
-    print('PORTAL TYPES (unrestricted):')
-    for name, count in sorted(counts.items(), key=lambda row: (-row[1], row[0])):
-        print('  %r: %d' % (name, count))
-
-    if base is not None:
-        query_path = {'query': _path(base), 'depth': -1}
-        rbrains = list(catalog(path=query_path))
-        ubrains = list(catalog.unrestrictedSearchResults(path=query_path))
-        print('UNDER BASE restricted:', len(rbrains))
-        print('UNDER BASE unrestricted:', len(ubrains))
-        base_counts = Counter(str(b.portal_type) for b in ubrains)
-        for name, count in sorted(base_counts.items(), key=lambda row: (-row[1], row[0])):
-            print('  %r: %d' % (name, count))
-        print('FIRST 10 UNDER BASE unrestricted:')
-        for brain in ubrains[:10]:
-            print('  type=%r path=%r title=%r' %
-                  (brain.portal_type, brain.getPath(), brain.Title))
-
-    print('FIRST 10 SITE CATALOG unrestricted:')
-    for brain in unrestricted[:10]:
-        print('  type=%r path=%r title=%r' %
-              (brain.portal_type, brain.getPath(), brain.Title))
+def _probe_preiskave(app):
+    site = app.unrestrictedTraverse('preiskave')
+    catalog = site.portal_catalog
+    base = site.get('preiskave-1')
+    path = _path(base)
+    print('\n=== PREISKAVE SEARCH ===')
+    for name in ('moj', 'moj_sklop', 'sklop', 'podrocje', 'vzorci_lab'):
+        _index_info(catalog, name)
+    brains = list(catalog.unrestrictedSearchResults(
+        portal_type='imi.exams.examination', path={'query': path, 'depth': -1}))
+    print('EXAM BRAINS unrestricted:', len(brains))
+    if not brains:
+        return
+    obj = brains[0].getObject()
+    print('SAMPLE:', _path(obj), repr(obj.Title()))
+    for name in ('moj', 'sklop', 'sinonim', 'vzorci', 'podrocje', 'vzorci_lab'):
+        print('WRAPPER %s: %r' % (name, _wrapper_value(obj, catalog, name))[:1500])
+    title = str(obj.Title() or '').strip()
+    probes = []
+    if title:
+        probes.append(title.split()[0])
+    probes.extend(['Toxoplasma', 'test'])
+    for raw in probes:
+        q = raw + '*'
+        try:
+            result = catalog.unrestrictedSearchResults(
+                moj=q, portal_type='imi.exams.examination',
+                path={'query': path, 'depth': -1})
+            print('QUERY moj %r -> %d' % (q, len(result)))
+        except Exception as exc:
+            print('QUERY moj %r ERROR: %r' % (q, exc))
 
 
 def run(app):
-    _dump(app.unrestrictedTraverse('portal'), 'data2', 'IMENIK')
-    _dump(app.unrestrictedTraverse('preiskave'), 'preiskave-1', 'PREISKAVE')
+    _probe_imenik(app)
+    _probe_preiskave(app)
 
 
 if 'app' not in globals():
