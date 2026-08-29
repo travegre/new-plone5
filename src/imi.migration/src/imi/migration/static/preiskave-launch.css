@@ -190,6 +190,41 @@ html body.imi-exams-public #exam-live-results .LSRow span {
 }
 html body.imi-exams-public #exam-live-results .LSDescr { display:none !important; }
 
+/* The old livesearch footer opened a normal full search-result page.  The
+   migrated quick view already renders that result set; make it visible instead
+   of discarding it after navigation. */
+html body.imi-exams-public .quick-full-results {
+  display:block !important;
+  width:900px !important;
+  max-width:100% !important;
+  margin:46px auto 0 !important;
+  padding:0 !important;
+  text-align:left !important;
+}
+html body.imi-exams-public .quick-full-results .result-count {
+  margin:0 0 18px !important;
+  padding:0 0 9px !important;
+  border-bottom:1px solid #ddd !important;
+  color:#654fa4 !important;
+  font:400 16px/22px Arial,Helvetica,sans-serif !important;
+}
+html body.imi-exams-public .quick-full-results .plain-exam-list {
+  margin:0 !important;
+  padding:0 !important;
+  list-style:none !important;
+}
+html body.imi-exams-public .quick-full-results .plain-exam-list li {
+  margin:0 !important;
+  padding:7px 8px !important;
+  border-bottom:1px solid #e2e2e2 !important;
+}
+html body.imi-exams-public .quick-full-results .plain-exam-list a {
+  color:#373052 !important;
+  font:400 13px/18px Arial,Helvetica,sans-serif !important;
+  text-decoration:none !important;
+}
+html body.imi-exams-public .quick-full-results .plain-exam-list a:hover { color:#ae3dcc !important; }
+
 html body.imi-exams-public #listing_preiskav { width:100% !important; padding-top:7px !important; }
 html body.imi-exams-public .trenutno { font:400 8px/12px Arial,Helvetica,sans-serif !important; color:#666 !important; }
 html body.imi-exams-public .podrocje_select {
