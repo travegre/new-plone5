@@ -21,6 +21,16 @@
       name="imi.form.staff_email"
       />
 
+  <adapter
+      name="sklop"
+      factory=".indexers.examination_sklop"
+      />
+
+  <adapter
+      name="sinonim"
+      factory=".indexers.examination_sinonim"
+      />
+
   <subscriber
       for=".content.IDutyRosterDay zope.lifecycleevent.interfaces.IObjectModifiedEvent"
       handler=".events.copy_readiness_to_week"
