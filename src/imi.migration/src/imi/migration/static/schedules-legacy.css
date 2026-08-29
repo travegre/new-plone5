@@ -1,38 +1,42 @@
-/* Legacy schedule styling, isolated from generic Plone/compatibility CSS. */
+/* Legacy schedule styling ported from the original kiestra.podoba and nadomescanja.podoba dezurstva.css. */
 html,body{margin:0;padding:0}
-.imi-kiestra-public{background:#fff;color:#414152;font:16px Tahoma,sans-serif;text-decoration:none}
-.imi-kiestra-public #okol{width:95%;margin:30px auto;text-align:center;padding-bottom:30px}
-.imi-kiestra-public #okolo{padding-bottom:50px;min-height:900px}
-.imi-kiestra-public #logo{margin:0;max-width:80px}
-.imi-kiestra-public h1,.imi-kiestra-public h2,.imi-kiestra-public h3,.imi-kiestra-public h4{margin:20px 0;text-align:center;color:#624C9C;text-decoration:none;font-family:Helvetica,Arial,sans-serif}
-.imi-kiestra-public h2{margin:0}
-.imi-kiestra-public h1 a{text-decoration:none!important;color:#624C9C!important;font-size:32px;margin:0}
-.imi-kiestra-public a{color:#5fb11e;font-size:16px;text-decoration:none!important}
-.imi-kiestra-public a:hover{color:#777;text-decoration:none}
-.imi-kiestra-public table{border:1px solid #624c9c;width:100%;border-collapse:collapse}
-.imi-kiestra-public table.dezurstva{border-bottom:1px solid #624c9c}
+body.imi-kiestra-public,body.imi-replacements-public{background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAIAAAA/Y+msAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAcSURBVHjaYnr69Ol/MIAzGJD5EJIBWR7CBggwAMnZM/mCB9LIAAAAAElFTkSuQmCC)!important;color:#414152;font:16px Tahoma,sans-serif;text-decoration:none}
+.imi-kiestra-public #okol,.imi-replacements-public #okol{width:95%;margin:30px auto;text-align:center;padding-bottom:30px}
+.imi-kiestra-public #okolo,.imi-replacements-public #okolo{padding-bottom:50px;min-height:900px}
+.imi-kiestra-public #logo,.imi-replacements-public #logo{margin:0;max-width:80px}
+.imi-kiestra-public h1,.imi-kiestra-public h2,.imi-replacements-public h1,.imi-replacements-public h2{margin:20px 0;text-align:center;color:#624C9C;text-decoration:none;font-family:Helvetica,Arial,sans-serif}
+.imi-kiestra-public h2,.imi-replacements-public h2{margin:0}
+.imi-kiestra-public h1 a,.imi-replacements-public h1 a{text-decoration:none!important;color:#624C9C!important;font-size:32px;margin:0}
+.imi-kiestra-public a,.imi-replacements-public a{color:#5fb11e;font-size:16px;text-decoration:none!important}
+.imi-kiestra-public a:hover,.imi-replacements-public a:hover{color:#777;text-decoration:none}
+.imi-kiestra-public table,.imi-replacements-public table{border:1px solid #624c9c;width:100%;border-collapse:collapse}
+.imi-kiestra-public table.dezurstva,.imi-replacements-public table.dezurstva{border-bottom:1px solid #624c9c}
 .imi-kiestra-public table td,.imi-kiestra-public table th{padding:6px 10px;border:1px solid #624c9c;border-collapse:collapse}
-.imi-kiestra-public table.dezurstva tr.head th{font-weight:bold;font-family:Tahoma,sans-serif;font-size:1.3em;padding:1.5em .5em;border-bottom:2px solid #624c9c;color:#624c9c}
-.imi-kiestra-public table.dezurstva td{background:white;text-align:left;font-weight:bold;border-top:none;font-size:2em}
-.imi-kiestra-public table.dezurstva td span{color:#5fb11e;font-weight:normal;font-size:.9em}
-.imi-kiestra-public table.glava,.imi-kiestra-public table.glava td{border:none}
-.imi-kiestra-public #last-change{position:absolute;top:5px;right:10px}
+.imi-replacements-public table td,.imi-replacements-public table th{padding:12px 10px;border:1px solid #624c9c;border-collapse:collapse}
+.imi-kiestra-public table.dezurstva tr.head th,.imi-replacements-public table.dezurstva tr.head th{font-weight:bold;font-family:Tahoma,sans-serif;font-size:1.3em;padding:1.5em .5em;border-bottom:2px solid #624c9c;color:#624c9c}
+.imi-kiestra-public table.dezurstva td{background:white;text-align:left;font-weight:bold;border-top:none;border-bottom:none;font-size:2em}
+.imi-replacements-public table.dezurstva td{background:white;text-align:left;font-weight:bold;border-top:none;font-size:2em}
+.imi-kiestra-public table.dezurstva td span,.imi-replacements-public table.dezurstva td span{color:#5fb11e;font-weight:normal;font-size:.9em}
+.imi-replacements-public table.dezurstva td.grey{color:#aaa}
+.imi-kiestra-public table.glava,.imi-kiestra-public table.glava td,.imi-replacements-public table.glava,.imi-replacements-public table.glava td{border:none}
+.imi-kiestra-public #last-change,.imi-replacements-public #last-change{position:absolute;top:5px;right:10px}
 .imi-kiestra-public .kiestra-logo{width:80px}
 .imi-kiestra-public .kiestra-title{width:40%}
 .imi-kiestra-public .kiestra-date-nav{width:60%}
-.imi-kiestra-public .kiestra-date-nav .legacy-back{width:28%;margin-right:5%;float:left;text-align:right;font-size:24px}
-.imi-kiestra-public .kiestra-date-nav h2{width:33%;float:left;text-align:center}
-.imi-kiestra-public .kiestra-date-nav .legacy-next{width:25%;margin-left:5%;float:left;text-align:left;font-size:24px}
+/* The original Kiestra CSS leaves ordinary links at 16px; only the date h2 keeps heading size. */
+.imi-kiestra-public .kiestra-date-nav .legacy-back{width:28%;margin:4px 5% 0 0;float:left;text-align:right;font-size:16px;font-family:Tahoma,sans-serif}
+.imi-kiestra-public .kiestra-date-nav h2{width:33%;float:left;text-align:center;font-size:1.5em}
+.imi-kiestra-public .kiestra-date-nav .legacy-next{width:25%;margin:4px 0 0 5%;float:left;text-align:left;font-size:16px;font-family:Tahoma,sans-serif}
 .imi-kiestra-public .notes-row td{border-top:1px solid #000!important;color:#5fb11e;font-weight:normal!important;font-size:1.8em!important}
 .imi-kiestra-public .stalni-tekst{margin-top:15px}
 .imi-kiestra-public .stalni-tekst td{padding:50px 30px!important}
-.imi-kiestra-public .legacy-utility-row{width:100%;overflow:hidden;margin-top:35px}
-.imi-kiestra-public .legacy-half{width:49%;display:inline-block;vertical-align:top}
-.imi-kiestra-public .legacy-half.left{float:left}.imi-kiestra-public .legacy-half.right{float:right}
-.imi-kiestra-public .legacy-utility-row form{text-align:left}
-.imi-kiestra-public .person-name{color:#5fb11e}
-.imi-kiestra-public .person-history{clear:both;padding-top:25px}
-.imi-kiestra-public .person-year-list{width:40%;margin:0 auto 30px;text-align:center}
-.imi-kiestra-public .person-date{display:block;text-align:center}
-.imi-kiestra-public .clear{clear:both}
-@media(max-width:900px){.imi-kiestra-public .legacy-half,.imi-kiestra-public .legacy-half.left,.imi-kiestra-public .legacy-half.right{width:100%;float:none;display:block}.imi-kiestra-public .person-year-list{width:90%}}
+.legacy-date-nav{width:100%}
+.imi-replacements-public .legacy-date-nav .legacy-back{margin-top:4px;width:28%;margin-right:5%;float:left;text-align:right;font-size:16px;font-family:Tahoma,sans-serif}
+.imi-replacements-public .legacy-date-nav h2{width:33%;float:left;text-align:center;font-size:1.5em}
+.imi-replacements-public .legacy-date-nav .legacy-next{margin-top:4px;width:25%;margin-left:5%;float:left;text-align:left;font-size:16px;font-family:Tahoma,sans-serif}
+.legacy-utility-row{width:100%;overflow:hidden;margin-top:35px}
+.legacy-half{width:49%;display:inline-block;vertical-align:top}
+.legacy-half.left{float:left}.legacy-half.right{float:right}
+.legacy-utility-row form{text-align:left}
+.person-name{color:#5fb11e}.person-history{clear:both;padding-top:25px}.person-year-list{width:40%;margin:0 auto 30px;text-align:center}.person-date{display:block;text-align:center}.date-range{display:none}.export-row .submit,#nad-obdobje{display:none}.change-request-link{text-align:center;font-size:16px}.clear{clear:both}
+@media(max-width:900px){.legacy-half,.legacy-half.left,.legacy-half.right{width:100%;float:none;display:block}.person-year-list{width:90%}}
