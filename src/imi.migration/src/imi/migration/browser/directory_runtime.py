@@ -18,13 +18,7 @@ def _legacy_query(value):
 
 
 class DirectorySearchView(LegacyDirectorySearchView):
-    """Catalog-backed port of the Plone-4 IMENIK livesearch.
-
-    The original queried the normal ``SearchableText`` ZCTextIndex for
-    ``produkti`` and only used the custom ``priimek`` index for sorting.  Do
-    the same with migrated ``imi.directory.person`` objects.  No per-process
-    object cache or full content-tree traversal is involved.
-    """
+    """Catalog-backed port of the Plone-4 IMENIK livesearch."""
 
     def _results(self, portal, query):
         transformed = _legacy_query(query)
@@ -33,15 +27,13 @@ class DirectorySearchView(LegacyDirectorySearchView):
         base = portal.get('data2')
         if base is None:
             return []
-        brains = portal.portal_catalog(
+        catalog = portal.portal_catalog
+        brains = catalog.unrestrictedSearchResults(
             SearchableText=transformed,
             portal_type='imi.directory.person',
             path='/'.join(base.getPhysicalPath()),
         )
         objects = [brain.getObject() for brain in brains]
-        # The 4.3 script requested descending ``priimek`` from ZCatalog and
-        # then tsort() sorted the rendered rows by rel2.  Its visible result is
-        # ascending surname order with empty surnames forced to the end.
         objects.sort(
             key=lambda obj: (
                 (getattr(obj, 'priimek', '') or u'ŽŽŽŽŽ').lower(),
