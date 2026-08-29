@@ -3,6 +3,8 @@
 """Install/reindex the legacy custom catalog indexes in all five Plone 5.2 sites."""
 from __future__ import print_function
 
+import transaction
+
 from imi.migration.setuphandlers import HTMLTEXT_LEXICON_ID
 from imi.migration.setuphandlers import SITE_INDEXES
 from imi.migration.setuphandlers import install_catalog_indexes
@@ -25,6 +27,7 @@ def run(app):
             changed = install_catalog_indexes(site, reindex=True)
         except Exception as exc:
             print('ERROR installing indexes:', repr(exc))
+            transaction.abort()
             raise
 
         expected = SITE_INDEXES[site_id]
@@ -58,6 +61,9 @@ def run(app):
                 pipeline = ['%s.%s' % (item.__class__.__module__, item.__class__.__name__)
                             for item in getattr(lexicon, '_pipeline', ())]
             print('LEXICON %s: %r' % (HTMLTEXT_LEXICON_ID, pipeline))
+
+    transaction.commit()
+    print('\nCOMMITTED catalog/index changes.')
 
 
 if 'app' not in globals():
