@@ -1,0 +1,25 @@
+/* Final fidelity overrides from the original Plone-4 main_template/imipreiskave.css. */
+.imi-exams-public .legacy-preiskave-shell{overflow:hidden;padding-top:18px}
+.imi-exams-public .legacy-preiskave-shell .vsebina{float:left;width:220px;margin:0 0 20px;padding:0}
+.imi-exams-public #podmeni{width:220px;min-height:20px;float:left;padding:0;margin:0 0 20px}
+.imi-exams-public #podmeni ul{margin:0;padding:0;list-style:none}
+.imi-exams-public #podmeni ul li{height:26px;cursor:pointer;padding:0 10px 0 5px;margin:0;overflow:hidden}
+.imi-exams-public #podmeni ul li a{display:block;line-height:26px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#000;text-decoration:none!important;white-space:nowrap}
+.imi-exams-public #podmeni ul li.oznacen,.imi-exams-public #podmeni ul li:hover{background:#5FB11E;color:#fff}
+.imi-exams-public #podmeni ul li.oznacen a,.imi-exams-public #podmeni ul li:hover a{color:#fff!important}
+.imi-exams-public #podmeni .podmeni_crta{height:2px;background:#e7e7e9;width:200px}
+.imi-exams-public .legacy-preiskave-shell #vsebina_podstran{float:left;width:760px;max-width:760px;margin:0;padding:0 0 20px}
+
+/* The original template did not render the invented horizontal route bar. */
+.imi-exams-public #glavni_meni{display:none!important}
+
+@media(max-width:1050px){
+ .imi-exams-public .legacy-preiskave-shell .vsebina{width:200px}
+ .imi-exams-public #podmeni{width:200px}
+ .imi-exams-public .legacy-preiskave-shell #vsebina_podstran{width:calc(100% - 200px)!important;max-width:760px!important;margin:0!important}
+}
+@media(max-width:800px){
+ .imi-exams-public .legacy-preiskave-shell .vsebina,.imi-exams-public #podmeni{float:none;width:100%}
+ .imi-exams-public #podmeni ul li{height:auto;min-height:26px}
+ .imi-exams-public .legacy-preiskave-shell #vsebina_podstran{float:none;width:100%!important;max-width:100%!important;margin:0!important}
+}
