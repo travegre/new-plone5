@@ -29,6 +29,15 @@ def run(app):
 
         expected = SITE_INDEXES[site_id]
         catalog = site.portal_catalog
+
+        # IMENIK 4.3 searched the standard SearchableText index.  The migrated
+        # Dexterity type now has an explicit SearchableText adapter reproducing
+        # the old Archetypes searchable=True fields, so refresh this existing
+        # standard index once after deploying the adapter.
+        if site_id == 'portal':
+            print('REINDEX: SearchableText')
+            catalog.manage_reindexIndex(ids=['SearchableText'])
+
         print('CHANGED:', list(changed))
         print('CUSTOM INDEXES:')
         for name in sorted(expected):
