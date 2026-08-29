@@ -69,19 +69,21 @@ class ProductionMenuMixin(object):
         return _dynamic_menu(self.portal, self.request)
 
     def launch_items(self):
-        icons = {
-            'quick': 'search-quick.png',
-            'areas': 'search-podrocja.png',
-            'samples': 'search-vzorci.png',
-            'labs': 'search-lab.png',
+        # Captions are literal legacy launch-page text. URLs remain dynamic and
+        # point at the actual Plone folders, so content moves/layouts propagate.
+        launch = {
+            'quick': (u'Hitro iskanje', 'search-quick.png'),
+            'areas': (u'Po področjih', 'search-podrocja.png'),
+            'samples': (u'Po vzorcih', 'search-vzorci.png'),
+            'labs': (u'Po laboratorijih', 'search-lab.png'),
         }
-        wanted = ('quick', 'areas', 'samples', 'labs')
         by_key = {row[0]: row for row in self.menu()}
         rows = []
-        for key in wanted:
+        for key in ('quick', 'areas', 'samples', 'labs'):
             row = by_key.get(key)
             if row is not None:
-                rows.append((key, row[1], row[2], icons[key]))
+                caption, icon = launch[key]
+                rows.append((key, caption, row[2], icon))
         return rows
 
 
@@ -99,12 +101,6 @@ class ProductionSearchMixin(object):
         return tokens
 
     def _moj_candidates(self):
-        """Do not alphabetize livesearch results.
-
-        The 4.3 ZCatalog returned its normal catalog order because the legacy
-        query supplied no sort_on.  Traversal order is the closest preserved
-        migrated equivalent and, unlike all_exams(), is not title-sorted.
-        """
         base = self.base_folder()
         if base is None:
             return []
@@ -215,7 +211,6 @@ class LegacyExamsLiveSearchView(ProductionSearchMixin,
 
 class ExaminationPublicView(ProductionMenuMixin, BaseExaminationPublicView):
     def attachment(self):
-        """Return only a real migrated document, never the zero-byte placeholder."""
         attachment = getattr(self.context, 'datoteka', None)
         if attachment is None:
             return None
