@@ -13,28 +13,6 @@ from .exams_runtime import ExaminationPublicView as BaseExaminationPublicView
 from .runtime_fixes import _walk
 
 
-# Exact order returned by the live Plone-4 ``moj='test*'`` query.  This is kept
-# as a regression fixture for the legacy quick-search query we use for visual
-# and behavioural comparison.  Other queries still use the migrated candidate
-# order until/unless we reproduce the old ZCTextIndex scoring algorithm.
-LEGACY_TEST_RESULT_ORDER = (
-    'preiskava_10049', 'preiskava_11243', 'preiskava_11236', 'preiskava_11347',
-    'preiskava_11332', 'preiskava_10167', 'preiskava_10053', 'preiskava_10168',
-    'preiskava_10047', 'preiskava_11203', 'preiskava_10086', 'preiskava_11207',
-    'preiskava_11204', 'preiskava_11217', 'preiskava_11208', 'preiskava_10067',
-    'preiskava_10045', 'preiskava_11212', 'preiskava_11205', 'preiskava_11231',
-    'preiskava_10030', 'preiskava_11241', 'preiskava_10010', 'preiskava_10007',
-    'preiskava_10016', 'preiskava_10020', 'preiskava_10026', 'preiskava_11362',
-    'preiskava_11224', 'preiskava_11435', 'preiskava_11180', 'preiskava_11413',
-    'preiskava_10048', 'preiskava_10052', 'preiskava_11363', 'preiskava_10039',
-    'preiskava_10014', 'preiskava_11303', 'preiskava_11183', 'preiskava_10051',
-    'preiskava_11184', 'preiskava_11111', 'preiskava_11328', 'preiskava_11239',
-    'preiskava_11359', 'preiskava_10061', 'preiskava_11193', 'preiskava_11071',
-    'preiskava_11074', 'preiskava_11070', 'preiskava_10279', 'preiskava_10264',
-    'preiskava_10257', 'preiskava_10278',
-)
-
-
 def _plain(value):
     if value is None:
         return u''
@@ -108,7 +86,12 @@ class ProductionMenuMixin(object):
 
 
 class ProductionSearchMixin(object):
-    """Reproduce the probed Plone-4 ``moj`` source fields."""
+    """Temporary object-scan implementation of the probed Plone-4 ``moj`` fields.
+
+    There are deliberately no query-specific ordering exceptions here.  Until
+    the real ZCTextIndex is recreated in Plone 5.2, result membership follows
+    the six legacy source fields while ordering follows migrated traversal.
+    """
     searchable_fields = (
         'Title', 'vzorci', 'sinonim', 'podrocje', 'sklop', 'vzorci_lab',
     )
@@ -127,13 +110,6 @@ class ProductionSearchMixin(object):
         return [obj for obj in _walk(base)
                 if getattr(obj, 'portal_type', None) == 'imi.exams.examination']
 
-    def _legacy_order(self, query, result):
-        normalized = ' '.join(_fold(query).split())
-        if normalized != 'test':
-            return result
-        rank = {obj_id: pos for pos, obj_id in enumerate(LEGACY_TEST_RESULT_ORDER)}
-        return sorted(result, key=lambda obj: rank.get(obj.getId(), len(rank)))
-
     def filtered_exams(self, query=None):
         query = str(query if query is not None else
                     (self.request.form.get('q') or self.request.form.get('moj') or '')).strip()
@@ -148,7 +124,7 @@ class ProductionSearchMixin(object):
             indexed = self._moj_tokens(obj)
             if all(any(token.startswith(word) for token in indexed) for word in wanted):
                 result.append(obj)
-        return self._legacy_order(clean_query, result)
+        return result
 
 
 class ExamsHomeView(ProductionMenuMixin, legacy.ExamsHomeView):
@@ -162,7 +138,6 @@ class ExamsAllView(ProductionMenuMixin, legacy.ExamsAllView):
 
 class ExamsQuickView(ProductionSearchMixin, ProductionMenuMixin, legacy.ExamsQuickView):
     def results(self):
-        """Use the same result set/order for the full page as for livesearch."""
         return self.filtered_exams(self.query()) if self.query() else []
 
 
