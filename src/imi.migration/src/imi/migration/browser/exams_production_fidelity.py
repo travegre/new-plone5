@@ -83,25 +83,24 @@ class ProductionMenuMixin(object):
 
 
 class ProductionSearchMixin(object):
-    """Approximate the old ``portal_catalog(moj='word AND word*')`` index.
+    """Reproduce the source fields of the Plone-4 ``moj`` ZCTextIndex.
 
-    Only the old Archetypes fields marked ``searchable=True`` are included,
-    plus Title/Description which Archetypes/ATContentTypes supplied to its text
-    indexes. Non-searchable display fields must not enlarge the result set.
+    A probe against the actual 4.3 ZODB reports exactly these indexed attrs:
+    Title, vzorci, sinonim, podrocje, sklop and vzorci_lab.  The legacy
+    livesearch turns a simple query such as ``test`` into ``test*``; matching
+    below therefore uses token-prefix semantics over only those six fields.
     """
     searchable_fields = (
-        'sklop', 'sinonim', 'vzorci', 'vzorci_lab', 'vzorci_lab_tel',
-        'vzorci_odvzem', 'vzorci_odvzem_video_sifra', 'vzorci_kolicina',
-        'embalaza_slika_sifra', 'vzorci_transport', 'vzorci_opomba',
-        'vzorci_nivo1', 'vzorci_nivo2', 'vzorci_nivo3', 'vzorci_nivo4',
-        'vzorci_nivo5', 'vzorci_nivo6',
+        'Title', 'vzorci', 'sinonim', 'podrocje', 'sklop', 'vzorci_lab',
     )
 
     def _moj_tokens(self, obj):
-        values = [obj.Title(), obj.Description()]
-        values.extend(getattr(obj, field, '') for field in self.searchable_fields)
         tokens = []
-        for value in values:
+        for field in self.searchable_fields:
+            if field == 'Title':
+                value = obj.Title()
+            else:
+                value = getattr(obj, field, '')
             tokens.extend(_tokens(value))
         return tokens
 
