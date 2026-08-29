@@ -31,7 +31,7 @@
           <div class="show-more"><a href="#" id="gumb_pokazi_vec">Prikaži več</a></div>
         </tal:opis>
 
-        <tal:file define="attachment python:getattr(context, 'datoteka', None)" condition="attachment">
+        <tal:file define="attachment view/attachment" condition="attachment">
           <p class="text text-12 siv-tekst">Dodatna dokumentacija:</p>
           <p class="text text-13"><a tal:attributes="href string:${context/absolute_url}/@@download/datoteka/${attachment/filename}" tal:content="attachment/filename">datoteka</a></p>
         </tal:file>
