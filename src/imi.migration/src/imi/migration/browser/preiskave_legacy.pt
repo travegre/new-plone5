@@ -110,14 +110,14 @@
       </div></div>
     </tal:urgent>
 
-    <tal:samples condition="python:view.mode_key() == 'samples'" tal:define="choices view/sample_choices; matches view/sample_matching_exams">
+    <tal:samples condition="python:view.mode_key() == 'samples'" tal:define="choices view/sample_choices; selected view/sample_selected; area view/selected_area; matches python:view.sample_matching_exams() if any(selected) else [obj for obj in view.all_exams() if (not area or area in (obj.podrocje or ()))]">
       <h1>Vzorci</h1>
       <div id="listing_preiskav" class="vzorci">
         <span class="trenutno">Trenutno izbrano področje preiskav</span><br />
         <form class="facet-form" method="get" tal:attributes="action string:${view/portal/absolute_url}/@@preiskave_vzorci_view">
           <select class="podrocje_select" name="podrocje" onchange="this.form.submit()">
             <option value="" tal:attributes="selected python:not view.selected_area()">VSA PODROČJA</option>
-            <option tal:repeat="area view/areas" tal:attributes="value area; selected python:area == view.selected_area()" tal:content="area">Področje</option>
+            <option tal:repeat="area_option view/areas" tal:attributes="value area_option; selected python:area_option == view.selected_area()" tal:content="area_option">Področje</option>
           </select>
           <span class="vijolcno">&lt;&lt;&lt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Skrčite število preiskav samo na eno izbrano področje</span>
         </form>
