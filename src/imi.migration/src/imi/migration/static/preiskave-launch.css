@@ -189,6 +189,28 @@ html body.imi-exams-public #exam-live-results .LSRow span {
   text-decoration:none !important;
 }
 html body.imi-exams-public #exam-live-results .LSDescr { display:none !important; }
+html body.imi-exams-public #exam-live-results .livesearch-more-row {
+  border-bottom:0 !important;
+  padding-top:14px !important;
+}
+html body.imi-exams-public #exam-live-results .livesearch-show-all {
+  display:inline-block !important;
+  margin-left:10px !important;
+  padding:7px 14px !important;
+  border:1px solid rgba(255,255,255,.9) !important;
+  border-radius:2px !important;
+  background:#fff !important;
+  color:#654fa4 !important;
+  font:700 13px/18px Arial,Helvetica,sans-serif !important;
+  text-decoration:none !important;
+  cursor:pointer !important;
+}
+html body.imi-exams-public #exam-live-results .livesearch-show-all:hover,
+html body.imi-exams-public #exam-live-results .livesearch-show-all:focus {
+  background:#2e2c31 !important;
+  color:#fff !important;
+  outline:0 !important;
+}
 
 /* The old livesearch footer opened a normal full search-result page.  The
    migrated quick view already renders that result set; make it visible instead
