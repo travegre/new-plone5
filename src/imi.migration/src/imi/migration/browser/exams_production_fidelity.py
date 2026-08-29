@@ -3,8 +3,8 @@
 
 Keep the route implementations from exams_legacy_modes while matching the
 legacy public rendering and the old custom ``moj`` ZCTextIndex livesearch.
-Navigation is content-driven: folder titles, order and public URLs come from
-Plone, as in the Plone-4 main template.
+Navigation is content-driven: published folder titles, order and public URLs
+come from Plone, as in the Plone-4 main template.
 """
 from html import escape
 import re
@@ -40,17 +40,27 @@ def _tokens(value):
     return re.findall(r'[\w]+', _fold(value), flags=re.UNICODE)
 
 
-def _dynamic_menu(portal, request):
-    """Return only menu entries backed by actual migrated Plone folders.
+def _is_published(obj):
+    try:
+        return api.content.get_state(obj=obj) == 'published'
+    except Exception:
+        return False
 
-    Route matching is needed only to identify the active logical view. Visible
-    labels, order and hrefs are taken from the current content objects. Rename,
-    reorder, move or remove a menu folder in Plone and the public menu follows.
+
+def _dynamic_menu(portal, request):
+    """Reproduce the legacy published-folder navigation.
+
+    The old main_template queried published Folder objects ordered by
+    getObjPositionInParent and linked to the folders themselves. Route matching
+    here identifies only the logical active item; label, order and href all
+    remain live Plone content values.
     """
     provider = legacy.ExamsHomeView(portal, request)
     rows = []
     used = set()
     for child in provider._legacy_children():
+        if not _is_published(child):
+            continue
         match = provider._menu_match(child)
         if match is None:
             continue
