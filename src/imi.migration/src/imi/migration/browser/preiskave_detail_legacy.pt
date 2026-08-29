@@ -101,7 +101,32 @@
 <script>
 (function(){
   'use strict';
-  document.querySelectorAll('.naslov_vzorca').forEach(function(title){title.addEventListener('click',function(){var body=title.nextElementSibling;if(!body){return;}var open=title.classList.toggle('odprt');body.style.display=open?'block':'none';});});
+  function slide(body,open,duration){
+    duration=duration||260;
+    body.style.overflow='hidden';
+    body.style.transition='height '+duration+'ms, opacity '+duration+'ms';
+    if(open){
+      body.style.display='block';
+      body.style.height='0px';
+      body.style.opacity='0';
+      var target=body.scrollHeight;
+      requestAnimationFrame(function(){requestAnimationFrame(function(){body.style.height=target+'px';body.style.opacity='1';});});
+      window.setTimeout(function(){body.style.height='auto';body.style.overflow='';body.style.transition='';},duration);
+    }else{
+      body.style.height=body.scrollHeight+'px';
+      body.style.opacity='1';
+      requestAnimationFrame(function(){requestAnimationFrame(function(){body.style.height='0px';body.style.opacity='0';});});
+      window.setTimeout(function(){body.style.display='none';body.style.height='';body.style.opacity='';body.style.overflow='';body.style.transition='';},duration);
+    }
+  }
+  document.querySelectorAll('.naslov_vzorca').forEach(function(title){
+    title.addEventListener('click',function(){
+      var body=title.nextElementSibling;
+      if(!body){return;}
+      var open=title.classList.toggle('odprt');
+      slide(body,open);
+    });
+  });
   var description=document.getElementById('opis_preiskave');var more=document.getElementById('gumb_pokazi_vec');
   if(description&&more){if(description.scrollHeight<=60){more.parentNode.style.display='none';}else{description.classList.add('collapsed');more.parentNode.style.display='block';more.addEventListener('click',function(e){e.preventDefault();var open=description.classList.toggle('expanded');more.textContent=open?'Prikaži manj':'Prikaži več';});}}
   var lightbox=document.getElementById('image-lightbox');var image=lightbox.querySelector('img');function close(){lightbox.classList.remove('open');lightbox.setAttribute('aria-hidden','true');}
