@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """Production-render fidelity overrides for the migrated Preiskave site.
 
-The filesystem skin and the migrated folder order are not sufficient to
-reconstruct the final Plone-4 rendering.  This module keeps the route
-implementations from exams_legacy_modes but fixes the public navigation to the
-order visible on the production site and emulates the old custom ``moj``
-ZCTextIndex query used by livesearch_reply.py.
+Keep the route implementations from exams_legacy_modes while matching the
+legacy public rendering and the old custom ``moj`` ZCTextIndex livesearch.
+Navigation itself remains content-driven: folder titles and ordering come from
+Plone, exactly as they did in the Plone-4 main template.
 """
 import re
 import unicodedata
@@ -16,25 +15,6 @@ from plone import api
 from . import exams_legacy_modes as legacy
 from .exams_runtime import ExaminationPublicView as BaseExaminationPublicView
 from .runtime_fixes import _walk
-
-
-PRODUCTION_MENU = (
-    ('quick', u'Hitro iskanje', 'preiskave_hitro_view'),
-    ('areas', u'Preiskave po področjih', 'preiskave_podrocja_view'),
-    ('samples', u'Preiskave po vzorcih', 'preiskave_vzorci_view'),
-    ('all', u'Katalog preiskav', 'preiskave_view'),
-    ('labs', u'Preiskave po laboratorijih', 'preiskave_lab_view'),
-    ('groups', u'Preiskave po sklopih', 'preiskave_sklopi_view'),
-    ('urgent', u'Nujne preiskave', 'preiskave_nujne_view'),
-    ('new', u'Nove preiskave', 'preiskave_nove_view'),
-    ('guardians', u'Skrbniki', 'preiskave_skrbniki_view'),
-)
-
-
-def _menu(portal):
-    base = portal.absolute_url()
-    return [(key, label, base + '/@@' + route)
-            for key, label, route in PRODUCTION_MENU]
 
 
 def _plain(value):
@@ -57,7 +37,7 @@ def _fold(value):
 
 
 def _tokens(value):
-    # ZCTextIndex tokenisation is word based.  The legacy script transformed
+    # ZCTextIndex tokenisation is word based. The legacy script transformed
     # each query word to an AND term and appended ``*`` to the query, i.e. a
     # prefix match, rather than the arbitrary substring test used in 5.2.
     return re.findall(r'[\w]+', _fold(value), flags=re.UNICODE)
@@ -65,7 +45,13 @@ def _tokens(value):
 
 class ProductionMenuMixin(object):
     def menu(self):
-        return _menu(self.portal)
+        # Do not duplicate or freeze menu labels here.  The Plone-4 shell built
+        # navigation from the actual child folders; exams_legacy_modes ports
+        # that behaviour and therefore picks up folder-title/order changes at
+        # request time.  Instantiate the menu view explicitly so this also
+        # works on an individual examination context, which has no base_folder
+        # method of its own.
+        return legacy.ExamsHomeView(self.portal, self.request).menu()
 
 
 class ProductionSearchMixin(object):
