@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Production-render fidelity overrides for the migrated Preiskave site.
-
-Keep the route implementations from exams_legacy_modes while matching the
-legacy public rendering and the old custom ``moj`` ZCTextIndex livesearch.
-Navigation is content-driven: published folder titles, order and public URLs
-come from Plone, as in the Plone-4 main template.
-"""
+"""Production-render fidelity overrides for the migrated Preiskave site."""
 from html import escape
 import re
 import unicodedata
@@ -48,13 +42,6 @@ def _is_published(obj):
 
 
 def _dynamic_menu(portal, request):
-    """Reproduce the legacy published-folder navigation.
-
-    The old main_template queried published Folder objects ordered by
-    getObjPositionInParent and linked to the folders themselves. Route matching
-    here identifies only the logical active item; label, order and href all
-    remain live Plone content values.
-    """
     provider = legacy.ExamsHomeView(portal, request)
     rows = []
     used = set()
@@ -81,15 +68,25 @@ class ProductionMenuMixin(object):
     def menu(self):
         return _dynamic_menu(self.portal, self.request)
 
+    def launch_items(self):
+        icons = {
+            'quick': 'search-quick.png',
+            'areas': 'search-podrocja.png',
+            'samples': 'search-vzorci.png',
+            'labs': 'search-lab.png',
+        }
+        wanted = ('quick', 'areas', 'samples', 'labs')
+        by_key = {row[0]: row for row in self.menu()}
+        rows = []
+        for key in wanted:
+            row = by_key.get(key)
+            if row is not None:
+                rows.append((key, row[1], row[2], icons[key]))
+        return rows
+
 
 class ProductionSearchMixin(object):
-    """Reproduce the source fields of the Plone-4 ``moj`` ZCTextIndex.
-
-    A probe against the actual 4.3 ZODB reports exactly these indexed attrs:
-    Title, vzorci, sinonim, podrocje, sklop and vzorci_lab.  The legacy
-    livesearch turns a simple query such as ``test`` into ``test*``; matching
-    below therefore uses token-prefix semantics over only those six fields.
-    """
+    """Reproduce the probed Plone-4 ``moj`` source fields and result order."""
     searchable_fields = (
         'Title', 'vzorci', 'sinonim', 'podrocje', 'sklop', 'vzorci_lab',
     )
@@ -97,12 +94,22 @@ class ProductionSearchMixin(object):
     def _moj_tokens(self, obj):
         tokens = []
         for field in self.searchable_fields:
-            if field == 'Title':
-                value = obj.Title()
-            else:
-                value = getattr(obj, field, '')
+            value = obj.Title() if field == 'Title' else getattr(obj, field, '')
             tokens.extend(_tokens(value))
         return tokens
+
+    def _moj_candidates(self):
+        """Do not alphabetize livesearch results.
+
+        The 4.3 ZCatalog returned its normal catalog order because the legacy
+        query supplied no sort_on.  Traversal order is the closest preserved
+        migrated equivalent and, unlike all_exams(), is not title-sorted.
+        """
+        base = self.base_folder()
+        if base is None:
+            return []
+        return [obj for obj in _walk(base)
+                if getattr(obj, 'portal_type', None) == 'imi.exams.examination']
 
     def filtered_exams(self, query=None):
         query = str(query if query is not None else
@@ -111,9 +118,9 @@ class ProductionSearchMixin(object):
             query = query.replace(char, ' ')
         wanted = [_fold(word) for word in query.split() if word]
         if not wanted:
-            return self.all_exams()
+            return self._moj_candidates()
         result = []
-        for obj in self.all_exams():
+        for obj in self._moj_candidates():
             indexed = self._moj_tokens(obj)
             if all(any(token.startswith(word) for token in indexed) for word in wanted):
                 result.append(obj)
@@ -168,7 +175,6 @@ class ExamsGuardiansView(ProductionMenuMixin, legacy.ExamsGuardiansView):
 class LegacyExamsLiveSearchView(ProductionSearchMixin,
                                 ProductionMenuMixin,
                                 legacy.LegacyExamsLiveSearchView):
-    """Reproduce the old livesearch_reply.py response contract."""
     limit = 20
     max_title = 100
     max_description = 93
@@ -177,15 +183,11 @@ class LegacyExamsLiveSearchView(ProductionSearchMixin,
         query = str(self.request.form.get('q') or self.request.form.get('moj') or '').strip()
         results = self.filtered_exams(query) if len(query) > 1 else []
         self.request.response.setHeader('Content-Type', 'text/html; charset=utf-8')
-
         if not results:
-            return (
-                '<fieldset class="livesearchContainer">'
-                '<legend id="livesearchLegend">Live search</legend>'
-                '<div class="LSIEFix"><div id="LSNothingFound">No match found</div>'
-                '<div class="LSRow"></div></div></fieldset>'
-            )
-
+            return ('<fieldset class="livesearchContainer">'
+                    '<legend id="livesearchLegend">Live search</legend>'
+                    '<div class="LSIEFix"><div id="LSNothingFound">No match found</div>'
+                    '<div class="LSRow"></div></div></fieldset>')
         out = [
             '<fieldset class="livesearchContainer">',
             '<legend id="livesearchLegend">Live search results: %d</legend>' % len(results),
@@ -193,33 +195,42 @@ class LegacyExamsLiveSearchView(ProductionSearchMixin,
         ]
         for obj in results[:self.limit]:
             full_title = str(obj.Title() or '')
-            display_title = full_title
-            if len(display_title) > self.max_title:
-                display_title = display_title[:self.max_title] + '...'
+            display_title = full_title if len(full_title) <= self.max_title else full_title[:self.max_title] + '...'
             description = str(obj.Description() or '')
             if len(description) > self.max_description:
                 description = description[:self.max_description] + '...'
             href = self.exam_url(obj) + '&searchterm=' + quote_plus(query)
-            out.append(
-                '<li class="LSRow"><a href="%s" title="%s">%s</a>'
-                '<div class="LSDescr">%s</div></li>' % (
-                    escape(href), escape(full_title), escape(display_title),
-                    escape(description)))
-
+            out.append('<li class="LSRow"><a href="%s" title="%s">%s</a>'
+                       '<div class="LSDescr">%s</div></li>' %
+                       (escape(href), escape(full_title), escape(display_title), escape(description)))
         out.append('<li class="LSRow"><br /></li>')
         if len(results) > self.limit:
-            out.append(
-                '<li class="LSRow"><span>prikazanih %d od %d zadetkov</span> '
-                '<a href="%s/@@preiskave_hitro_view?moj=%s" style="font-weight:normal">'
-                'prikaži vse zadetke</a></li>' % (
-                    self.limit, len(results), self.portal.absolute_url(),
-                    quote(query)))
+            out.append('<li class="LSRow"><span>prikazanih %d od %d zadetkov</span> '
+                       '<a href="%s/@@preiskave_hitro_view?moj=%s" style="font-weight:normal">'
+                       'prikaži vse zadetke</a></li>' %
+                       (self.limit, len(results), self.portal.absolute_url(), quote(query)))
         out.append('</ul></div></fieldset>')
         return ''.join(out)
 
 
 class ExaminationPublicView(ProductionMenuMixin, BaseExaminationPublicView):
-    pass
+    def attachment(self):
+        """Return only a real migrated document, never the zero-byte placeholder."""
+        attachment = getattr(self.context, 'datoteka', None)
+        if attachment is None:
+            return None
+        filename = str(getattr(attachment, 'filename', '') or '').strip()
+        if not filename:
+            return None
+        size = 0
+        getter = getattr(attachment, 'getSize', None)
+        try:
+            size = int(getter() if callable(getter) else getattr(attachment, 'size', 0) or 0)
+        except Exception:
+            size = 0
+        if size <= 0:
+            return None
+        return attachment
 
 
 class ExaminationPublicProxyView(BrowserView):
