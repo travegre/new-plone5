@@ -121,6 +121,17 @@ def dump_query(catalog, q):
         print('legacy q=%r query failed: %r' % (q, exc))
 
 
+def requested_queries(argv):
+    # ``bin/instance run script.py`` leaves the script path in sys.argv, so do
+    # not accidentally treat it as a search term.  Only extra positional
+    # arguments after the .py filename are user-supplied queries.
+    args = list(argv[1:])
+    if args and args[0].endswith('.py'):
+        args = args[1:]
+    queries = [arg for arg in args if arg and not arg.startswith('-')]
+    return queries or ['test', 'te']
+
+
 def run(app):
     site = app.unrestrictedTraverse('preiskave')
     catalog = site.portal_catalog
@@ -142,10 +153,7 @@ def run(app):
         except Exception as exc:
             print('%r -> ERROR %r' % (query, exc))
 
-    queries = [arg for arg in sys.argv[1:] if not arg.startswith('-')]
-    if not queries:
-        queries = ['test', 'te']
-    for q in queries:
+    for q in requested_queries(sys.argv):
         dump_query(catalog, q)
 
 
