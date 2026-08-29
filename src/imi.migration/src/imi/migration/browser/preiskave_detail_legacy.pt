@@ -6,6 +6,7 @@
   <title tal:content="context/Title">Preiskava</title>
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-legacy.css" />
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-fidelity.css" />
+  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-launch.css" />
 </head>
 <body class="imi-exams-public imi-exam-detail">
 <div id="zunanji_okvir"><div id="okvir">
@@ -30,9 +31,9 @@
           <div class="show-more"><a href="#" id="gumb_pokazi_vec">Prikaži več</a></div>
         </tal:opis>
 
-        <tal:file condition="context/datoteka|nothing">
+        <tal:file define="attachment python:getattr(context, 'datoteka', None)" condition="attachment">
           <p class="text text-12 siv-tekst">Dodatna dokumentacija:</p>
-          <p class="text text-13"><a tal:attributes="href string:${context/absolute_url}/@@download/datoteka/${context/datoteka/filename}" tal:content="context/datoteka/filename">datoteka</a></p>
+          <p class="text text-13"><a tal:attributes="href string:${context/absolute_url}/@@download/datoteka/${attachment/filename}" tal:content="attachment/filename">datoteka</a></p>
         </tal:file>
 
         <tal:opombe condition="python:bool(view.rich('opombe'))">
