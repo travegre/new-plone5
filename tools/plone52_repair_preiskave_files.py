@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Restore legacy Preiskave FileField payloads on an already imported site.
+"""Restore real legacy Preiskave FileField payloads on an imported site.
 
 This is a narrow repair pass for the ``datoteka`` field of legacy
-``imipreiskava`` records.  The Plone-4 exporter wrote FileField/ImageField
-payloads to ``binaries/`` and described them in ``objects.jsonl``; the normal
-Plone-5 importer can import those blobs, but this tool lets an existing target
-be repaired without recreating/reimporting all content.
+``imipreiskava`` records. Empty Archetypes FileField placeholders are ignored:
+the old detail template displayed "Dodatna dokumentacija" only when
+``getFilename('datoteka')`` was non-empty, so a zero-byte value with an empty
+filename is not user-visible legacy content and must not be manufactured in
+Plone 5.2.
 
 Run inside the Plone 5.2 instance::
 
     bin/instance run tools/plone52_repair_preiskave_files.py \
         --input-dir=/migration-data/export
-
-The input directory must contain the original full ``objects.jsonl`` and
-``binaries/`` directory produced by ``plone43_export.py``.
 """
 import json
 import os
@@ -66,6 +64,18 @@ def binary_path(input_dir, info):
     return os.path.join(input_dir, 'binaries', rel)
 
 
+def real_binary(info):
+    """Match the legacy template's visibility rule, not exporter placeholders."""
+    if not info:
+        return False
+    try:
+        size = int(info.get('size') or 0)
+    except (TypeError, ValueError):
+        size = 0
+    filename = str(info.get('filename') or '').strip()
+    return size > 0 and bool(filename)
+
+
 def has_payload(value):
     if value is None:
         return False
@@ -89,8 +99,8 @@ def repair(app, input_dir):
 
     site = app['preiskave']
     setSite(site)
-    examined = source_with_file = repaired = already_present = 0
-    missing_target = missing_binary = 0
+    examined = real_source_files = repaired = already_present = 0
+    empty_placeholders = missing_target = missing_binary = 0
     failures = []
 
     with open(objects_path, 'r', encoding='utf-8') as handle:
@@ -105,7 +115,10 @@ def repair(app, input_dir):
             info = item and item.get('binary')
             if not info:
                 continue
-            source_with_file += 1
+            if not real_binary(info):
+                empty_placeholders += 1
+                continue
+            real_source_files += 1
             obj = target_for_record(site, record.get('source_path'))
             if obj is None:
                 missing_target += 1
@@ -122,9 +135,14 @@ def repair(app, input_dir):
             try:
                 with open(path, 'rb') as binary:
                     data = binary.read()
-                filename = info.get('filename') or 'legacy-file'
+                if not data:
+                    empty_placeholders += 1
+                    continue
+                kwargs = {
+                    'data': data,
+                    'filename': str(info['filename']),
+                }
                 content_type = info.get('content_type') or None
-                kwargs = {'data': data, 'filename': str(filename)}
                 if content_type:
                     kwargs['contentType'] = str(content_type)
                 obj.datoteka = NamedBlobFile(**kwargs)
@@ -136,7 +154,8 @@ def repair(app, input_dir):
     import transaction
     transaction.commit()
     print('Preiskave examinations inspected: %d' % examined)
-    print('Source examinations with datoteka: %d' % source_with_file)
+    print('Empty datoteka placeholders ignored: %d' % empty_placeholders)
+    print('Real source documents: %d' % real_source_files)
     print('Already present in Plone 5.2: %d' % already_present)
     print('Repaired: %d' % repaired)
     print('Missing target objects: %d' % missing_target)
