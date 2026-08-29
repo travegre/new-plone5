@@ -4,6 +4,8 @@ from collections import OrderedDict
 from html import escape
 from urllib.parse import quote
 
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+
 from .exams_runtime import ExamsListView, ExamsLiveSearchView, ExamsPublicView, SLO_LETTERS
 
 
@@ -41,8 +43,6 @@ def _split(value):
 class _LegacyMenuMixin(object):
     def menu(self):
         base = self.portal.absolute_url()
-        # Keep the public navigation complete; Skrbniki was a real published
-        # document under /preiskave-1/skrbniki/skrbniki-1 in the Plone 4 site.
         return [
             ('all', u'Preiskave', base + '/@@preiskave_view'),
             ('quick', u'Hitro iskanje', base + '/@@preiskave_hitro_view'),
@@ -87,9 +87,6 @@ class _LegacyModeView(_LegacyMenuMixin, ExamsListView):
             url += '&podrocje=' + quote(selected)
         return url
 
-    # Use defensive Unicode grouping instead of depending on catalog brains.
-    # This mirrors the old templates' A, B, C, Č ... grouping but works on
-    # migrated Dexterity objects directly.
     def alphabet_groups(self, exams=None):
         exams = self.all_exams() if exams is None else list(exams or [])
         buckets = OrderedDict()
@@ -135,12 +132,10 @@ class _LegacyModeView(_LegacyMenuMixin, ExamsListView):
         result = []
         for obj in self.all_exams():
             if self.legacy_mode == 'labs':
-                # The old lab template used substring membership in laboratoriji.
                 match = selected in _text(getattr(obj, 'laboratoriji', ''))
             elif self.legacy_mode == 'areas':
                 match = selected in _seq(getattr(obj, 'podrocje', ()))
             elif self.legacy_mode == 'groups':
-                # The old sklop template also used substring membership.
                 match = selected in _text(getattr(obj, 'sklop', ''))
             else:
                 match = False
@@ -170,7 +165,6 @@ class ExamsNewView(_LegacyModeView):
 
     def new_groups(self):
         result = []
-        # The Plone 4 template has these two sections explicitly and in order.
         for year in ('2016', '2017'):
             exams = [obj for obj in self.all_exams()
                      if str(getattr(obj, 'nova_pre', '') or '').strip() == year]
@@ -201,6 +195,7 @@ class ExamsSamplesView(_LegacyModeView):
 class ExamsGuardiansView(_LegacyModeView):
     legacy_mode = 'guardians'
     legacy_name = 'preiskave_skrbniki_view'
+    template = ViewPageTemplateFile('preiskave_skrbniki.pt')
 
     def title(self):
         return u'Skrbniki'
@@ -217,7 +212,6 @@ class ExamsGuardiansView(_LegacyModeView):
 
 
 class LegacyExamsLiveSearchView(_LegacyMenuMixin, ExamsLiveSearchView):
-    """Visible behaviour of the old preiskave livesearch_reply.py."""
     limit = 20
 
     def __call__(self):
