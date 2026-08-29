@@ -22,6 +22,11 @@
       />
 
   <adapter
+      name="SearchableText"
+      factory=".indexers.directory_searchable_text"
+      />
+
+  <adapter
       name="sklop"
       factory=".indexers.examination_sklop"
       />
