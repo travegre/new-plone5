@@ -4,7 +4,7 @@ from html import escape
 
 from plone import api
 
-from .runtime_fixes import DirectorySearchView as LegacyDirectorySearchView
+from .legacy_sites import DirectorySearchView as LegacyDirectorySearchView
 
 
 def _legacy_query(value):
