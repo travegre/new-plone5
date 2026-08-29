@@ -5,12 +5,14 @@
   <title tal:content="view/title">PREISKAVE</title>
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-legacy.css" />
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-launch.css" />
+  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-fidelity.css" />
 </head>
 <body class="imi-exams-public" tal:attributes="data-mode view/mode_key">
 <div id="zunanji_okvir"><div id="okvir">
   <div class="exams-header"><a tal:attributes="href view/portal/absolute_url"><img id="logo" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a><h1 class="site-title"><a tal:attributes="href view/portal/absolute_url">PREISKAVE</a></h1></div>
-  <nav id="glavni_meni"><ul><li class="domov"><a tal:attributes="href view/portal/absolute_url" title="Domov">Domov</a></li><li tal:repeat="item view/menu" tal:attributes="class python:item[0] == view.mode_key() and 'oznacen' or ''"><a tal:attributes="href python:item[2]" tal:content="python:item[1]">Meni</a></li></ul></nav><div class="clear"></div>
-  <main id="vsebina_podstran">
+  <div class="legacy-preiskave-shell">
+    <div class="vsebina"><div id="podmeni"><ul class="nav_subitems"><li tal:repeat="item view/menu" tal:attributes="class python:item[0] == view.mode_key() and 'oznacen' or ''"><a tal:attributes="href python:item[2]" tal:content="python:item[1]">Meni</a></li></ul></div></div>
+    <main id="vsebina_podstran">
     <tal:home condition="python:view.mode_key() == 'home'">
       <h1>PREISKAVE</h1>
       <div class="search-choice-grid slikce_filtrov row">
@@ -59,7 +61,8 @@
       <div class="sample-choice-grid" tal:condition="view/sample_choices"><div class="razvrsti" tal:repeat="choice view/sample_choices"><a tal:attributes="href python:view.sample_choice_url(choice)" tal:content="choice">Vzorec</a></div></div>
       <div class="sample-exam-results" tal:condition="view/sample_matching_exams"><div id="divi_preiskav"><div class="alphabet-listing" tal:repeat="group python:view.alphabet_groups(view.sample_matching_exams())"><div class="velika_crka" tal:content="group/letter">A</div><ul><li tal:repeat="exam group/items"><a tal:attributes="href python:view.exam_url(exam)" tal:content="exam/Title">Preiskava</a></li></ul></div></div></div></div>
     </tal:samples>
-  </main><div class="clear"></div>
+    </main><div class="clear"></div>
+  </div>
 </div></div>
 <script>(function(){'use strict';var letters=document.querySelectorAll('.preiskave_crke');letters.forEach(function(letter){letter.addEventListener('click',function(){var target=letter.getAttribute('data-letter');var active=letter.classList.contains('odprt');letters.forEach(function(x){x.classList.remove('odprt');});document.querySelectorAll('[data-group]').forEach(function(group){group.style.display='';});if(!active){letter.classList.add('odprt');document.querySelectorAll('[data-group]').forEach(function(group){if(group.getAttribute('data-group')!==target){group.style.display='none';}});}});});var input=document.getElementById('exam-search');var result=document.getElementById('exam-live-results');var timer=null;if(input&&result){var url=result.getAttribute('data-search-url');input.focus();input.addEventListener('input',function(){window.clearTimeout(timer);var q=input.value.trim();if(q.length<2){result.innerHTML='';result.style.display='none';return;}timer=window.setTimeout(function(){fetch(url+'?q='+encodeURIComponent(q),{credentials:'same-origin'}).then(function(r){return r.text();}).then(function(html){result.innerHTML=html;result.style.display='block';});},180);});document.addEventListener('mousedown',function(event){if(!result.contains(event.target)&&event.target!==input){result.style.display='none';}});}}());</script>
 </body></html>
