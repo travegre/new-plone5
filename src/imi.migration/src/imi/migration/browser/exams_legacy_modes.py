@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """Route-specific Preiskave views ported from the Plone 4 skin.
 
-The old site had separate page templates for each public route.  Keep the
-route semantics here and expose simple, template-safe values; do not make the
-page template rediscover legacy data conventions.
+The old site had separate page templates for each public route. Keep the route
+semantics here and expose template-safe values; do not make the page template
+rediscover legacy data conventions.
 """
 from collections import OrderedDict
 from html import escape
@@ -51,61 +51,92 @@ def _norm(value):
     return ''.join(ch for ch in value.casefold() if ch.isalnum())
 
 
-# Route names are 5.2 implementation details.  Labels are fallbacks only: the
-# old main_template got them from the published folders under /preiskave-1.
+# Route names are 5.2 implementation details. Labels are fallbacks only. The
+# Plone 4 main_template built the menu from published folders sorted by their
+# position in /preiskave-1. Include both legacy ids/titles and the known layout
+# names so migrated folders can be matched without inventing their labels.
 _MENU = (
-    ('all', u'Preiskave', 'preiskave_view', ('preiskave', 'katalogpreiskav')),
-    ('quick', u'Hitro iskanje', 'preiskave_hitro_view', ('hitroiskanje', 'hitro')),
-    ('labs', u'Laboratoriji', 'preiskave_lab_view', ('laboratoriji', 'laboratorij')),
-    ('new', u'Nove', 'preiskave_nove_view', ('nove', 'novepreiskave')),
-    ('urgent', u'Nujne', 'preiskave_nujne_view', ('nujne', 'nujnepreiskave')),
-    ('areas', u'Področja', 'preiskave_podrocja_view', ('podrocja', 'podrocjapreiskav')),
-    ('groups', u'Sklopi', 'preiskave_sklopi_view', ('sklopi', 'sklopipreiskav')),
-    ('samples', u'Vzorci', 'preiskave_vzorci_view', ('vzorci',)),
-    ('guardians', u'Skrbniki', 'preiskave_skrbniki_view', ('skrbniki',)),
+    ('all', u'Preiskave', 'preiskave_view',
+     ('preiskave', 'katalogpreiskav', 'preiskaveview', 'contentview')),
+    ('quick', u'Hitro iskanje', 'preiskave_hitro_view',
+     ('hitroiskanje', 'hitro', 'preiskavehitroview')),
+    ('labs', u'Laboratoriji', 'preiskave_lab_view',
+     ('laboratoriji', 'laboratorij', 'preiskavepolaboratorijih', 'preiskavelabview')),
+    ('new', u'Nove', 'preiskave_nove_view',
+     ('nove', 'novepreiskave', 'preiskavenoveview')),
+    ('urgent', u'Nujne', 'preiskave_nujne_view',
+     ('nujne', 'nujnepreiskave', 'preiskavenujneview')),
+    ('areas', u'Področja', 'preiskave_podrocja_view',
+     ('podrocja', 'podrocjapreiskav', 'preiskavepopodrocjih', 'preiskavepodrocjaview')),
+    ('groups', u'Sklopi', 'preiskave_sklopi_view',
+     ('sklopi', 'sklopipreiskav', 'preiskavesklopiview')),
+    ('samples', u'Vzorci', 'preiskave_vzorci_view',
+     ('vzorci', 'preiskavepovzorcih', 'preiskavevzorciview')),
+    ('guardians', u'Skrbniki', 'preiskave_skrbniki_view',
+     ('skrbniki', 'preiskaveskrbnikiview')),
 )
 
 
 class _LegacyMenuMixin(object):
-    def _legacy_folder_titles(self):
-        """Return legacy folder titles keyed by a normalized id/title.
-
-        Plone 4 rendered this menu from the actual published Folder titles and
-        their position.  Migration preserved those folders, so use their
-        titles whenever they can be matched, instead of silently renaming the
-        navigation in Python.
-        """
-        result = {}
+    def _legacy_children(self):
+        """Return migrated legacy Folder children in their object order."""
         base = self.base_folder()
         if base is None:
-            return result
+            return []
         try:
             children = list(base.values())
         except Exception:
-            children = []
-        for child in children:
-            if getattr(child, 'portal_type', '') not in ('Folder', 'folder'):
-                continue
-            try:
-                title = child.Title() or child.getId()
-                cid = child.getId()
-            except Exception:
-                continue
-            result[_norm(cid)] = title
-            result[_norm(title)] = title
-        return result
+            return []
+        return [child for child in children
+                if getattr(child, 'portal_type', '') in ('Folder', 'folder')]
+
+    def _menu_match(self, child):
+        try:
+            cid = child.getId()
+            title = child.Title() or cid
+        except Exception:
+            return None
+        try:
+            layout = child.getLayout() or ''
+        except Exception:
+            layout = getattr(child, 'layout', '') or ''
+        candidates = {_norm(cid), _norm(title), _norm(layout)}
+        for row in _MENU:
+            key, fallback, route, aliases = row
+            accepted = {_norm(route)}
+            accepted.update(_norm(alias) for alias in aliases)
+            if candidates.intersection(accepted):
+                return row
+        return None
 
     def menu(self):
-        base = self.portal.absolute_url()
-        titles = self._legacy_folder_titles()
+        """Port the old dynamic folder menu, preserving labels and order.
+
+        The legacy main_template queried the actual published folders sorted by
+        getObjPositionInParent. Dexterity folder values preserve object order,
+        so use those migrated objects first. Only unmatched/missing routes use
+        fallback labels from _MENU.
+        """
+        base_url = self.portal.absolute_url()
         rows = []
+        used = set()
+        for child in self._legacy_children():
+            match = self._menu_match(child)
+            if match is None:
+                continue
+            key, fallback, route, aliases = match
+            if key in used:
+                continue
+            try:
+                label = child.Title() or fallback
+            except Exception:
+                label = fallback
+            rows.append((key, label, base_url + '/@@' + route))
+            used.add(key)
+
         for key, fallback, route, aliases in _MENU:
-            label = fallback
-            for alias in aliases:
-                if _norm(alias) in titles:
-                    label = titles[_norm(alias)]
-                    break
-            rows.append((key, label, base + '/@@' + route))
+            if key not in used:
+                rows.append((key, fallback, base_url + '/@@' + route))
         return rows
 
 
@@ -141,12 +172,7 @@ class _LegacyModeView(_LegacyMenuMixin, ExamsListView):
         return url
 
     def alphabet_groups(self, exams=None):
-        """The old templates created vse_c[letter] lists in Slovenian order.
-
-        Use the key ``exams`` rather than ``items``: ``items`` collides with
-        dict.items during ZPT path traversal and was the cause of the current
-        production AttributeError where an examination became ('letter','A').
-        """
+        """Create Slovenian alphabetical sections without ZPT name clashes."""
         exams = self.all_exams() if exams is None else list(exams or [])
         buckets = OrderedDict()
         for obj in exams:
@@ -182,7 +208,6 @@ class _LegacyModeView(_LegacyMenuMixin, ExamsListView):
             for value in current:
                 if value not in values:
                     values.append(value)
-        # Legacy templates ran tinySort on the option elements.
         return sorted(values, key=lambda x: x.casefold())
 
     def facet_exams(self):
@@ -192,12 +217,12 @@ class _LegacyModeView(_LegacyMenuMixin, ExamsListView):
         result = []
         for obj in self.all_exams():
             if self.legacy_mode == 'labs':
-                # Exact old post-filter: podrocje in obj.laboratoriji.
+                # Legacy template post-filter: podrocje in obj.laboratoriji.
                 match = selected in _text(getattr(obj, 'laboratoriji', ''))
             elif self.legacy_mode == 'areas':
                 match = selected in _seq(getattr(obj, 'podrocje', ()))
             elif self.legacy_mode == 'groups':
-                # Exact old post-filter: podrocje in obj.sklop.
+                # Legacy template post-filter: podrocje in obj.sklop.
                 match = selected in _text(getattr(obj, 'sklop', ''))
             else:
                 match = False
@@ -227,8 +252,8 @@ class ExamsNewView(_LegacyModeView):
 
     def new_groups(self):
         result = []
-        # Deliberately not generalized: this is what preiskave_nove_view.pt
-        # actually rendered in the legacy site.
+        # This is intentionally not generalized: the legacy template rendered
+        # these two sections explicitly and in this order.
         for year in ('2016', '2017'):
             exams = [obj for obj in self.all_exams()
                      if str(getattr(obj, 'nova_pre', '') or '').strip() == year]
@@ -258,9 +283,9 @@ class ExamsSamplesView(_LegacyModeView):
     def sample_records(self):
         """Rebuild the five-level legacy sample tree from migrated fields.
 
-        Exported objects retain vzorci_nivo1..vzorci_nivo5 separately.  Those
-        are the authoritative aligned values.  Older/malformed objects still
-        fall back to the historical ``name######nivo1###...`` encoding.
+        Exported objects retain vzorci_nivo1..vzorci_nivo5 separately. Those
+        aligned values take priority. Older/malformed objects fall back to the
+        historical ``name######nivo1###...`` encoding used by the 4.3 view.
         """
         area = self.selected_area()
         rows = []
