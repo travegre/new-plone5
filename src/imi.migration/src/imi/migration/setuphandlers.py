@@ -74,8 +74,10 @@ class _IndexExtra(object):
 
     def __init__(self, indexed_attrs, lexicon_id=None):
         self.indexed_attrs = tuple(indexed_attrs)
-        # Older index factories also look at doc_attr; harmless in Plone 5.2.
-        self.doc_attr = self.indexed_attrs[0] if self.indexed_attrs else ''
+        # ZCTextIndex reads the comma-separated ``doc_attr`` value and splits
+        # it into _indexed_attrs.  Keep indexed_attrs too for Field/Keyword
+        # index factories and for introspection.
+        self.doc_attr = ','.join(self.indexed_attrs)
         if lexicon_id:
             self.lexicon_id = lexicon_id
             self.index_type = 'Okapi BM25 Rank'
