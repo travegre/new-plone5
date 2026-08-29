@@ -93,7 +93,7 @@ class ProductionSearchMixin(object):
         path = self._base_path()
         if path is None:
             return []
-        brains = self._catalog()(
+        brains = self._catalog().unrestrictedSearchResults(
             portal_type='imi.exams.examination',
             path=path,
         )
@@ -109,7 +109,7 @@ class ProductionSearchMixin(object):
         path = self._base_path()
         if path is None:
             return []
-        brains = self._catalog()(
+        brains = self._catalog().unrestrictedSearchResults(
             moj=transformed,
             portal_type='imi.exams.examination',
             path=path,
