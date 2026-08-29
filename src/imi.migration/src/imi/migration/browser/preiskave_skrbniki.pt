@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Skrbniki</title>
+  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-legacy.css" />
+  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-fidelity.css" />
+</head>
+<body class="imi-exams-public" data-mode="guardians">
+<div id="zunanji_okvir"><div id="okvir">
+  <div class="exams-header">
+    <a tal:attributes="href view/portal/absolute_url"><img id="logo" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a>
+    <h1 class="site-title"><a tal:attributes="href view/portal/absolute_url">PREISKAVE</a></h1>
+  </div>
+  <div class="legacy-preiskave-shell">
+    <div class="vsebina"><div id="podmeni"><ul class="nav_subitems">
+      <li tal:repeat="item view/menu" tal:attributes="class python:item[0] == view.mode_key() and 'oznacen' or ''"><a tal:attributes="href python:item[2]" tal:content="python:item[1]">Meni</a></li>
+    </ul></div></div>
+    <main id="vsebina_podstran">
+      <h1>Skrbniki</h1>
+      <div class="legacy-document-body" tal:content="structure view/guardians_html">Skrbniki</div>
+    </main>
+    <div class="clear"></div>
+  </div>
+</div></div>
+</body>
+</html>
