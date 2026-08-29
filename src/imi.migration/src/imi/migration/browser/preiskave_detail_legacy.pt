@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title tal:content="context/Title">Preiskava</title>
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-legacy.css" />
+  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-fidelity.css" />
 </head>
 <body class="imi-exams-public imi-exam-detail">
 <div id="zunanji_okvir"><div id="okvir">
@@ -12,12 +13,10 @@
     <a tal:attributes="href view/portal/absolute_url"><img id="logo" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a>
     <h1 class="site-title"><a tal:attributes="href view/portal/absolute_url">PREISKAVE</a></h1>
   </div>
-  <nav id="glavni_meni"><ul>
-    <li class="domov"><a tal:attributes="href view/portal/absolute_url">Domov</a></li>
-    <li tal:repeat="item view/menu"><a tal:attributes="href python:item[2]" tal:content="python:item[1]">Meni</a></li>
-  </ul></nav><div class="clear"></div>
+  <div class="legacy-preiskave-shell">
+    <div class="vsebina"><div id="podmeni"><ul class="nav_subitems"><li tal:repeat="item view/menu"><a tal:attributes="href python:item[2]" tal:content="python:item[1]">Meni</a></li></ul></div></div>
 
-  <main id="vsebina_podstran" class="legacy-examination">
+    <main id="vsebina_podstran" class="legacy-examination">
     <p class="text text-10 exam-main-title" tal:content="context/Title">Preiskava</p>
 
     <div class="exam-three-columns">
@@ -93,7 +92,8 @@
         <div tal:condition="python:bool(view.rich('metode'))"><p class="text text-16">Metode preiskave</p><div class="text text-17" tal:content="structure python:view.rich('metode')"></div></div>
       </div>
     </div>
-  </main><div class="clear"></div>
+    </main><div class="clear"></div>
+  </div>
 </div></div>
 
 <div id="image-lightbox" class="exam-lightbox" aria-hidden="true"><div class="exam-lightbox-bg"></div><img alt="Embalaža" /><button type="button">×</button></div>
