@@ -1,25 +1,46 @@
-/* Final fidelity overrides from the original Plone-4 main_template/imipreiskave.css. */
-.imi-exams-public .legacy-preiskave-shell{overflow:hidden;padding-top:18px}
-.imi-exams-public .legacy-preiskave-shell .vsebina{float:left;width:220px;margin:0 0 20px;padding:0}
-.imi-exams-public #podmeni{width:220px;min-height:20px;float:left;padding:0;margin:0 0 20px}
-.imi-exams-public #podmeni ul{margin:0;padding:0;list-style:none}
-.imi-exams-public #podmeni ul li{height:26px;cursor:pointer;padding:0 10px 0 5px;margin:0;overflow:hidden}
-.imi-exams-public #podmeni ul li a{display:block;line-height:26px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#000;text-decoration:none!important;white-space:nowrap}
-.imi-exams-public #podmeni ul li.oznacen,.imi-exams-public #podmeni ul li:hover{background:#5FB11E;color:#fff}
+/* Runtime fidelity overrides. The production Plone 4 presentation used by the
+   migrated site has a horizontal public menu; do not turn it into a sidebar. */
+body.imi-exams-public{
+  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAIAAAA/Y+msAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAcSURBVHjaYnr69Ol/MIAzGJD5EJIBWR7CBggwAMnZM/mCB9LIAAAAAElFTkSuQmCC)!important;
+}
+.imi-exams-public .legacy-preiskave-shell{overflow:visible!important;padding-top:0!important}
+.imi-exams-public .legacy-preiskave-shell>.vsebina{float:none!important;width:100%!important;margin:0!important;padding:0!important}
+.imi-exams-public #podmeni{float:none!important;width:100%!important;min-height:59px!important;margin:0 0 18px!important;padding:12px 0 0 70px!important;overflow:visible;background:rgba(255,255,255,.55)}
+.imi-exams-public #podmeni ul{display:flex!important;flex-direction:row!important;align-items:stretch;flex-wrap:nowrap;margin:0!important;padding:0!important;list-style:none!important}
+.imi-exams-public #podmeni ul li{float:none!important;display:block!important;height:46px!important;line-height:normal!important;padding:14px 16px 0!important;margin:0!important;overflow:visible!important;border-left:1px solid #e7e7e9;white-space:nowrap}
+.imi-exams-public #podmeni ul li:first-child{border-left:0}
+.imi-exams-public #podmeni ul li a{display:block!important;line-height:18px!important;font-family:Arial,sans-serif!important;font-size:13px!important;color:#414152!important;text-decoration:none!important;white-space:nowrap}
+.imi-exams-public #podmeni ul li.oznacen,.imi-exams-public #podmeni ul li:hover{background:#5FB11E!important}
 .imi-exams-public #podmeni ul li.oznacen a,.imi-exams-public #podmeni ul li:hover a{color:#fff!important}
-.imi-exams-public #podmeni .podmeni_crta{height:2px;background:#e7e7e9;width:200px}
-.imi-exams-public .legacy-preiskave-shell #vsebina_podstran{float:left;width:760px;max-width:760px;margin:0;padding:0 0 20px}
+.imi-exams-public .legacy-preiskave-shell #vsebina_podstran{float:none!important;width:760px!important;max-width:760px!important;margin:0 auto!important;padding:18px 0 50px!important;overflow:visible!important}
 
-/* The original template did not render the invented horizontal route bar. */
-.imi-exams-public #glavni_meni{display:none!important}
+/* Livesearch must remain in normal flow. The previous absolute result layer was
+   being clipped/covered even though the endpoint returned matches. */
+.imi-exams-public .legacy-quick-search .LSBox{overflow:visible!important}
+.imi-exams-public #exam-live-results.{$dummy|nothing},
+.imi-exams-public #exam-live-results{
+  position:relative!important;
+  top:auto!important;
+  left:auto!important;
+  width:760px!important;
+  max-width:100%!important;
+  z-index:9999!important;
+  padding-top:10px!important;
+  clear:both!important;
+}
+.imi-exams-public #exam-live-results .livesearchContainer{display:block!important;width:100%!important;max-width:100%!important;background:#fff!important;border:2px solid #e7e7e9!important;padding:12px 5px!important;color:#333!important}
+.imi-exams-public #exam-live-results #livesearchLegend{display:block!important;color:#666!important;background:#e7e7e9!important;padding:2px 7px!important;font-size:12px!important}
+.imi-exams-public #exam-live-results .LSTable{display:block!important;margin:0!important;padding:0!important}
+.imi-exams-public #exam-live-results .LSRow{display:block!important;visibility:visible!important;opacity:1!important;min-height:26px!important;background:#fff!important;color:#333!important;padding:7px 10px!important}
+.imi-exams-public #exam-live-results .LSRow a{display:inline!important;visibility:visible!important;color:#5FB11E!important;font-size:14px!important;line-height:18px!important}
+.imi-exams-public #exam-live-results .LSDescr{display:block!important;visibility:visible!important;color:#666!important;font-size:11px!important;line-height:15px!important}
 
-@media(max-width:1050px){
- .imi-exams-public .legacy-preiskave-shell .vsebina{width:200px}
- .imi-exams-public #podmeni{width:200px}
- .imi-exams-public .legacy-preiskave-shell #vsebina_podstran{width:calc(100% - 200px)!important;max-width:760px!important;margin:0!important}
+@media(max-width:1100px){
+ .imi-exams-public #podmeni{padding-left:10px!important;overflow-x:auto!important}
+ .imi-exams-public #podmeni ul{min-width:max-content}
 }
 @media(max-width:800px){
- .imi-exams-public .legacy-preiskave-shell .vsebina,.imi-exams-public #podmeni{float:none;width:100%}
- .imi-exams-public #podmeni ul li{height:auto;min-height:26px}
- .imi-exams-public .legacy-preiskave-shell #vsebina_podstran{float:none;width:100%!important;max-width:100%!important;margin:0!important}
+ .imi-exams-public #podmeni ul{flex-wrap:wrap!important;min-width:0}
+ .imi-exams-public #podmeni ul li{height:auto!important;min-height:36px!important;padding:9px 10px!important}
+ .imi-exams-public .legacy-preiskave-shell #vsebina_podstran{width:95%!important;max-width:95%!important}
 }
