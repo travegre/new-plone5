@@ -17,7 +17,6 @@ body.imi-exams-public{
 /* Livesearch must remain in normal flow. The previous absolute result layer was
    being clipped/covered even though the endpoint returned matches. */
 .imi-exams-public .legacy-quick-search .LSBox{overflow:visible!important}
-.imi-exams-public #exam-live-results.{$dummy|nothing},
 .imi-exams-public #exam-live-results{
   position:relative!important;
   top:auto!important;
