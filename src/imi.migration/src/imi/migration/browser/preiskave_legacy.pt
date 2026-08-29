@@ -7,6 +7,7 @@
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-legacy.css" />
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-launch.css" />
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-fidelity.css" />
+  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-final.css" />
 </head>
 <body class="imi-exams-public" tal:attributes="data-mode view/mode_key">
 <div id="zunanji_okvir"><div id="okvir">
