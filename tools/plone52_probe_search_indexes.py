@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Probe workflow security, permission acquisition and search indexers."""
+"""Probe workflow security and registered search indexers."""
 from __future__ import print_function
 
 from AccessControl.SecurityManagement import newSecurityManager
 from AccessControl.SecurityManagement import noSecurityManager
 from AccessControl.SpecialUsers import nobody
 from plone.indexer.interfaces import IIndexer
-from zope.component import queryMultiAdapter
+from zope.component import queryAdapter
 
 
 def _path(obj):
@@ -23,30 +23,11 @@ def _anonymous_count(catalog, **kw):
 
 
 def _selected_roles(obj, permission):
-    return [row['name'] for row in obj.rolesOfPermission(permission)
-            if row.get('selected')]
-
-
-def _permission_chain(obj):
-    print('VIEW PERMISSION CHAIN:')
-    chain = []
-    current = obj
-    while current is not None:
-        chain.append(current)
-        parent = getattr(current, 'aq_parent', None)
-        if parent is None or parent is current:
-            break
-        current = parent
-    for item in reversed(chain):
-        path = _path(item) if hasattr(item, 'getPhysicalPath') else repr(item)
-        local = getattr(item, '_View_Permission', '<inherited/no local declaration>')
-        try:
-            roles = _selected_roles(item, 'View')
-        except Exception:
-            roles = '<unavailable>'
-        print('  %s' % path)
-        print('    _View_Permission=%r' % (local,))
-        print('    effective View roles=%r' % (roles,))
+    try:
+        return [row['name'] for row in obj.rolesOfPermission(permission)
+                if row.get('selected')]
+    except Exception:
+        return '<unavailable>'
 
 
 def _workflow(site, obj):
@@ -54,26 +35,42 @@ def _workflow(site, obj):
     print('TYPE:', obj.portal_type)
     print('CHAIN:', tuple(wf.getChainFor(obj)))
     print('STATE:', wf.getInfoFor(obj, 'review_state', None))
-    for wf_id in wf.getChainFor(obj):
-        definition = wf.get(wf_id)
-        state_id = wf.getStatusOf(wf_id, obj).get('review_state')
-        state = definition.states.get(state_id) if definition is not None else None
-        print('WORKFLOW:', wf_id, 'STATE:', state_id)
-        if state is not None:
-            print('  permission_roles:', repr(getattr(state, 'permission_roles', None)))
     print('VIEW ROLES:', _selected_roles(obj, 'View'))
-    _permission_chain(obj)
 
 
 def _adapter(obj, name):
-    adapter = queryMultiAdapter((obj, obj.REQUEST), IIndexer, name=name)
+    # @plone.indexer.indexer factories are named single adapters from the
+    # content object to IIndexer.  Earlier probes incorrectly queried a
+    # content+request multi-adapter and therefore always printed None.
+    adapter = queryAdapter(obj, IIndexer, name=name)
     print('INDEXER %s:' % name, adapter)
     if adapter is not None:
         try:
             value = adapter()
-            print('INDEXER %s VALUE:' % name, repr(value)[:2500])
+            print('INDEXER %s VALUE:' % name, repr(value)[:4000])
         except Exception as exc:
             print('INDEXER %s ERROR:' % name, repr(exc))
+
+
+def _directory_field_queries(catalog, base, obj):
+    print('DIRECTORY FIELD VALUES:')
+    for field in ('ime', 'priimek', 'oddelek', 'telefon', 'enota', 'lokacija',
+                  'dect', 'fax', 'mobilna', 'enaslov'):
+        value = getattr(obj, field, '') or ''
+        print('  %s=%r' % (field, value))
+        text = str(value).strip()
+        if not text:
+            continue
+        # Use the first nontrivial token exactly as the legacy prefix search does.
+        token = next((part for part in text.replace('/', ' ').replace(',', ' ').split()
+                      if len(part) >= 3), None)
+        if token:
+            brains = catalog.unrestrictedSearchResults(
+                SearchableText=token + '*',
+                portal_type='imi.directory.person',
+                path={'query': _path(base), 'depth': -1},
+            )
+            print('    SearchableText %r -> %d' % (token + '*', len(brains)))
 
 
 def run(app):
@@ -89,6 +86,7 @@ def run(app):
         print('SAMPLE:', _path(obj), repr(obj.Title()))
         _workflow(site, obj)
         _adapter(obj, 'SearchableText')
+        _directory_field_queries(catalog, base, obj)
 
     site = app.unrestrictedTraverse('preiskave')
     catalog = site.portal_catalog
