@@ -47,14 +47,11 @@ def is_virtual_group(group_id):
 
 
 def normal_roles(roles):
-    """Return stored roles suitable for explicit PAS role assignment."""
     ignored = {'Authenticated', 'Anonymous'}
-    return tuple(str(role) for role in (roles or ())
-                 if str(role) not in ignored)
+    return tuple(str(role) for role in (roles or ()) if str(role) not in ignored)
 
 
 def assign_principal_roles(site, principal_id, roles):
-    """Assign exported portal roles one at a time through the PAS role manager."""
     assigned = []
     errors = []
     manager = getattr(site.acl_users, 'portal_role_manager', None)
@@ -83,22 +80,15 @@ def create_groups(site, records):
         group = plone.api.group.get(groupname=group_id)
         if group is None:
             try:
-                # Create first without elevated roles.  Explicit role assignment
-                # below is less restrictive and matches how PAS stores roles.
-                plone.api.group.create(
-                    groupname=group_id,
-                    title=record.get('title') or group_id,
-                    description=record.get('description') or '',
-                    roles=(),
-                )
+                plone.api.group.create(groupname=group_id, title=record.get('title') or group_id,
+                                       description=record.get('description') or '', roles=())
                 created += 1
             except Exception as exc:
                 errors.append('create group %s: %r' % (group_id, exc))
                 continue
         else:
             existing += 1
-        assigned, role_errors = assign_principal_roles(
-            site, group_id, record.get('roles') or ())
+        assigned, role_errors = assign_principal_roles(site, group_id, record.get('roles') or ())
         roles_assigned += len(assigned)
         errors.extend(role_errors)
     return created, existing, skipped_virtual, roles_assigned, errors
@@ -119,16 +109,8 @@ def create_users(site, records):
         if user is None:
             password = secrets.token_urlsafe(32)
             try:
-                # RegistrationTool intentionally refuses elevated roles at
-                # creation time.  Create a normal member, then restore roles via
-                # portal_role_manager below.
-                user = plone.api.user.create(
-                    username=user_id,
-                    password=password,
-                    email=email,
-                    properties=props,
-                    roles=BASE_USER_ROLES,
-                )
+                user = plone.api.user.create(username=user_id, password=password, email=email,
+                                             properties=props, roles=BASE_USER_ROLES)
                 created += 1
                 reset_required.append(user_id)
             except Exception as exc:
@@ -140,9 +122,7 @@ def create_users(site, records):
                 plone.api.user.update(user=user, email=email, properties=props)
             except Exception as exc:
                 errors.append('update user %s properties: %r' % (user_id, exc))
-
-        assigned, role_errors = assign_principal_roles(
-            site, user_id, record.get('roles') or ())
+        assigned, role_errors = assign_principal_roles(site, user_id, record.get('roles') or ())
         roles_assigned += len(assigned)
         errors.extend(role_errors)
     return created, existing, reset_required, roles_assigned, errors
@@ -164,8 +144,7 @@ def add_memberships(records):
                 errors.append('missing group %s for user %s' % (group_id, user_id))
                 continue
             try:
-                current = plone.api.group.get_groups(username=user_id)
-                current_ids = set(g.getId() for g in current)
+                current_ids = set(g.getId() for g in plone.api.group.get_groups(username=user_id))
             except Exception:
                 current_ids = set()
             if group_id in current_ids:
@@ -175,8 +154,7 @@ def add_memberships(records):
                 plone.api.group.add_user(groupname=group_id, username=user_id)
                 added += 1
             except Exception as exc:
-                errors.append('membership %s <- %s: %r' %
-                              (group_id, user_id, exc))
+                errors.append('membership %s <- %s: %r' % (group_id, user_id, exc))
     return added, existing, skipped_virtual, errors
 
 
@@ -194,20 +172,14 @@ def apply_site_local_roles(site, records):
 
 def apply_site_identity(site, record):
     changed = []
-    title = record.get('title')
-    description = record.get('description')
-    try:
-        if title is not None:
-            site.setTitle(title)
-            changed.append('title')
-    except Exception:
-        pass
-    try:
-        if description is not None:
-            site.setDescription(description)
-            changed.append('description')
-    except Exception:
-        pass
+    for name, setter in (('title', 'setTitle'), ('description', 'setDescription')):
+        value = record.get(name)
+        if value is not None:
+            try:
+                getattr(site, setter)(value)
+                changed.append(name)
+            except Exception:
+                pass
     return changed
 
 
@@ -245,10 +217,8 @@ def apply_registry_email(site, properties):
         registry = getUtility(IRegistry)
     except Exception:
         return changed
-    mapping = {
-        'email_from_address': 'plone.email_from_address',
-        'email_from_name': 'plone.email_from_name',
-    }
+    mapping = {'email_from_address': 'plone.email_from_address',
+               'email_from_name': 'plone.email_from_name'}
     for source_name, target_name in mapping.items():
         if source_name not in (properties or {}):
             continue
@@ -297,6 +267,10 @@ def apply_workflow_chains(site, chains):
             applied.append(str(type_id))
         except Exception:
             skipped.append({'portal_type': str(type_id), 'source_chain': list(chain or ())})
+    # Changing chains does not by itself apply the target workflow's permission
+    # role maps to already-migrated objects.  Without this, published content can
+    # remain non-viewable by Anonymous even though review_state is 'published'.
+    tool.updateRoleMappings()
     return applied, skipped
 
 
@@ -318,69 +292,50 @@ def run(app, input_dir):
                 continue
             setSite(site)
             errors = []
-
-            groups_created, groups_existing, groups_virtual, group_roles, group_errors = create_groups(
-                site, record.get('groups') or ())
+            groups_created, groups_existing, groups_virtual, group_roles, group_errors = create_groups(site, record.get('groups') or ())
             errors.extend(group_errors)
-            users_created, users_existing, resets, user_roles, user_errors = create_users(
-                site, record.get('users') or ())
+            users_created, users_existing, resets, user_roles, user_errors = create_users(site, record.get('users') or ())
             errors.extend(user_errors)
-            memberships_added, memberships_existing, memberships_virtual, membership_errors = \
-                add_memberships(record.get('users') or ())
+            memberships_added, memberships_existing, memberships_virtual, membership_errors = add_memberships(record.get('users') or ())
             errors.extend(membership_errors)
-
-            local_roles, local_role_errors = apply_site_local_roles(
-                site, record.get('site_local_roles') or ())
+            local_roles, local_role_errors = apply_site_local_roles(site, record.get('site_local_roles') or ())
             errors.extend(local_role_errors)
-
             identity = apply_site_identity(site, record)
             props = apply_site_properties(site, record.get('properties') or {})
             registry_email = apply_registry_email(site, record.get('properties') or {})
             mail = apply_mailhost(site, record.get('mailhost'))
-            workflows, workflows_skipped = apply_workflow_chains(
-                site, record.get('workflow_chains') or {})
-
+            workflows, workflows_skipped = apply_workflow_chains(site, record.get('workflow_chains') or {})
             try:
+                site.portal_catalog.manage_reindexIndex(ids=['allowedRolesAndUsers'])
                 site.reindexObject()
-            except Exception:
-                pass
+            except Exception as exc:
+                errors.append('security catalog reindex: %r' % (exc,))
 
             report['sites'][site_id] = {
-                'groups_created': groups_created,
-                'groups_existing': groups_existing,
-                'virtual_groups_skipped': groups_virtual,
-                'group_roles_assigned': group_roles,
-                'users_created': users_created,
-                'users_existing': users_existing,
-                'user_roles_assigned': user_roles,
-                'memberships_added': memberships_added,
+                'groups_created': groups_created, 'groups_existing': groups_existing,
+                'virtual_groups_skipped': groups_virtual, 'group_roles_assigned': group_roles,
+                'users_created': users_created, 'users_existing': users_existing,
+                'user_roles_assigned': user_roles, 'memberships_added': memberships_added,
                 'memberships_existing': memberships_existing,
                 'virtual_memberships_skipped': memberships_virtual,
-                'site_local_roles_applied': local_roles,
-                'site_identity_applied': identity,
-                'site_properties_applied': props,
-                'registry_email_applied': registry_email,
-                'mailhost_fields_applied': mail,
-                'workflow_chains_applied': workflows,
+                'site_local_roles_applied': local_roles, 'site_identity_applied': identity,
+                'site_properties_applied': props, 'registry_email_applied': registry_email,
+                'mailhost_fields_applied': mail, 'workflow_chains_applied': workflows,
                 'workflow_chains_skipped': workflows_skipped,
                 'smtp_password_required': bool((record.get('mailhost') or {}).get('smtp_password_configured')),
                 'errors': errors,
             }
             report['password_resets_required'][site_id] = resets
-
             status = 'OK' if not errors else 'FAILED (%d errors)' % len(errors)
             print('%s: %s' % (site_id, status))
             print('  users +%d/%d existing, groups +%d/%d existing, memberships +%d/%d existing, virtual memberships skipped %d' %
-                  (users_created, users_existing,
-                   groups_created, groups_existing,
-                   memberships_added, memberships_existing,
-                   memberships_virtual))
+                  (users_created, users_existing, groups_created, groups_existing,
+                   memberships_added, memberships_existing, memberships_virtual))
             print('  roles assigned: users %d, groups %d' % (user_roles, group_roles))
             for error in errors:
                 print('  ERROR: %s' % error)
             for skipped in workflows_skipped:
-                print('  WORKFLOW SKIPPED: %s <- %s' %
-                      (skipped['portal_type'], ','.join(skipped['source_chain'])))
+                print('  WORKFLOW SKIPPED: %s <- %s' % (skipped['portal_type'], ','.join(skipped['source_chain'])))
             if (record.get('mailhost') or {}).get('smtp_password_configured'):
                 print('  WARNING: SMTP password was configured on source and must be set separately.')
             transaction.commit()
