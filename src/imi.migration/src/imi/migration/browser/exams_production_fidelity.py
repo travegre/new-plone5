@@ -89,6 +89,21 @@ class ProductionSearchMixin(object):
             return None
         return '/'.join(base.getPhysicalPath())
 
+    @staticmethod
+    def _brain_object(brain):
+        """Resolve an unrestricted result without re-entering security traversal.
+
+        These public views already use ``unrestrictedSearchResults`` to mirror
+        the legacy public catalog search.  Calling ``brain.getObject()`` after
+        that performs normal traversal again and can turn a valid anonymous
+        search result into an authentication challenge.  Use the unrestricted
+        brain resolver consistently instead.
+        """
+        getter = getattr(brain, '_unrestrictedGetObject', None)
+        if getter is not None:
+            return getter()
+        return brain.getObject()
+
     def _moj_candidates(self):
         path = self._base_path()
         if path is None:
@@ -97,7 +112,7 @@ class ProductionSearchMixin(object):
             portal_type='imi.exams.examination',
             path=path,
         )
-        return [brain.getObject() for brain in brains]
+        return [self._brain_object(brain) for brain in brains]
 
     def filtered_exams(self, query=None):
         query = str(query if query is not None else
@@ -114,7 +129,7 @@ class ProductionSearchMixin(object):
             portal_type='imi.exams.examination',
             path=path,
         )
-        return [brain.getObject() for brain in brains]
+        return [self._brain_object(brain) for brain in brains]
 
 
 class ExamsHomeView(ProductionMenuMixin, legacy.ExamsHomeView):
