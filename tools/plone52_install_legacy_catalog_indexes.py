@@ -4,38 +4,53 @@
 from __future__ import print_function
 
 import transaction
-from zope.interface import alsoProvides
 
-from imi.migration.content import IDirectoryPerson
-from imi.migration.content import IExamination
 from imi.migration.setuphandlers import HTMLTEXT_LEXICON_ID
 from imi.migration.setuphandlers import SITE_INDEXES
 from imi.migration.setuphandlers import install_catalog_indexes
 
 
 SITES = ('portal', 'dezurstva', 'kiestra', 'preiskave', 'nadomescanja')
-TYPE_MARKERS = {
-    'imi.directory.person': IDirectoryPerson,
-    'imi.exams.examination': IExamination,
-}
 
 
 def _reindex_objects(site, portal_type, idxs):
-    """Reindex migration content independent of the instance-run security context."""
-    brains = site.portal_catalog.unrestrictedSearchResults(
+    """Synchronously reindex selected indexes through Plone's catalog wrapper.
+
+    ``obj.reindexObject()`` goes through CMFCore's transaction-aware indexing
+    queue.  For this offline migration/repair script we deliberately call
+    ``portal_catalog.catalog_object`` directly: CatalogTool wraps the object
+    with ``IIndexableObject`` before handing it to ZCatalog, so named
+    ``plone.indexer`` adapters are still used, but the selected indexes are
+    updated immediately and can be verified in this same process.
+    """
+    catalog = site.portal_catalog
+    brains = list(catalog.unrestrictedSearchResults(
         portal_type=portal_type,
         path={'query': '/'.join(site.getPhysicalPath()), 'depth': -1},
-    )
-    count = marked = 0
-    marker = TYPE_MARKERS.get(portal_type)
+    ))
     for brain in brains:
         obj = brain._unrestrictedGetObject()
-        if marker is not None and not marker.providedBy(obj):
-            alsoProvides(obj, marker)
-            marked += 1
-        obj.reindexObject(idxs=list(idxs))
-        count += 1
-    return count, marked
+        catalog.catalog_object(
+            obj,
+            uid=brain.getPath(),
+            idxs=list(idxs),
+            update_metadata=0,
+        )
+    return len(brains)
+
+
+def _print_index_state(catalog, names):
+    print('INDEX OBJECT COUNTS:')
+    for name in names:
+        index = catalog._catalog.indexes.get(name)
+        if index is None:
+            print('  %s: MISSING' % name)
+            continue
+        try:
+            count = index.numObjects()
+        except Exception:
+            count = '<unavailable>'
+        print('  %s: %s' % (name, count))
 
 
 def run(app):
@@ -59,19 +74,36 @@ def run(app):
         catalog = site.portal_catalog
 
         if site_id == 'portal':
-            count, marked = _reindex_objects(
+            count = _reindex_objects(
                 site, 'imi.directory.person', ('SearchableText', 'priimek'))
             print('REINDEXED IMENIK PERSONS:', count)
-            print('MARKED IDirectoryPerson:', marked)
+            _print_index_state(catalog, ('SearchableText', 'priimek'))
+            scope = {
+                'portal_type': 'imi.directory.person',
+                'path': {'query': '/'.join(site.getPhysicalPath()), 'depth': -1},
+            }
+            for term in ('Reklamacijsko*', 'Financna*', '2573*'):
+                found = catalog.unrestrictedSearchResults(SearchableText=term, **scope)
+                print('  SearchableText %r -> %d' % (term, len(found)))
         elif site_id == 'preiskave':
-            count, marked = _reindex_objects(
+            count = _reindex_objects(
                 site,
                 'imi.exams.examination',
                 tuple(expected.keys()),
             )
             print('REINDEXED PREISKAVE EXAMS:', count)
-            print('MARKED IExamination:', marked)
+            _print_index_state(catalog, tuple(expected.keys()))
+            scope = {
+                'portal_type': 'imi.exams.examination',
+                'path': {'query': '/'.join(site.getPhysicalPath()), 'depth': -1},
+            }
+            for term in ('Toxoplasma*', 'PARAZITOLOGIJA*'):
+                found = catalog.unrestrictedSearchResults(moj=term, **scope)
+                print('  moj %r -> %d' % (term, len(found)))
         elif changed:
+            # These indexes use object attributes directly and do not need a
+            # custom named indexer. Reindexing a newly-created/corrected index
+            # through ZCatalog is sufficient.
             catalog.manage_reindexIndex(ids=list(changed))
 
         print('CHANGED:', list(changed))
