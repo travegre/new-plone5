@@ -1,0 +1,86 @@
+/* Final, last-loaded corrections measured against the live Plone 4.3 quick-search page.
+   Keep this file small and explicit: it only resolves rules still being overridden by
+   the older compatibility layers. */
+
+/* The old #okol had no top padding.  logo.png itself kept the original skin
+   padding (20px top, 65px left), which is why the visible mark sits slightly
+   right of the page centre even though the image box is centred. */
+html body.imi-exams-public .exams-header {
+  padding:0 !important;
+}
+html body.imi-exams-public .exams-header > a {
+  padding:0 !important;
+}
+html body.imi-exams-public .exams-header #logo {
+  width:auto !important;
+  max-width:none !important;
+  height:auto !important;
+  margin:20px 0 10px 0 !important;
+  padding:20px 0 0 65px !important;
+}
+
+/* In the live 4.3 page the quick-search heading sits about 15px lower and is
+   visibly wider than the current fallback Georgia rendering. */
+html body.imi-exams-public[data-mode="quick"] #vsebina_podstran {
+  padding-top:66px !important;
+}
+html body.imi-exams-public[data-mode="quick"] #vsebina_podstran > h1 {
+  margin-bottom:11px !important;
+  font-family:"Droid Serif",Georgia,"Times New Roman",serif !important;
+  font-size:40px !important;
+  line-height:46px !important;
+}
+
+/* Search control geometry from the old page. */
+html body.imi-exams-public[data-mode="quick"] #exam-search {
+  width:310px !important;
+  padding:5px !important;
+  font-size:16px !important;
+  line-height:20px !important;
+}
+html body.imi-exams-public[data-mode="quick"] .legacy-quick-search .searchButton {
+  height:40px !important;
+  margin:-8px 0 0 5px !important;
+  padding:0 10px !important;
+  font-size:13px !important;
+  line-height:38px !important;
+}
+
+/* Match the live 4.3 vertical placement: the purple block begins lower, its
+   first result starts lower inside the block, and rows are 38px apart. */
+html body.imi-exams-public[data-mode="quick"] #exam-live-results {
+  margin-top:69px !important;
+}
+html body.imi-exams-public[data-mode="quick"] #exam-live-results .livesearchContainer {
+  padding:calc(5% + 22px) 5% 5% !important;
+}
+html body.imi-exams-public[data-mode="quick"] #exam-live-results .LSTable {
+  width:calc(100% - 24px) !important;
+  margin-left:24px !important;
+}
+html body.imi-exams-public[data-mode="quick"] #exam-live-results .LSRow {
+  padding:7px 0 !important;
+}
+html body.imi-exams-public[data-mode="quick"] #exam-live-results .LSRow > a:not(.livesearch-show-all) {
+  margin-top:5px !important;
+  font-size:14px !important;
+  line-height:18px !important;
+}
+
+/* The generic white live-search link rule must never erase the show-all label. */
+html body.imi-exams-public[data-mode="quick"] #exam-live-results .LSRow a.livesearch-show-all:link,
+html body.imi-exams-public[data-mode="quick"] #exam-live-results .LSRow a.livesearch-show-all:visited {
+  display:inline-block !important;
+  width:auto !important;
+  background:#fff !important;
+  color:#624c9c !important;
+  border:1px solid #fff !important;
+  padding:7px 14px !important;
+  font-weight:700 !important;
+}
+html body.imi-exams-public[data-mode="quick"] #exam-live-results .LSRow a.livesearch-show-all:hover,
+html body.imi-exams-public[data-mode="quick"] #exam-live-results .LSRow a.livesearch-show-all:focus {
+  background:#2e2c31 !important;
+  color:#fff !important;
+  border-color:#2e2c31 !important;
+}

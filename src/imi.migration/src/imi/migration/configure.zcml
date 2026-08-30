@@ -3,33 +3,25 @@
     xmlns:browser="http://namespaces.zope.org/browser"
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup">
 
-  <!-- The lightweight Docker develop-package skeleton intentionally has no
-       install_requires metadata, so includeDependencies(package=".") no longer
-       guarantees that CMFCore permissions are registered before our browser
-       pages use cmf.ModifyPortalContent / cmf.AddPortalContent. -->
   <include package="Products.CMFCore" file="permissions.zcml" />
   <includeDependencies package="." />
   <include package=".browser" />
 
-  <utility
-      component=".vocabularies.duty_staff_vocabulary"
-      name="imi.duty.staff"
-      />
+  <utility component=".vocabularies.duty_staff_vocabulary" name="imi.duty.staff" />
+  <utility component=".vocabularies.form_staff_email_vocabulary" name="imi.form.staff_email" />
 
-  <utility
-      component=".vocabularies.form_staff_email_vocabulary"
-      name="imi.form.staff_email"
-      />
+  <!-- plone.indexer adapters are named (content, catalog) -> IIndexer adapters. -->
+  <adapter name="SearchableText" factory=".indexers.directory_searchable_text" />
+  <adapter name="moj" factory=".indexers.examination_moj" />
+  <adapter name="sklop" factory=".indexers.examination_sklop" />
+  <adapter name="sinonim" factory=".indexers.examination_sinonim" />
 
   <subscriber
       for=".content.IDutyRosterDay zope.lifecycleevent.interfaces.IObjectModifiedEvent"
       handler=".events.copy_readiness_to_week"
       />
 
-  <browser:resourceDirectory
-      name="imi.migration"
-      directory="static"
-      />
+  <browser:resourceDirectory name="imi.migration" directory="static" />
 
   <genericsetup:registerProfile
       name="default"
@@ -37,6 +29,7 @@
       description="Installs the Dexterity content models used by the Plone 4.3 migration."
       directory="profiles/default"
       provides="Products.GenericSetup.interfaces.EXTENSION"
+      post_handler=".setuphandlers.post_install"
       />
 
 </configure>

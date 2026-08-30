@@ -23,6 +23,7 @@
             <input id="datum"
                    name="datum"
                    type="date"
+                   lang="sl"
                    required="required" />
           </div>
 
@@ -45,6 +46,7 @@
             <input id="star"
                    name="star"
                    type="date"
+                   lang="sl"
                    required="required" />
           </div>
 
@@ -54,6 +56,7 @@
             <input id="nov"
                    name="nov"
                    type="date"
+                   lang="sl"
                    required="required" />
           </div>
 

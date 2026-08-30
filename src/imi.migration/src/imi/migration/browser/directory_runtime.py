@@ -4,25 +4,49 @@ from html import escape
 
 from plone import api
 
-from .runtime_fixes import DirectorySearchView as CachedDirectorySearchView
+from .legacy_sites import DirectorySearchView as LegacyDirectorySearchView
 
 
-class DirectorySearchView(CachedDirectorySearchView):
-    """Keep cached search, but emit the complete legacy contact detail block."""
+def _legacy_query(value):
+    """Convert IMENIK input exactly as the Plone-4 livesearch script did."""
+    value = str(value or '')
+    for char in ('?', '-', '+', '*', u'\u3000'):
+        value = value.replace(char, ' ')
+    value = ' AND '.join(value.split())
+    value = value.replace('(', '"("').replace(')', '")"')
+    return value + '*' if value else ''
+
+
+class DirectorySearchView(LegacyDirectorySearchView):
+    """Catalog-backed port of the Plone-4 IMENIK livesearch."""
+
+    def _results(self, portal, query):
+        transformed = _legacy_query(query)
+        if not transformed:
+            return []
+        base = portal.get('data2')
+        if base is None:
+            return []
+        catalog = portal.portal_catalog
+        brains = catalog.unrestrictedSearchResults(
+            SearchableText=transformed,
+            portal_type='imi.directory.person',
+            path='/'.join(base.getPhysicalPath()),
+        )
+        objects = [brain.getObject() for brain in brains]
+        objects.sort(
+            key=lambda obj: (
+                (getattr(obj, 'priimek', '') or u'ŽŽŽŽŽ').lower(),
+                (getattr(obj, 'ime', '') or '').lower(),
+            )
+        )
+        return objects
 
     def __call__(self):
         portal = api.portal.get()
         query = str(self.request.form.get('q') or self.request.form.get('searchGadget') or '').strip()
-        words = [w.lower() for w in query.replace('*', ' ').replace('+', ' ').split() if w]
-        objects = []
-        if words:
-            for haystack, obj in self._cache(portal):
-                if all(word in haystack for word in words):
-                    objects.append(obj)
-        objects.sort(key=lambda obj: ((getattr(obj, 'priimek', '') or 'ŽŽŽŽŽ').lower(),
-                                      (getattr(obj, 'ime', '') or '').lower()))
+        objects = self._results(portal, query)
         total = len(objects)
-        objects = objects[:100]
 
         self.request.response.setHeader('Content-Type', 'text/html; charset=utf-8')
         if not objects:

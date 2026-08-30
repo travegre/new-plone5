@@ -1,65 +1,198 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title tal:content="view/title">PREISKAVE</title>
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-legacy.css" />
-  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-launch.css" />
 </head>
 <body class="imi-exams-public" tal:attributes="data-mode view/mode_key">
 <div id="zunanji_okvir"><div id="okvir">
-  <div class="exams-header"><a tal:attributes="href view/portal/absolute_url"><img id="logo" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a><h1 class="site-title"><a tal:attributes="href view/portal/absolute_url">PREISKAVE</a></h1></div>
-  <nav id="glavni_meni"><ul><li class="domov"><a tal:attributes="href view/portal/absolute_url" title="Domov">Domov</a></li><li tal:repeat="item view/menu" tal:attributes="class python:item[0] == view.mode_key() and 'oznacen' or ''"><a tal:attributes="href python:item[2]" tal:content="python:item[1]">Meni</a></li></ul></nav><div class="clear"></div>
+  <header class="exams-header">
+    <a tal:attributes="href view/portal/absolute_url"><img id="logo" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a>
+    <h1 class="site-title"><a tal:attributes="href view/portal/absolute_url">PREISKAVE</a></h1>
+  </header>
+
+  <nav id="podmeni" class="legacy-horizontal-menu">
+    <ul class="nav_subitems">
+      <li tal:repeat="item view/menu" tal:attributes="class python:item[0] == view.mode_key() and 'oznacen' or ''">
+        <a tal:attributes="href python:item[2]" tal:content="python:item[1]">Meni</a>
+      </li>
+    </ul>
+  </nav>
+
   <main id="vsebina_podstran">
     <tal:home condition="python:view.mode_key() == 'home'">
       <h1>PREISKAVE</h1>
       <div class="search-choice-grid slikce_filtrov row">
-        <a class="search-opcija quick" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_hitro_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-quick.png" alt="" /><p>Hitro iskanje</p></a>
-        <a class="search-opcija areas" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_podrocja_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-podrocja.png" alt="" /><p>Po področjih</p></a>
-        <a class="search-opcija samples" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_vzorci_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-vzorci.png" alt="" /><p>Po vzorcih</p></a>
-        <a class="search-opcija labs" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_lab_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-lab.png" alt="" /><p>Po laboratorijih</p></a>
+        <a tal:repeat="item view/launch_items" tal:attributes="class python:'search-opcija ' + item[0]; href python:item[2]">
+          <img class="search-choice-image" tal:attributes="src python:view.portal.absolute_url() + '/++resource++imi.migration/' + item[3]" alt="" />
+          <p tal:content="python:item[1]">Iskanje</p>
+        </a>
       </div>
     </tal:home>
 
     <tal:all condition="python:view.mode_key() == 'all'">
       <h1>Preiskave</h1>
       <div class="search-choice-grid slikce_filtrov row legacy-preiskave-launch">
-        <a class="search-opcija quick" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_hitro_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-quick.png" alt="" /><p>Hitro iskanje</p></a>
-        <a class="search-opcija areas" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_podrocja_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-podrocja.png" alt="" /><p>Po področjih</p></a>
-        <a class="search-opcija samples" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_vzorci_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-vzorci.png" alt="" /><p>Po vzorcih</p></a>
-        <a class="search-opcija labs" tal:attributes="href string:${view/portal/absolute_url}/@@preiskave_lab_view"><img class="search-choice-image" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/search-lab.png" alt="" /><p>Po laboratorijih</p></a>
+        <a tal:repeat="item view/launch_items" tal:attributes="class python:'search-opcija ' + item[0]; href python:item[2]">
+          <img class="search-choice-image" tal:attributes="src python:view.portal.absolute_url() + '/++resource++imi.migration/' + item[3]" alt="" />
+          <p tal:content="python:item[1]">Iskanje</p>
+        </a>
       </div>
     </tal:all>
 
     <tal:quick condition="python:view.mode_key() == 'quick'">
       <h1>Hitro iskanje</h1>
-      <form name="searchform" id="searchform" class="searchPage legacy-quick-search" method="get" tal:attributes="action string:${view/portal/absolute_url}/@@preiskave_hitro_view"><div class="LSBox"><input class="searchPage iskalnik" id="exam-search" name="moj" autocomplete="off" tal:attributes="value view/query" /><input class="searchPage searchButton" type="submit" value="Išči" /><br /><span>Vpišite iskani pojem, ime preiskave, vzorec, področje, sklop, laboratorij, ...</span><div id="exam-live-results" class="rezultati LSResult" tal:attributes="data-search-url string:${view/portal/absolute_url}/@@preiskave-livesearch"></div></div></form>
-      <div class="quick-full-results" tal:condition="view/query"><p class="result-count" tal:content="python:u'Zadetkov: %d' % len(view.results())">Zadetkov</p><ul class="plain-exam-list"><li tal:repeat="exam view/results"><a tal:attributes="href python:view.exam_url(exam)" tal:content="exam/Title">Preiskava</a></li></ul></div>
+      <form name="searchform" id="searchform" class="searchPage legacy-quick-search" method="get" tal:attributes="action string:${view/portal/absolute_url}/@@preiskave_hitro_view">
+        <div class="LSBox">
+          <input class="searchPage iskalnik" id="exam-search" name="moj" autocomplete="off" tal:attributes="value view/query" />
+          <input class="searchPage searchButton" type="submit" value="Išči" />
+          <br />
+          <span>Vpišite iskani pojem, ime preiskave, vzorec, področje, sklop, laboratorij, ...</span>
+          <div id="exam-live-results" class="rezultati LSResult" tal:attributes="data-search-url string:${view/portal/absolute_url}/@@preiskave-livesearch"></div>
+        </div>
+      </form>
+      <div class="quick-full-results" tal:condition="view/query">
+        <p class="result-count" tal:content="python:u'Zadetkov: %d' % len(view.results())">Zadetkov</p>
+        <ul class="plain-exam-list"><li tal:repeat="exam view/results"><a tal:attributes="href python:view.exam_url(exam)" tal:content="exam/Title">Preiskava</a></li></ul>
+      </div>
     </tal:quick>
 
-    <tal:facet condition="python:view.mode_key() in ('labs','areas','groups')">
-      <h1 tal:content="view/title">Področja</h1><div id="listing_preiskav"><span class="trenutno">Trenutno izbrani <span tal:replace="view/facet_label">filter</span></span><br />
-      <form class="facet-form" method="get" tal:attributes="action view/mode_url"><select class="podrocje_select" name="podrocje" onchange="this.form.submit()"><option value="" tal:attributes="selected python:not view.selected_facet()" tal:content="view/facet_all_label">VSE</option><option tal:repeat="facet view/facet_values" tal:attributes="value facet; selected python:facet == view.selected_facet()" tal:content="facet">Facet</option></select><span class="vijolcno">&lt;&lt;&lt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Skrčite število preiskav samo na eno izbrano vrednost</span></form>
-      <div id="divi_preiskav"><ul class="izbirnik_crk"><li class="preiskave_crke" tal:repeat="group python:view.alphabet_groups(view.facet_exams())" tal:attributes="data-letter group/letter" tal:content="group/letter">A</li></ul><div class="locnica_druga clear"></div>
-      <div class="alphabet-listing crke_skrito preiskave odprto" tal:repeat="group python:view.alphabet_groups(view.facet_exams())" tal:attributes="data-group group/letter"><div class="velika_crka" tal:content="group/letter">A</div><ul><li tal:repeat="exam group/items"><a tal:attributes="href python:view.exam_url(exam)" tal:content="exam/Title">Preiskava</a></li></ul></div></div></div>
+    <tal:facet condition="python:view.mode_key() in ('labs','areas','groups')" tal:define="facet_exams view/facet_exams; alphabet python:view.alphabet_groups(facet_exams)">
+      <h1 tal:content="view/title">Področja</h1>
+      <div id="listing_preiskav">
+        <span class="trenutno" tal:content="view/facet_current_label">Trenutno izbrano področje preiskav</span><br />
+        <form class="facet-form" method="get" tal:attributes="action view/mode_url">
+          <select class="podrocje_select" name="podrocje" onchange="this.form.submit()">
+            <option value="" tal:attributes="selected python:not view.selected_facet()" tal:content="view/facet_all_label">VSE</option>
+            <option tal:repeat="facet view/facet_values" tal:attributes="value facet; selected python:facet == view.selected_facet()" tal:content="facet">Facet</option>
+          </select>
+          <span class="vijolcno">&lt;&lt;&lt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<tal:hint tal:replace="view/facet_hint">Skrčite število preiskav</tal:hint></span>
+        </form>
+        <div id="divi_preiskav">
+          <ul class="izbirnik_crk"><li class="preiskave_crke" tal:repeat="group alphabet" tal:attributes="data-letter python:group['letter']" tal:content="python:group['letter']">A</li></ul>
+          <div class="locnica_druga clear"></div>
+          <div class="alphabet-listing crke_skrito preiskave odprto" tal:repeat="group alphabet" tal:attributes="data-group python:group['letter']">
+            <div class="velika_crka" tal:content="python:group['letter']">A</div>
+            <ul><li tal:repeat="exam python:group['exams']"><a tal:attributes="href python:view.exam_url(exam)" tal:content="exam/Title">Preiskava</a></li></ul>
+          </div>
+        </div>
+      </div>
     </tal:facet>
 
-    <tal:new condition="python:view.mode_key() == 'new'">
-      <h1>Nove preiskave</h1><div class="new-year" tal:repeat="year view/new_groups"><p class="text text-12 year-title" tal:content="python:u'Preiskave %s' % year['year']">Preiskave 2017</p><div class="alphabet-listing" tal:repeat="group year/groups"><div class="velika_crka" tal:content="group/letter">A</div><ul><li tal:repeat="exam group/items"><a tal:attributes="href python:view.exam_url(exam)" tal:content="exam/Title">Preiskava</a></li></ul></div></div><p tal:condition="not:view/new_groups">Ni označenih novih preiskav.</p>
+    <tal:new condition="python:view.mode_key() == 'new'" tal:define="years view/new_groups">
+      <h1>Nove preiskave</h1>
+      <div class="new-year" tal:repeat="year years">
+        <ul class="izbirnik_crk"><li class="preiskave_crke" tal:repeat="group python:year['sections']" tal:attributes="data-letter python:group['letter']" tal:content="python:group['letter']">A</li></ul>
+        <div class="locnica_druga clear"></div>
+        <p class="text text-12 year-title" tal:content="python:u'Preiskave %s' % year['year']">Preiskave 2017</p>
+        <div class="alphabet-listing crke_skrito preiskave odprto" tal:repeat="group python:year['sections']" tal:attributes="data-group python:group['letter']">
+          <div class="velika_crka" tal:content="python:group['letter']">A</div>
+          <ul><li tal:repeat="exam python:group['exams']"><a tal:attributes="href python:view.exam_url(exam)" tal:content="exam/Title">Preiskava</a></li></ul>
+        </div>
+      </div>
     </tal:new>
 
-    <tal:urgent condition="python:view.mode_key() == 'urgent'">
-      <h1>Nujne preiskave</h1><div id="divi_preiskav"><div class="urgent-exams"><div class="alphabet-listing" tal:repeat="group python:view.alphabet_groups(view.urgent_exams())"><div class="velika_crka" tal:content="group/letter">A</div><ul><li tal:repeat="exam group/items"><a tal:attributes="href python:view.exam_url(exam)" tal:content="exam/Title">Preiskava</a></li></ul></div></div><p class="text text-12 urgent-sample-title">Preiskave z nujnim vzorcem</p><ul class="urgent-samples"><li tal:repeat="row view/urgent_samples"><a tal:attributes="href python:view.exam_url(row['exam'])" tal:content="python:u'%s (%s)' % (row['exam'].Title(), row['sample'])">Preiskava (vzorec)</a></li></ul></div>
+    <tal:urgent condition="python:view.mode_key() == 'urgent'" tal:define="urgent view/urgent_exams; alphabet python:view.alphabet_groups(urgent); urgent_samples view/urgent_samples">
+      <h1>Nujne preiskave</h1>
+      <div id="listing_preiskav"><div id="divi_preiskav">
+        <ul class="izbirnik_crk"><li class="preiskave_crke" tal:repeat="group alphabet" tal:attributes="data-letter python:group['letter']" tal:content="python:group['letter']">A</li></ul>
+        <div class="locnica_druga clear"></div>
+        <div class="alphabet-listing crke_skrito preiskave odprto" tal:repeat="group alphabet" tal:attributes="data-group python:group['letter']">
+          <div class="velika_crka" tal:content="python:group['letter']">A</div>
+          <ul><li tal:repeat="exam python:group['exams']"><a tal:attributes="href python:view.exam_url(exam)" tal:content="exam/Title">Preiskava</a></li></ul>
+        </div>
+        <p class="text text-12 urgent-sample-title">Preiskave z nujnim vzorcem</p>
+        <ul class="urgent-samples"><li tal:repeat="row urgent_samples"><a tal:attributes="href python:view.exam_url(row['exam'])" tal:content="python:u'%s (%s)' % (row['exam'].Title(), row['sample'])">Preiskava (vzorec)</a></li></ul>
+      </div></div>
     </tal:urgent>
 
-    <tal:samples condition="python:view.mode_key() == 'samples'">
-      <h1>Vzorci</h1><div id="listing_preiskav" class="vzorci"><span class="trenutno">Trenutno izbrano področje preiskav</span><br />
-      <form class="facet-form" method="get" tal:attributes="action string:${view/portal/absolute_url}/@@preiskave_vzorci_view"><select class="podrocje_select" name="podrocje" onchange="this.form.submit()"><option value="" tal:attributes="selected python:not view.selected_area()">VSA PODROČJA</option><option tal:repeat="area view/areas" tal:attributes="value area; selected python:area == view.selected_area()" tal:content="area">Področje</option></select><span class="vijolcno">&lt;&lt;&lt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Skrčite število preiskav samo na eno izbrano področje</span></form>
-      <div class="vzorci_drobtine"><tal:crumb repeat="crumb view/sample_breadcrumbs"><span tal:condition="not:repeat/crumb/end"><a tal:attributes="href crumb/url" tal:content="crumb/label">vsi vzorci</a> &gt; </span><span tal:condition="repeat/crumb/end" tal:content="crumb/label">trenutno</span></tal:crumb></div>
-      <div class="sample-choice-grid" tal:condition="view/sample_choices"><div class="razvrsti" tal:repeat="choice view/sample_choices"><a tal:attributes="href python:view.sample_choice_url(choice)" tal:content="choice">Vzorec</a></div></div>
-      <div class="sample-exam-results" tal:condition="view/sample_matching_exams"><p class="text text-12">Preiskave za izbrani vzorec</p><div class="alphabet-listing" tal:repeat="group python:view.alphabet_groups(view.sample_matching_exams())"><div class="velika_crka" tal:content="group/letter">A</div><ul><li tal:repeat="exam group/items"><a tal:attributes="href python:view.exam_url(exam)" tal:content="exam/Title">Preiskava</a></li></ul></div></div></div>
+    <tal:samples condition="python:view.mode_key() == 'samples'" tal:define="choices view/sample_choices; selected view/sample_selected; area view/selected_area; matches python:view.sample_matching_exams() if any(selected) else [obj for obj in view.all_exams() if (not area or area in (obj.podrocje or ()))]">
+      <h1>Vzorci</h1>
+      <div id="listing_preiskav" class="vzorci">
+        <span class="trenutno">Trenutno izbrano področje preiskav</span><br />
+        <form class="facet-form" method="get" tal:attributes="action string:${view/portal/absolute_url}/@@preiskave_vzorci_view">
+          <select class="podrocje_select" name="podrocje" onchange="this.form.submit()">
+            <option value="" tal:attributes="selected python:not view.selected_area()">VSA PODROČJA</option>
+            <option tal:repeat="area_option view/areas" tal:attributes="value area_option; selected python:area_option == view.selected_area()" tal:content="area_option">Področje</option>
+          </select>
+          <span class="vijolcno">&lt;&lt;&lt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Skrčite število preiskav samo na eno izbrano področje</span>
+        </form>
+        <div class="vzorci_drobtine"><tal:crumb repeat="crumb view/sample_breadcrumbs"><span tal:condition="not:repeat/crumb/end"><a tal:attributes="href python:crumb['url']" tal:content="python:crumb['label']">vsi vzorci</a> &gt; </span><span tal:condition="repeat/crumb/end" tal:content="python:crumb['label']">trenutno</span></tal:crumb></div>
+        <div class="sample-choice-grid" tal:condition="choices"><div class="razvrsti" tal:repeat="choice choices"><a tal:attributes="href python:view.sample_choice_url(choice)" tal:content="choice">Vzorec</a></div></div>
+        <div class="sample-exam-results" tal:condition="matches" tal:define="alphabet python:view.alphabet_groups(matches)">
+          <div id="divi_preiskav">
+            <ul class="izbirnik_crk"><li class="preiskave_crke" tal:repeat="group alphabet" tal:attributes="data-letter python:group['letter']" tal:content="python:group['letter']">A</li></ul>
+            <div class="locnica_druga clear"></div>
+            <div class="alphabet-listing crke_skrito preiskave odprto" tal:repeat="group alphabet" tal:attributes="data-group python:group['letter']">
+              <div class="velika_crka" tal:content="python:group['letter']">A</div>
+              <ul><li tal:repeat="exam python:group['exams']"><a tal:attributes="href python:view.exam_url(exam)" tal:content="exam/Title">Preiskava</a></li></ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </tal:samples>
-  </main><div class="clear"></div>
+  </main>
+  <div class="clear"></div>
 </div></div>
-<script>(function(){'use strict';var letters=document.querySelectorAll('.preiskave_crke');letters.forEach(function(letter){letter.addEventListener('click',function(){var target=letter.getAttribute('data-letter');var active=letter.classList.contains('odprt');letters.forEach(function(x){x.classList.remove('odprt');});document.querySelectorAll('[data-group]').forEach(function(group){group.style.display='';});if(!active){letter.classList.add('odprt');document.querySelectorAll('[data-group]').forEach(function(group){if(group.getAttribute('data-group')!==target){group.style.display='none';}});}});});var input=document.getElementById('exam-search');var result=document.getElementById('exam-live-results');var timer=null;if(input&&result){var url=result.getAttribute('data-search-url');input.focus();input.addEventListener('input',function(){window.clearTimeout(timer);var q=input.value.trim();if(q.length<2){result.innerHTML='';result.style.display='none';return;}timer=window.setTimeout(function(){fetch(url+'?q='+encodeURIComponent(q),{credentials:'same-origin'}).then(function(r){return r.text();}).then(function(html){result.innerHTML=html;result.style.display='block';});},180);});document.addEventListener('mousedown',function(event){if(!result.contains(event.target)&&event.target!==input){result.style.display='none';}});}}());</script>
-</body></html>
+<script>
+(function(){
+  'use strict';
+  function fade(element, show, duration){
+    duration=duration||220;
+    if(show){
+      element.style.display='block';
+      element.style.opacity='0';
+      element.style.transition='opacity '+duration+'ms';
+      requestAnimationFrame(function(){requestAnimationFrame(function(){element.style.opacity='1';});});
+    }else{
+      element.style.opacity='1';
+      element.style.transition='opacity '+duration+'ms';
+      requestAnimationFrame(function(){element.style.opacity='0';});
+      window.setTimeout(function(){element.style.display='none';},duration);
+    }
+  }
+  document.querySelectorAll('.izbirnik_crk').forEach(function(selector){
+    var letters=selector.querySelectorAll('.preiskave_crke');
+    var scope=selector.parentNode;
+    letters.forEach(function(letter){
+      letter.addEventListener('click',function(){
+        var target=letter.getAttribute('data-letter');
+        var active=letter.classList.contains('odprt');
+        var groups=scope.querySelectorAll('[data-group]');
+        letters.forEach(function(x){x.classList.remove('odprt');});
+        if(active){
+          groups.forEach(function(group){fade(group,true);});
+          return;
+        }
+        letter.classList.add('odprt');
+        groups.forEach(function(group){
+          fade(group,group.getAttribute('data-group')===target);
+        });
+      });
+    });
+  });
+  var input=document.getElementById('exam-search');
+  var result=document.getElementById('exam-live-results');
+  var timer=null;
+  if(input&&result){
+    var url=result.getAttribute('data-search-url');
+    input.focus();
+    input.addEventListener('input',function(){
+      window.clearTimeout(timer);
+      var q=input.value.trim();
+      if(q.length<2){result.innerHTML='';result.style.display='none';return;}
+      timer=window.setTimeout(function(){
+        fetch(url+'?q='+encodeURIComponent(q),{credentials:'same-origin'})
+          .then(function(r){return r.text();})
+          .then(function(html){result.innerHTML=html;result.style.display='block';})
+          .catch(function(){result.innerHTML='';result.style.display='none';});
+      },180);
+    });
+    document.addEventListener('mousedown',function(event){if(!result.contains(event.target)&&event.target!==input){result.style.display='none';}});
+  }
+}());
+</script>
+</body>
+</html>

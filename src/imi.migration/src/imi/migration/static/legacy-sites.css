@@ -7,18 +7,19 @@
 :root { --imi-purple:#624C9C; --imi-green:#5fb11e; --imi-text:#414152; }
 html, body { margin:0; padding:0; }
 
+body.imi-directory-public,
 body.imi-kiestra-public,
 body.imi-replacements-public {
-  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAIAAAA/Y+msAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAcSURBVHjaYnr69Ol/MIAzGJD5EJIBWR7CBggwAMnZM/mCB9LIAAAAAElFTkSuQmCC);
+  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAIAAAA/Y+msAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAcSURBVHjaYnr69Ol/MIAzGJD5EJIBWR7CBggwAMnZM/mCB9LIAAAAAElFTkSuQmCC) !important;
   color:var(--imi-text);
   font:16px Tahoma,sans-serif;
 }
 
 .clear { clear:both; }
 .legacy-date-nav { width:100%; }
-.legacy-date-nav .legacy-back { margin-top:4px; width:28%; margin-right:5%; float:left; text-align:right; font-size:24px; font-family:Tahoma,sans-serif; }
+.legacy-date-nav .legacy-back { margin-top:4px; width:28%; margin-right:5%; float:left; text-align:right; font-size:16px; font-family:Tahoma,sans-serif; }
 .legacy-date-nav h2 { width:33%; float:left; text-align:center; }
-.legacy-date-nav .legacy-next { margin-top:4px; width:25%; margin-left:5%; float:left; text-align:left; font-size:24px; font-family:Tahoma,sans-serif; }
+.legacy-date-nav .legacy-next { margin-top:4px; width:25%; margin-left:5%; float:left; text-align:left; font-size:16px; font-family:Tahoma,sans-serif; }
 .legacy-half { width:49%; display:inline-block; vertical-align:top; }
 .legacy-half.left { float:left; }
 .legacy-half.right { float:right; }

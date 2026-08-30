@@ -20,6 +20,14 @@ def _at(values, index):
     return values[index] if index < len(values) else ''
 
 
+def _youtube_embed_url(value):
+    """Port the old template's watch?v= -> v/ conversion without JS."""
+    url = str(value or '').strip()
+    if not url:
+        return ''
+    return url.replace('watch?v=', 'v/')
+
+
 class ExaminationView(BaseExaminationView):
 
     def sample_rows(self):
@@ -49,7 +57,12 @@ class ExaminationView(BaseExaminationView):
                 phone = _at(lab_phones, pos)
                 code = _at(lab_codes, pos)
                 if name or phone or code:
-                    lab_rows.append({'name': name, 'phone': phone, 'code': code})
+                    lab_rows.append({
+                        'name': name,
+                        'phone': phone,
+                        'code': code,
+                        'number': pos + 1,
+                    })
             rows.append({
                 'name': sample_parts[0],
                 'collection': _at(collection, index),
@@ -57,7 +70,7 @@ class ExaminationView(BaseExaminationView):
                 'amount': _at(amounts, index),
                 'note': _at(notes, index),
                 'packaging': [item for item in _at(packaging, index).split('#') if item],
-                'video': _at(videos, index),
+                'video': _youtube_embed_url(_at(videos, index)),
                 'labs': lab_rows,
             })
         return rows

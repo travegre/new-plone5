@@ -12,16 +12,17 @@
   </p>
   <h2>Uredi dežurstvo</h2>
   <form tal:attributes="action string:${context/absolute_url}/@@kiestra-select" method="get">
-    <p>Datum: <input name="datum" type="date" tal:attributes="value view/today_id" /></p>
+    <p>Datum: <input name="datum" type="date" lang="sl" tal:attributes="value view/today_id" /></p>
     <input class="btn btn-primary" type="submit" value="Uredi" />
   </form>
   <p>&nbsp;</p>
   <h2>Kopiraj dežurstvo</h2>
   <form tal:attributes="action string:${context/absolute_url}/@@kiestra-copy" method="get">
-    <p>Obstoječi datum: <input name="star" type="date" tal:attributes="value view/today_id" /></p>
-    <p>Novi datum: <input name="nov" type="date" tal:attributes="value view/today_id" /></p>
+    <p>Obstoječi datum: <input name="star" type="date" lang="sl" tal:attributes="value view/today_id" /></p>
+    <p>Novi datum: <input name="nov" type="date" lang="sl" tal:attributes="value view/today_id" /></p>
     <input class="btn btn-primary" type="submit" value="Kopiraj" />
   </form>
+  <script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/legacy-date-picker.js"></script>
 </metal:main>
 </body>
 </html>

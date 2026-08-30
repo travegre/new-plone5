@@ -1,37 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TARGET="${1:-$HOME/new-plone5/src/imi.migration/src/imi/migration/static}"
+# Backward-compatible wrapper.  The canonical helper knows the actual 4.3 skin
+# filenames (iskanje-hitro.png, iskanje-podrocja.png, ...) and maps them to the
+# resource names used by the Plone 5 templates.
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-candidates=(
-  "$HOME/previous_plone/src/preiskave.podoba/preiskave/podoba/skins/preiskave_podoba_custom_images"
-  "$HOME/previous_plone/zeocluster/src/preiskave.podoba/preiskave/podoba/skins/preiskave_podoba_custom_images"
-  "$HOME/my-plone-migration/src/preiskave.podoba/preiskave/podoba/skins/preiskave_podoba_custom_images"
-)
-
-SOURCE=""
-for candidate in "${candidates[@]}"; do
-  if [[ -d "$candidate" ]]; then
-    SOURCE="$candidate"
-    break
-  fi
-done
-
-if [[ -z "$SOURCE" ]]; then
-  echo "Preiskave legacy image directory was not found." >&2
-  echo "Looked in:" >&2
-  printf '  %s\n' "${candidates[@]}" >&2
-  exit 1
+if [[ $# -gt 0 ]]; then
+  OLD_REPO="$1"
+elif [[ -d "$HOME/my-plone-migration" ]]; then
+  OLD_REPO="$HOME/my-plone-migration"
+elif [[ -d "$HOME/previous_plone" ]]; then
+  OLD_REPO="$HOME/previous_plone"
+else
+  OLD_REPO="../my-plone-migration"
 fi
 
-mkdir -p "$TARGET/embalazaSlike"
-for file in search-quick.png search-podrocja.png search-vzorci.png search-lab.png fajli_dol_new.png fajli_gor_new.png puscica_velika.png; do
-  if [[ -f "$SOURCE/$file" ]]; then
-    cp -f "$SOURCE/$file" "$TARGET/$file"
-    echo "copied $file"
-  fi
-done
-
-cp -f "$SOURCE"/embalazaSlike/* "$TARGET/embalazaSlike/"
-echo "copied packaging images -> $TARGET/embalazaSlike"
-echo "source: $SOURCE"
+exec "$ROOT/scripts/sync-preiskave-src-assets.sh" "$OLD_REPO"
