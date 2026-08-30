@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title tal:content="context/Title">Preiskava</title>
   <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-legacy.css" />
-  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-fidelity.css" />
-  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave-launch.css" />
 </head>
 <body class="imi-exams-public imi-exam-detail">
 <div id="zunanji_okvir"><div id="okvir">
@@ -78,60 +76,47 @@
                     </tal:hascode>
                   </tal:labcode>
                 </tal:labs>
-                <div class="clear"></div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="container _container container-13 preiskava_tech_data clearfix">
-        <div tal:condition="view/code"><p class="text text-16">Šifra preiskave</p><p class="text text-17" tal:content="view/code"></p></div>
-        <div tal:condition="python:bool(view.text('laboratoriji'))"><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="structure python:view.text('laboratoriji')"></p></div>
-        <div tal:condition="python:bool(view.rich('urnik'))"><p class="text text-16">Urnik izvajanja</p><div class="text text-17" tal:content="structure python:view.rich('urnik')"></div></div>
-        <div tal:condition="python:bool(view.rich('trajanje'))"><p class="text text-16">Trajanje preiskave</p><div class="text text-17" tal:content="structure python:view.rich('trajanje')"></div></div>
-        <div tal:condition="python:bool(view.rich('metode'))"><p class="text text-16">Metode preiskave</p><div class="text text-17" tal:content="structure python:view.rich('metode')"></div></div>
+      <div class="container _container container-12 preiskava_tech_data clearfix">
+        <tal:code condition="python:bool(context.sifra)"><div><p class="text text-16">Šifra preiskave</p><p class="text text-17" tal:content="context/sifra"></p></div></tal:code>
+        <tal:labs condition="python:bool(context.laboratoriji)"><div><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="context/laboratoriji"></p></div></tal:labs>
+        <tal:schedule condition="python:bool(view.rich('urnik'))"><div><p class="text text-16">Urnik izvajanja</p><div class="text text-17" tal:content="structure python:view.rich('urnik')"></div></div></tal:schedule>
+        <tal:duration condition="python:bool(context.trajanje)"><div><p class="text text-16">Trajanje preiskave</p><p class="text text-17" tal:content="context/trajanje"></p></div></tal:duration>
+        <tal:methods condition="python:bool(view.rich('metode'))"><div><p class="text text-16">Metode preiskave</p><div class="text text-17" tal:content="structure python:view.rich('metode')"></div></div></tal:methods>
       </div>
     </div>
-    </main><div class="clear"></div>
+    </main>
   </div>
 </div></div>
 
-<div id="image-lightbox" class="exam-lightbox" aria-hidden="true"><div class="exam-lightbox-bg"></div><img alt="Embalaža" /><button type="button">×</button></div>
+<div class="exam-lightbox" id="exam-lightbox"><div class="exam-lightbox-bg"></div><button type="button">×</button><img src="" alt="" /></div>
 <script>
 (function(){
   'use strict';
-  function slide(body,open,duration){
-    duration=duration||260;
-    body.style.overflow='hidden';
-    body.style.transition='height '+duration+'ms, opacity '+duration+'ms';
-    if(open){
-      body.style.display='block';
-      body.style.height='0px';
-      body.style.opacity='0';
-      var target=body.scrollHeight;
-      requestAnimationFrame(function(){requestAnimationFrame(function(){body.style.height=target+'px';body.style.opacity='1';});});
-      window.setTimeout(function(){body.style.height='auto';body.style.overflow='';body.style.transition='';},duration);
-    }else{
-      body.style.height=body.scrollHeight+'px';
-      body.style.opacity='1';
-      requestAnimationFrame(function(){requestAnimationFrame(function(){body.style.height='0px';body.style.opacity='0';});});
-      window.setTimeout(function(){body.style.display='none';body.style.height='';body.style.opacity='';body.style.overflow='';body.style.transition='';},duration);
-    }
-  }
+  var more=document.getElementById('gumb_pokazi_vec');
+  var opis=document.getElementById('opis_preiskave');
+  if(opis&&opis.scrollHeight>opis.clientHeight){opis.classList.add('collapsed');}
+  if(more&&opis){more.addEventListener('click',function(e){e.preventDefault();opis.classList.toggle('collapsed');opis.classList.toggle('expanded');more.textContent=opis.classList.contains('expanded')?'Prikaži manj':'Prikaži več';});}
   document.querySelectorAll('.naslov_vzorca').forEach(function(title){
+    var detail=title.nextElementSibling;
+    if(detail){detail.style.display='block';title.classList.add('odprt');}
     title.addEventListener('click',function(){
-      var body=title.nextElementSibling;
-      if(!body){return;}
-      var open=title.classList.toggle('odprt');
-      slide(body,open);
+      if(!detail)return;
+      var open=detail.style.display!=='none';
+      detail.style.display=open?'none':'block';
+      title.classList.toggle('odprt',!open);
     });
   });
-  var description=document.getElementById('opis_preiskave');var more=document.getElementById('gumb_pokazi_vec');
-  if(description&&more){if(description.scrollHeight<=60){more.parentNode.style.display='none';}else{description.classList.add('collapsed');more.parentNode.style.display='block';more.addEventListener('click',function(e){e.preventDefault();var open=description.classList.toggle('expanded');more.textContent=open?'Prikaži manj':'Prikaži več';});}}
-  var lightbox=document.getElementById('image-lightbox');var image=lightbox.querySelector('img');function close(){lightbox.classList.remove('open');lightbox.setAttribute('aria-hidden','true');}
-  document.querySelectorAll('.slika_popup').forEach(function(link){link.addEventListener('click',function(e){e.preventDefault();image.src=link.getAttribute('data-href');lightbox.classList.add('open');lightbox.setAttribute('aria-hidden','false');});});
-  lightbox.querySelector('.exam-lightbox-bg').addEventListener('click',close);lightbox.querySelector('button').addEventListener('click',close);document.addEventListener('keydown',function(e){if(e.key==='Escape'){close();}});
+  var lightbox=document.getElementById('exam-lightbox');
+  var lightboxImage=lightbox?lightbox.querySelector('img'):null;
+  document.querySelectorAll('.slika_popup').forEach(function(item){item.addEventListener('click',function(){if(lightbox&&lightboxImage){lightboxImage.src=item.getAttribute('data-href');lightbox.classList.add('open');}});});
+  if(lightbox){lightbox.addEventListener('click',function(event){if(event.target===lightboxImage)return;lightbox.classList.remove('open');});}
 }());
 </script>
-</body></html>
+</body>
+</html>
