@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal" lang="sl">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NADOMEŠČANJA - ENOTE</title>
@@ -30,7 +30,7 @@
 
     <div class="legacy-utility-row">
       <div class="legacy-half left"><form method="get" tal:attributes="action string:${context/absolute_url}/@@nadomescanja-public">
-        <p>Prikaži nadomeščanja na izbrani datum: </p><input name="datum" type="date" tal:attributes="value view/today_id" /><input type="submit" value="Prikaži" />
+        <p>Prikaži nadomeščanja na izbrani datum: </p><input name="datum" type="date" lang="sl" tal:attributes="value view/today_id" /><input type="submit" value="Prikaži" />
       </form></div>
       <div class="legacy-half right"><form method="get" tal:attributes="action string:${context/absolute_url}/@@nadomescanja-public">
         <p>Prikaži vsa nadomeščanja kjer nadomešča oseba:</p>
@@ -46,13 +46,13 @@
         <p>Izberite obdobje: </p><select name="izvoz-1-izbira" id="nad-izvoz-1-izbira">
           <option value=""></option><option value="teden">za prejšnji teden</option><option value="tedenplus2">za naslednja 2 tedna</option><option value="tekoci">za tekoči mesec</option><option value="pretekli">za pretekli mesec</option><option value="oddo">izvozi od do</option>
         </select>
-        <span class="date-range">od <input name="od" type="date" tal:attributes="value view/today_id" /> do <input name="do" type="date" tal:attributes="value view/today_id" /></span><input class="submit" type="submit" value="Izvozi" />
+        <span class="date-range">od <input name="od" type="date" lang="sl" tal:attributes="value view/today_id" /> do <input name="do" type="date" lang="sl" tal:attributes="value view/today_id" /></span><input class="submit" type="submit" value="Izvozi" />
       </form></div>
       <div class="legacy-half right"><form method="get" tal:attributes="action string:${context/absolute_url}/@@nadomescanja-izvoz" id="nad-izvoz-2">
         <p>Izberite osebo in nato obdobje:</p><select name="izvoz-2-oseba" id="nad-izvoz-2-oseba"><option value=""></option><option tal:repeat="option view/staff_options" tal:attributes="value python:option[0]" tal:content="python:option[1]">Ime</option></select>
         <div id="nad-obdobje"><p>Izberite obdobje: </p><select name="izvoz-2-izbira" id="nad-izvoz-2-izbira">
           <option value=""></option><option value="teden">za prejšnji teden</option><option value="tedenplus2">za naslednja 2 tedna</option><option value="tekoci">za tekoči mesec</option><option value="pretekli">za pretekli mesec</option><option value="oddo">izvozi od do</option>
-        </select><span class="date-range">od <input name="od" type="date" tal:attributes="value view/today_id" /> do <input name="do" type="date" tal:attributes="value view/today_id" /></span><input class="submit" type="submit" value="Izvozi" /></div>
+        </select><span class="date-range">od <input name="od" type="date" lang="sl" tal:attributes="value view/today_id" /> do <input name="do" type="date" lang="sl" tal:attributes="value view/today_id" /></span><input class="submit" type="submit" value="Izvozi" /></div>
       </form></div>
     </div>
   </tal:normal>
