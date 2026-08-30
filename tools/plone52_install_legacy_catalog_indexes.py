@@ -32,20 +32,20 @@ def _reindex_objects(site, portal_type, idxs):
 
 
 def _clear_indexes(catalog, names):
-    """Clear only the named indexes, preserving the rest of portal_catalog.
+    """Clear named indexes while preserving their acquisition context.
 
-    This is required for PREISKAVE because an earlier Plone 5 reindex put
-    RichTextValue instances directly into legacy KeywordIndexes.  Updating
-    such an entry first tries to unindex the stale value and Python 3 cannot
-    order RichTextValue objects inside the underlying BTree.  Clearing the
-    affected indexes removes those invalid keys before rebuilding them from
-    the corrected Plone indexer values.
+    ZCTextIndex.getLexicon() finds its lexicon by acquisition from
+    portal_catalog.  Objects obtained from ``catalog._catalog.indexes`` are
+    acquisition-stripped, so calling ``clear()`` on those directly leaves
+    ZCTextIndex without a parent and therefore without htmltext_lexicon.
+    Fetching each index as an attribute of portal_catalog gives it the normal
+    acquisition wrapper used by ZCatalog management operations.
     """
     cleared = []
     for name in names:
-        index = catalog._catalog.indexes.get(name)
-        if index is None:
+        if name not in catalog.indexes():
             continue
+        index = getattr(catalog, name)
         index.clear()
         cleared.append(name)
     return cleared
@@ -98,7 +98,7 @@ def run(app):
                 found = catalog.unrestrictedSearchResults(SearchableText=term, **scope)
                 print('  SearchableText %r -> %d' % (term, len(found)))
         elif site_id == 'preiskave':
-            # Rebuild every legacy PREISKAVE custom index from scratch.  Some
+            # Rebuild every legacy PREISKAVE custom index from scratch. Some
             # existing KeywordIndexes contain RichTextValue keys from an older
             # incorrect indexing pass; they cannot safely be incrementally
             # unindexed on Python 3.
@@ -120,9 +120,6 @@ def run(app):
                 found = catalog.unrestrictedSearchResults(moj=term, **scope)
                 print('  moj %r -> %d' % (term, len(found)))
         elif changed:
-            # These indexes use object attributes directly and do not need a
-            # custom named indexer. Reindexing a newly-created/corrected index
-            # through ZCatalog is sufficient.
             catalog.manage_reindexIndex(ids=list(changed))
 
         print('CHANGED:', list(changed))
