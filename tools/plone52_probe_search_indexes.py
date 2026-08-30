@@ -1,34 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Probe actual 5.2 search indexes without request security filtering."""
+"""Probe persisted search terms and anonymous visibility in Plone 5.2."""
 from __future__ import print_function
 
-from plone.indexer.wrapper import IndexableObjectWrapper
+from AccessControl.SecurityManagement import newSecurityManager
+from AccessControl.SecurityManagement import noSecurityManager
+from AccessControl.SpecialUsers import nobody
 
 
 def _path(obj):
     return '/'.join(obj.getPhysicalPath()) if obj is not None else None
 
 
-def _index_info(catalog, name):
-    idx = catalog._catalog.indexes.get(name)
-    if idx is None:
-        print('INDEX %s: MISSING' % name)
-        return
+def _query(catalog, **kw):
     try:
-        attrs = list(idx.getIndexSourceNames() or ())
-    except Exception:
-        attrs = list(getattr(idx, '_indexed_attrs', ()) or ())
-    print('INDEX %s: %s attrs=%r lexicon=%r' % (
-        name, getattr(idx, 'meta_type', idx.__class__.__name__), attrs,
-        getattr(idx, 'lexicon_id', None)))
-
-
-def _wrapper_value(obj, catalog, name):
-    try:
-        return getattr(IndexableObjectWrapper(obj, catalog), name)
+        return list(catalog.unrestrictedSearchResults(**kw))
     except Exception as exc:
-        return 'ERROR %r' % (exc,)
+        print('  QUERY ERROR %r: %r' % (kw, exc))
+        return []
+
+
+def _anonymous_count(catalog, **kw):
+    noSecurityManager()
+    newSecurityManager(None, nobody)
+    try:
+        return len(catalog(**kw))
+    finally:
+        noSecurityManager()
 
 
 def _probe_imenik(app):
@@ -36,29 +34,31 @@ def _probe_imenik(app):
     catalog = site.portal_catalog
     base = site.get('data2')
     path = _path(base)
-    print('\n=== IMENIK SEARCH ===')
-    _index_info(catalog, 'SearchableText')
-    _index_info(catalog, 'priimek')
-    brains = list(catalog.unrestrictedSearchResults(
-        portal_type='imi.directory.person', path={'query': path, 'depth': -1}))
-    print('PERSON BRAINS unrestricted:', len(brains))
-    if not brains:
-        return
-    obj = brains[0].getObject()
-    print('SAMPLE:', _path(obj), repr(obj.Title()))
-    print('WRAPPER SearchableText:', repr(_wrapper_value(obj, catalog, 'SearchableText'))[:1500])
-    for raw in (getattr(obj, 'priimek', ''), getattr(obj, 'ime', ''), obj.Title()):
-        raw = str(raw or '').strip()
-        if not raw:
-            continue
-        q = raw.split()[0] + '*'
+    scope = dict(portal_type='imi.directory.person',
+                 path={'query': path, 'depth': -1})
+    brains = _query(catalog, **scope)
+    print('\n=== IMENIK ===')
+    print('PERSONS unrestricted:', len(brains))
+    print('PERSONS anonymous:', _anonymous_count(catalog, **scope))
+    if brains:
+        brain = brains[0]
+        obj = brain._unrestrictedGetObject()
+        print('SAMPLE:', brain.getPath(), repr(brain.Title))
         try:
-            result = catalog.unrestrictedSearchResults(
-                SearchableText=q, portal_type='imi.directory.person',
-                path={'query': path, 'depth': -1})
-            print('QUERY SearchableText %r -> %d' % (q, len(result)))
-        except Exception as exc:
-            print('QUERY SearchableText %r ERROR: %r' % (q, exc))
+            print('SAMPLE review_state:', repr(brain.review_state))
+        except Exception:
+            pass
+        print('SAMPLE rolesOfPermission(View):')
+        for row in obj.rolesOfPermission('View'):
+            if row.get('selected'):
+                print(' ', row)
+        for term in ('Vilma*', 'Zakrajšek*'):
+            kw = dict(scope)
+            kw['SearchableText'] = term
+            print('SearchableText %r unrestricted: %d' %
+                  (term, len(_query(catalog, **kw))))
+            print('SearchableText %r anonymous: %d' %
+                  (term, _anonymous_count(catalog, **kw)))
 
 
 def _probe_preiskave(app):
@@ -66,32 +66,35 @@ def _probe_preiskave(app):
     catalog = site.portal_catalog
     base = site.get('preiskave-1')
     path = _path(base)
-    print('\n=== PREISKAVE SEARCH ===')
-    for name in ('moj', 'moj_sklop', 'sklop', 'podrocje', 'vzorci_lab'):
-        _index_info(catalog, name)
-    brains = list(catalog.unrestrictedSearchResults(
-        portal_type='imi.exams.examination', path={'query': path, 'depth': -1}))
-    print('EXAM BRAINS unrestricted:', len(brains))
-    if not brains:
-        return
-    obj = brains[0].getObject()
-    print('SAMPLE:', _path(obj), repr(obj.Title()))
-    for name in ('moj', 'sklop', 'sinonim', 'vzorci', 'podrocje', 'vzorci_lab'):
-        print('WRAPPER %s: %r' % (name, _wrapper_value(obj, catalog, name))[:1500])
-    title = str(obj.Title() or '').strip()
-    probes = []
-    if title:
-        probes.append(title.split()[0])
-    probes.extend(['Toxoplasma', 'test'])
-    for raw in probes:
-        q = raw + '*'
+    scope = dict(portal_type='imi.exams.examination',
+                 path={'query': path, 'depth': -1})
+    brains = _query(catalog, **scope)
+    print('\n=== PREISKAVE ===')
+    print('EXAMS unrestricted:', len(brains))
+    print('EXAMS anonymous:', _anonymous_count(catalog, **scope))
+    if brains:
+        brain = brains[0]
+        print('SAMPLE:', brain.getPath(), repr(brain.Title))
         try:
-            result = catalog.unrestrictedSearchResults(
-                moj=q, portal_type='imi.exams.examination',
-                path={'query': path, 'depth': -1})
-            print('QUERY moj %r -> %d' % (q, len(result)))
+            print('SAMPLE review_state:', repr(brain.review_state))
+        except Exception:
+            pass
+    for term in ('Toxoplasma*', 'test*'):
+        kw = dict(scope)
+        kw['moj'] = term
+        found = _query(catalog, **kw)
+        print('moj %r unrestricted: %d' % (term, len(found)))
+        print('moj %r anonymous: %d' % (term, _anonymous_count(catalog, **kw)))
+        for brain in found[:3]:
+            print(' ', brain.getPath(), repr(brain.Title))
+
+    idx = catalog._catalog.indexes.get('moj')
+    if idx is not None:
+        print('moj numObjects:', idx.numObjects())
+        try:
+            print('moj uniqueValues sample:', list(idx.uniqueValues())[:30])
         except Exception as exc:
-            print('QUERY moj %r ERROR: %r' % (q, exc))
+            print('moj uniqueValues ERROR:', repr(exc))
 
 
 def run(app):
