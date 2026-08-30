@@ -5,11 +5,11 @@
   <p><a class="btn btn-default" tal:attributes="href string:${context/absolute_url}/folder_contents">Vsebine</a> <a class="btn btn-default" tal:attributes="href context/absolute_url">Poglej javna nadomeščanja</a></p>
   <h2>Uredi nadomeščanja</h2>
   <form method="get" tal:attributes="action string:${context/absolute_url}/@@nadomescanja-select">
-    <p>Datum: <input name="datum" type="date" tal:attributes="value view/today_id" /></p><input class="btn btn-primary" type="submit" value="Uredi" />
+    <p>Datum: <input name="datum" type="date" lang="sl" tal:attributes="value view/today_id" /></p><input class="btn btn-primary" type="submit" value="Uredi" />
   </form>
   <p>&nbsp;</p><h2>Kopiraj nadomeščanja</h2>
   <form method="get" tal:attributes="action string:${context/absolute_url}/@@nadomescanja-copy">
-    <p>Obstoječi datum: <input name="star" type="date" tal:attributes="value view/today_id" /></p><p>Novi datum: <input name="nov" type="date" tal:attributes="value view/today_id" /></p><input class="btn btn-primary" type="submit" value="Kopiraj" />
+    <p>Obstoječi datum: <input name="star" type="date" lang="sl" tal:attributes="value view/today_id" /></p><p>Novi datum: <input name="nov" type="date" lang="sl" tal:attributes="value view/today_id" /></p><input class="btn btn-primary" type="submit" value="Kopiraj" />
   </form>
   <p>&nbsp;</p><p><a tal:attributes="href string:${context/absolute_url}/laboratoriji/folder_contents">Uredi laboratorije</a></p>
 </metal:main></body></html>
