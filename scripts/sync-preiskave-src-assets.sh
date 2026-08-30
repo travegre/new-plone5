@@ -19,17 +19,17 @@ fi
 mkdir -p "$DST/embalazaSlike"
 cp -f "$SRC"/embalazaSlike/* "$DST/embalazaSlike/"
 
-# Keep the exact production artwork available under the resource names used by
-# the 5.2 templates.  Existing files are deliberately overwritten with the
-# authoritative 4.3 skin versions.
+# Use the exact filenames referenced by the Plone 4.3 preiskave_view.pt.
+# Do not substitute the separate iskanje-*.png artwork: those are different
+# graphics and were the reason the 5.2 catalogue launch icons looked wrong.
 [ ! -f "$SRC/logo.png" ] || cp -f "$SRC/logo.png" "$DST/logo.png"
+[ ! -f "$SRC/search-quick.png" ] || cp -f "$SRC/search-quick.png" "$DST/search-quick.png"
+[ ! -f "$SRC/search-podrocja.png" ] || cp -f "$SRC/search-podrocja.png" "$DST/search-podrocja.png"
+[ ! -f "$SRC/search-vzorci.png" ] || cp -f "$SRC/search-vzorci.png" "$DST/search-vzorci.png"
 [ ! -f "$SRC/search-lab.png" ] || cp -f "$SRC/search-lab.png" "$DST/search-lab.png"
-[ ! -f "$SRC/iskanje-hitro.png" ] || cp -f "$SRC/iskanje-hitro.png" "$DST/search-quick.png"
-[ ! -f "$SRC/iskanje-podrocja.png" ] || cp -f "$SRC/iskanje-podrocja.png" "$DST/search-podrocja.png"
-[ ! -f "$SRC/iskanje-vzorci.png" ] || cp -f "$SRC/iskanje-vzorci.png" "$DST/search-vzorci.png"
 [ ! -f "$SRC/fajli_dol_new.png" ] || cp -f "$SRC/fajli_dol_new.png" "$DST/fajli_dol_new.png"
 [ ! -f "$SRC/fajli_gor_new.png" ] || cp -f "$SRC/fajli_gor_new.png" "$DST/fajli_gor_new.png"
 [ ! -f "$SRC/puscica_velika.png" ] || cp -f "$SRC/puscica_velika.png" "$DST/puscica_velika.png"
 
 count=$(find "$DST/embalazaSlike" -type f | wc -l | tr -d ' ')
-echo "Synced $count packaging images plus Preiskave skin artwork from $SRC"
+echo "Synced $count packaging images plus exact Preiskave 4.3 skin artwork from $SRC"
