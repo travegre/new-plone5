@@ -14,9 +14,10 @@ SITES = ('portal', 'dezurstva', 'kiestra', 'preiskave', 'nadomescanja')
 
 
 def _reindex_objects(site, portal_type, idxs):
-    brains = site.portal_catalog(
+    """Reindex migration content independent of the instance-run security context."""
+    brains = site.portal_catalog.unrestrictedSearchResults(
         portal_type=portal_type,
-        path='/'.join(site.getPhysicalPath()),
+        path={'query': '/'.join(site.getPhysicalPath()), 'depth': -1},
     )
     count = 0
     for brain in brains:
@@ -37,10 +38,9 @@ def run(app):
             continue
 
         try:
-            # Create/correct definitions first.  Object-level reindexing below
-            # is intentional: it goes through Plone's IndexableObjectWrapper,
-            # so named plone.indexer adapters such as SearchableText and moj
-            # are actually used for Dexterity content.
+            # Create/correct definitions first. Object-level reindexing is
+            # intentional: it goes through Plone's IndexableObjectWrapper, so
+            # named plone.indexer adapters are used for Dexterity content.
             changed = install_catalog_indexes(site, reindex=False)
         except Exception as exc:
             print('ERROR installing indexes:', repr(exc))
