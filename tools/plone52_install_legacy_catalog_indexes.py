@@ -14,15 +14,7 @@ SITES = ('portal', 'dezurstva', 'kiestra', 'preiskave', 'nadomescanja')
 
 
 def _reindex_objects(site, portal_type, idxs):
-    """Synchronously reindex selected indexes through Plone's catalog wrapper.
-
-    ``obj.reindexObject()`` goes through CMFCore's transaction-aware indexing
-    queue.  For this offline migration/repair script we deliberately call
-    ``portal_catalog.catalog_object`` directly: CatalogTool wraps the object
-    with ``IIndexableObject`` before handing it to ZCatalog, so named
-    ``plone.indexer`` adapters are still used, but the selected indexes are
-    updated immediately and can be verified in this same process.
-    """
+    """Synchronously reindex selected indexes through Plone's catalog wrapper."""
     catalog = site.portal_catalog
     brains = list(catalog.unrestrictedSearchResults(
         portal_type=portal_type,
@@ -37,6 +29,26 @@ def _reindex_objects(site, portal_type, idxs):
             update_metadata=0,
         )
     return len(brains)
+
+
+def _clear_indexes(catalog, names):
+    """Clear only the named indexes, preserving the rest of portal_catalog.
+
+    This is required for PREISKAVE because an earlier Plone 5 reindex put
+    RichTextValue instances directly into legacy KeywordIndexes.  Updating
+    such an entry first tries to unindex the stale value and Python 3 cannot
+    order RichTextValue objects inside the underlying BTree.  Clearing the
+    affected indexes removes those invalid keys before rebuilding them from
+    the corrected Plone indexer values.
+    """
+    cleared = []
+    for name in names:
+        index = catalog._catalog.indexes.get(name)
+        if index is None:
+            continue
+        index.clear()
+        cleared.append(name)
+    return cleared
 
 
 def _print_index_state(catalog, names):
@@ -86,13 +98,20 @@ def run(app):
                 found = catalog.unrestrictedSearchResults(SearchableText=term, **scope)
                 print('  SearchableText %r -> %d' % (term, len(found)))
         elif site_id == 'preiskave':
+            # Rebuild every legacy PREISKAVE custom index from scratch.  Some
+            # existing KeywordIndexes contain RichTextValue keys from an older
+            # incorrect indexing pass; they cannot safely be incrementally
+            # unindexed on Python 3.
+            names = tuple(expected.keys())
+            cleared = _clear_indexes(catalog, names)
+            print('CLEARED PREISKAVE INDEXES:', cleared)
             count = _reindex_objects(
                 site,
                 'imi.exams.examination',
-                tuple(expected.keys()),
+                names,
             )
             print('REINDEXED PREISKAVE EXAMS:', count)
-            _print_index_state(catalog, tuple(expected.keys()))
+            _print_index_state(catalog, names)
             scope = {
                 'portal_type': 'imi.exams.examination',
                 'path': {'query': '/'.join(site.getPhysicalPath()), 'depth': -1},
