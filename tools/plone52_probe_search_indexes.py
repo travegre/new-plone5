@@ -1,105 +1,89 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Probe persisted search terms and anonymous visibility in Plone 5.2."""
+"""Probe workflow security and the actual registered search indexers."""
 from __future__ import print_function
 
 from AccessControl.SecurityManagement import newSecurityManager
 from AccessControl.SecurityManagement import noSecurityManager
 from AccessControl.SpecialUsers import nobody
+from plone.indexer.interfaces import IIndexer
+from zope.component import queryMultiAdapter
 
 
 def _path(obj):
     return '/'.join(obj.getPhysicalPath()) if obj is not None else None
 
 
-def _query(catalog, **kw):
-    try:
-        return list(catalog.unrestrictedSearchResults(**kw))
-    except Exception as exc:
-        print('  QUERY ERROR %r: %r' % (kw, exc))
-        return []
-
-
 def _anonymous_count(catalog, **kw):
-    noSecurityManager()
-    newSecurityManager(None, nobody)
+    noSecurityManager(); newSecurityManager(None, nobody)
     try:
         return len(catalog(**kw))
     finally:
         noSecurityManager()
 
 
-def _probe_imenik(app):
-    site = app.unrestrictedTraverse('portal')
-    catalog = site.portal_catalog
-    base = site.get('data2')
-    path = _path(base)
-    scope = dict(portal_type='imi.directory.person',
-                 path={'query': path, 'depth': -1})
-    brains = _query(catalog, **scope)
-    print('\n=== IMENIK ===')
-    print('PERSONS unrestricted:', len(brains))
-    print('PERSONS anonymous:', _anonymous_count(catalog, **scope))
-    if brains:
-        brain = brains[0]
-        obj = brain._unrestrictedGetObject()
-        print('SAMPLE:', brain.getPath(), repr(brain.Title))
-        try:
-            print('SAMPLE review_state:', repr(brain.review_state))
-        except Exception:
-            pass
-        print('SAMPLE rolesOfPermission(View):')
-        for row in obj.rolesOfPermission('View'):
-            if row.get('selected'):
-                print(' ', row)
-        for term in ('Vilma*', 'Zakrajšek*'):
-            kw = dict(scope)
-            kw['SearchableText'] = term
-            print('SearchableText %r unrestricted: %d' %
-                  (term, len(_query(catalog, **kw))))
-            print('SearchableText %r anonymous: %d' %
-                  (term, _anonymous_count(catalog, **kw)))
+def _workflow(site, obj):
+    wf = site.portal_workflow
+    print('TYPE:', obj.portal_type)
+    print('CHAIN:', tuple(wf.getChainFor(obj)))
+    print('STATE:', wf.getInfoFor(obj, 'review_state', None))
+    for wf_id in wf.getChainFor(obj):
+        definition = wf.get(wf_id)
+        state_id = wf.getStatusOf(wf_id, obj).get('review_state')
+        state = definition.states.get(state_id) if definition is not None else None
+        print('WORKFLOW:', wf_id, 'STATE:', state_id)
+        if state is not None:
+            print('  permission_roles:', repr(getattr(state, 'permission_roles', None)))
+    print('VIEW ROLES:')
+    for row in obj.rolesOfPermission('View'):
+        if row.get('selected'):
+            print(' ', row)
 
 
-def _probe_preiskave(app):
-    site = app.unrestrictedTraverse('preiskave')
-    catalog = site.portal_catalog
-    base = site.get('preiskave-1')
-    path = _path(base)
-    scope = dict(portal_type='imi.exams.examination',
-                 path={'query': path, 'depth': -1})
-    brains = _query(catalog, **scope)
-    print('\n=== PREISKAVE ===')
-    print('EXAMS unrestricted:', len(brains))
-    print('EXAMS anonymous:', _anonymous_count(catalog, **scope))
-    if brains:
-        brain = brains[0]
-        print('SAMPLE:', brain.getPath(), repr(brain.Title))
+def _adapter(obj, name):
+    adapter = queryMultiAdapter((obj, obj.REQUEST), IIndexer, name=name)
+    print('INDEXER %s:' % name, adapter)
+    if adapter is not None:
         try:
-            print('SAMPLE review_state:', repr(brain.review_state))
-        except Exception:
-            pass
-    for term in ('Toxoplasma*', 'test*'):
-        kw = dict(scope)
-        kw['moj'] = term
-        found = _query(catalog, **kw)
-        print('moj %r unrestricted: %d' % (term, len(found)))
-        print('moj %r anonymous: %d' % (term, _anonymous_count(catalog, **kw)))
-        for brain in found[:3]:
-            print(' ', brain.getPath(), repr(brain.Title))
-
-    idx = catalog._catalog.indexes.get('moj')
-    if idx is not None:
-        print('moj numObjects:', idx.numObjects())
-        try:
-            print('moj uniqueValues sample:', list(idx.uniqueValues())[:30])
+            value = adapter()
+            print('INDEXER %s VALUE:' % name, repr(value)[:2500])
         except Exception as exc:
-            print('moj uniqueValues ERROR:', repr(exc))
+            print('INDEXER %s ERROR:' % name, repr(exc))
 
 
 def run(app):
-    _probe_imenik(app)
-    _probe_preiskave(app)
+    site = app.unrestrictedTraverse('portal')
+    catalog = site.portal_catalog
+    base = site.get('data2')
+    scope = dict(portal_type='imi.directory.person', path={'query': _path(base), 'depth': -1})
+    brains = list(catalog.unrestrictedSearchResults(**scope))
+    print('\n=== IMENIK ===')
+    print('PERSONS unrestricted:', len(brains), 'anonymous:', _anonymous_count(catalog, **scope))
+    if brains:
+        obj = brains[0]._unrestrictedGetObject()
+        print('SAMPLE:', _path(obj), repr(obj.Title()))
+        _workflow(site, obj)
+        _adapter(obj, 'SearchableText')
+
+    site = app.unrestrictedTraverse('preiskave')
+    catalog = site.portal_catalog
+    base = site.get('preiskave-1')
+    scope = dict(portal_type='imi.exams.examination', path={'query': _path(base), 'depth': -1})
+    brains = list(catalog.unrestrictedSearchResults(**scope))
+    print('\n=== PREISKAVE ===')
+    print('EXAMS unrestricted:', len(brains), 'anonymous:', _anonymous_count(catalog, **scope))
+    if brains:
+        obj = brains[0]._unrestrictedGetObject()
+        print('SAMPLE:', _path(obj), repr(obj.Title()))
+        _workflow(site, obj)
+        _adapter(obj, 'moj')
+        _adapter(obj, 'sklop')
+        _adapter(obj, 'sinonim')
+    idx = catalog._catalog.indexes.get('moj')
+    print('moj numObjects:', idx.numObjects() if idx is not None else 'MISSING')
+    for term in ('Toxoplasma*', 'test*'):
+        found = list(catalog.unrestrictedSearchResults(moj=term, **scope))
+        print('moj %r unrestricted: %d' % (term, len(found)))
 
 
 if 'app' not in globals():
