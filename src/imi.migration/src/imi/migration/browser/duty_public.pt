@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:tal="http://xml.zope.org/namespaces/tal">
+      xmlns:tal="http://xml.zope.org/namespaces/tal" lang="sl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -86,7 +86,7 @@
           <div class="legacy-half left">
             <form method="get" tal:attributes="action string:${context/absolute_url}/@@dezurstva-public">
               <p>Prikaži razpored na izbrani datum: </p>
-              <input name="datum" tal:attributes="value view/today_id" type="date" class="datepicker" />
+              <input name="datum" tal:attributes="value view/today_id" type="date" lang="sl" class="datepicker" />
               <input type="submit" value="Prikaži" />
             </form>
           </div>
@@ -131,7 +131,7 @@
                 <option value="pretekli">za pretekli mesec</option>
                 <option value="oddo">od - do</option>
               </select>
-              <span class="date-range">od <input type="date" name="od" tal:attributes="value view/today_id" /> do <input type="date" name="do" tal:attributes="value view/today_id" /></span>
+              <span class="date-range">od <input type="date" lang="sl" name="od" tal:attributes="value view/today_id" /> do <input type="date" lang="sl" name="do" tal:attributes="value view/today_id" /></span>
               <input class="submit" type="submit" value="Izvozi" />
             </form>
           </div>
@@ -155,7 +155,7 @@
                   <option value="pretekli">za pretekli mesec</option>
                   <option value="oddo">od - do</option>
                 </select>
-                <span class="date-range">od <input type="date" name="od" tal:attributes="value view/today_id" /> do <input type="date" name="do" tal:attributes="value view/today_id" /></span>
+                <span class="date-range">od <input type="date" lang="sl" name="od" tal:attributes="value view/today_id" /> do <input type="date" lang="sl" name="do" tal:attributes="value view/today_id" /></span>
                 <input class="submit" type="submit" value="Izvozi" />
               </div>
             </form>
