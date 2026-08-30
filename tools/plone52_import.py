@@ -17,6 +17,8 @@ from plone.namedfile.file import NamedBlobFile
 from zope.component.hooks import setSite
 from zope.schema import getFields
 
+from imi.migration.setuphandlers import install_catalog_indexes
+
 CUSTOM_TYPE_MAP = {
     ('portal', 'produkti'): 'imi.directory.person',
     ('dezurstva', 'dezurstvo'): 'imi.duty.roster_day',
@@ -52,6 +54,7 @@ BASIC_SOURCE_FIELDS = {
 }
 
 COMMIT_EVERY = 500
+SITE_IDS = ('portal', 'dezurstva', 'kiestra', 'preiskave', 'nadomescanja')
 
 
 def parse_input_dir(argv):
@@ -213,6 +216,24 @@ def transition_to_state(obj, state):
         pass
 
 
+def synchronous_catalog_object(obj):
+    """Catalog the final imported state immediately through Plone's wrapper.
+
+    CatalogTool.catalog_object adapts ``(obj, portal_catalog)`` to
+    ``IIndexableObject`` before ZCatalog sees it, so our named plone.indexer
+    adapters (SearchableText, moj, sklop, ...) are used.  Doing this after all
+    fields have been assigned avoids relying on the transaction-aware indexing
+    queue for migration correctness.
+    """
+    catalog = plone.api.portal.get_tool('portal_catalog')
+    catalog.catalog_object(
+        obj,
+        uid='/'.join(obj.getPhysicalPath()),
+        idxs=[],
+        update_metadata=1,
+    )
+
+
 def create_record(app, record, input_dir, path_map):
     if record.get('source_path') in SKIP_PATHS:
         return None
@@ -245,9 +266,22 @@ def create_record(app, record, input_dir, path_map):
     except Exception:
         pass
     transition_to_state(obj, (record.get('metadata') or {}).get('workflow_state'))
-    obj.reindexObject()
+    synchronous_catalog_object(obj)
     path_map[(record['site'], rel)] = obj
     return obj
+
+
+def install_migration_catalogs(app):
+    """Ensure every site's legacy catalog definitions exist before import."""
+    for site_id in SITE_IDS:
+        site = app.get(site_id)
+        if site is None:
+            continue
+        setSite(site)
+        changed = install_catalog_indexes(site, reindex=False)
+        if changed:
+            print('Catalog indexes prepared for %s: %s' %
+                  (site_id, ', '.join(changed)))
 
 
 def run(app, input_dir):
@@ -258,6 +292,12 @@ def run(app, input_dir):
     created = skipped = processed = 0
     errors = []
     import transaction
+
+    # A clean export/import must be self-contained: create the catalog indexes
+    # first, then each imported object is indexed only after its final field
+    # values have been assigned.
+    install_migration_catalogs(app)
+    transaction.commit()
 
     with open(objects_file, 'r', encoding='utf-8') as handle:
         for lineno, line in enumerate(handle, 1):
