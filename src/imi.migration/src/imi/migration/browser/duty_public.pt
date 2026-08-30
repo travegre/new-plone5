@@ -8,6 +8,7 @@
   <link rel="stylesheet"
         tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/duty-public.css" />
   <script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/duty-public.js"></script>
+  <script defer="defer" tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/legacy-date-picker.js"></script>
   <script>
     (function () {
       var now = new Date();
