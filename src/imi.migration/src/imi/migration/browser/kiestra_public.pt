@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal" lang="sl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -30,7 +30,7 @@
     </tal:day>
     <p tal:condition="not:view/day_object">Razpored za ta datum še ni določen.</p>
     <div class="legacy-utility-row">
-      <div class="legacy-half left"><form method="get" tal:attributes="action context/absolute_url"><p>Prikaži razpored na izbrani datum: </p><input name="datum" type="date" tal:attributes="value view/today_id" /><input type="submit" value="Prikaži" /></form></div>
+      <div class="legacy-half left"><form method="get" tal:attributes="action context/absolute_url"><p>Prikaži razpored na izbrani datum: </p><input name="datum" type="date" lang="sl" tal:attributes="value view/today_id" /><input type="submit" value="Prikaži" /></form></div>
       <div class="legacy-half right"><form method="get" tal:attributes="action context/absolute_url"><p>Prikaži vsa dežurstva za osebo:</p><select name="oseba" id="oseba"><option value=""></option><option tal:repeat="option view/staff_options" tal:attributes="value python:option[0]" tal:content="python:option[1]">Ime</option></select><input type="submit" value="Prikaži" /></form></div>
     </div>
   </tal:normal>
