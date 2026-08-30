@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal" lang="sl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -26,7 +26,7 @@
         <tal:opis condition="python:bool(view.rich('opis'))">
           <p class="text text-12 siv-tekst">Opis preiskave</p>
           <div id="opis_preiskave" class="text text-13 opis" tal:content="structure python:view.rich('opis')"></div>
-          <div class="show-more"><a href="#" id="gumb_pokazi_vec">Prikaži več</a></div>
+          <div class="show-more" style="display:none"><a href="#" id="gumb_pokazi_vec">Prikaži več</a></div>
         </tal:opis>
 
         <tal:file define="attachment view/attachment" condition="attachment">
@@ -86,7 +86,7 @@
         <tal:code condition="python:bool(context.sifra)"><div><p class="text text-16">Šifra preiskave</p><p class="text text-17" tal:content="context/sifra"></p></div></tal:code>
         <tal:labs condition="python:bool(context.laboratoriji)"><div><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="context/laboratoriji"></p></div></tal:labs>
         <tal:schedule condition="python:bool(view.rich('urnik'))"><div><p class="text text-16">Urnik izvajanja</p><div class="text text-17" tal:content="structure python:view.rich('urnik')"></div></div></tal:schedule>
-        <tal:duration condition="python:bool(context.trajanje)"><div><p class="text text-16">Trajanje preiskave</p><p class="text text-17" tal:content="context/trajanje"></p></div></tal:duration>
+        <tal:duration condition="python:bool(view.rich('trajanje'))"><div><p class="text text-16">Trajanje preiskave</p><div class="text text-17" tal:content="structure python:view.rich('trajanje')"></div></div></tal:duration>
         <tal:methods condition="python:bool(view.rich('metode'))"><div><p class="text text-16">Metode preiskave</p><div class="text text-17" tal:content="structure python:view.rich('metode')"></div></div></tal:methods>
       </div>
     </div>
@@ -98,10 +98,6 @@
 <script>
 (function(){
   'use strict';
-  var more=document.getElementById('gumb_pokazi_vec');
-  var opis=document.getElementById('opis_preiskave');
-  if(opis&&opis.scrollHeight>opis.clientHeight){opis.classList.add('collapsed');}
-  if(more&&opis){more.addEventListener('click',function(e){e.preventDefault();opis.classList.toggle('collapsed');opis.classList.toggle('expanded');more.textContent=opis.classList.contains('expanded')?'Prikaži manj':'Prikaži več';});}
   document.querySelectorAll('.naslov_vzorca').forEach(function(title){
     var detail=title.nextElementSibling;
     if(detail){detail.style.display='block';title.classList.add('odprt');}
