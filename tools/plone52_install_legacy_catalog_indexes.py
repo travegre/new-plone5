@@ -4,13 +4,20 @@
 from __future__ import print_function
 
 import transaction
+from zope.interface import alsoProvides
 
+from imi.migration.content import IDirectoryPerson
+from imi.migration.content import IExamination
 from imi.migration.setuphandlers import HTMLTEXT_LEXICON_ID
 from imi.migration.setuphandlers import SITE_INDEXES
 from imi.migration.setuphandlers import install_catalog_indexes
 
 
 SITES = ('portal', 'dezurstva', 'kiestra', 'preiskave', 'nadomescanja')
+TYPE_MARKERS = {
+    'imi.directory.person': IDirectoryPerson,
+    'imi.exams.examination': IExamination,
+}
 
 
 def _reindex_objects(site, portal_type, idxs):
@@ -19,12 +26,16 @@ def _reindex_objects(site, portal_type, idxs):
         portal_type=portal_type,
         path={'query': '/'.join(site.getPhysicalPath()), 'depth': -1},
     )
-    count = 0
+    count = marked = 0
+    marker = TYPE_MARKERS.get(portal_type)
     for brain in brains:
-        obj = brain.getObject()
+        obj = brain._unrestrictedGetObject()
+        if marker is not None and not marker.providedBy(obj):
+            alsoProvides(obj, marker)
+            marked += 1
         obj.reindexObject(idxs=list(idxs))
         count += 1
-    return count
+    return count, marked
 
 
 def run(app):
@@ -38,9 +49,6 @@ def run(app):
             continue
 
         try:
-            # Create/correct definitions first. Object-level reindexing is
-            # intentional: it goes through Plone's IndexableObjectWrapper, so
-            # named plone.indexer adapters are used for Dexterity content.
             changed = install_catalog_indexes(site, reindex=False)
         except Exception as exc:
             print('ERROR installing indexes:', repr(exc))
@@ -51,16 +59,18 @@ def run(app):
         catalog = site.portal_catalog
 
         if site_id == 'portal':
-            count = _reindex_objects(
+            count, marked = _reindex_objects(
                 site, 'imi.directory.person', ('SearchableText', 'priimek'))
             print('REINDEXED IMENIK PERSONS:', count)
+            print('MARKED IDirectoryPerson:', marked)
         elif site_id == 'preiskave':
-            count = _reindex_objects(
+            count, marked = _reindex_objects(
                 site,
                 'imi.exams.examination',
                 tuple(expected.keys()),
             )
             print('REINDEXED PREISKAVE EXAMS:', count)
+            print('MARKED IExamination:', marked)
         elif changed:
             catalog.manage_reindexIndex(ids=list(changed))
 
