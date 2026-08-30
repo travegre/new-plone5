@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Probe workflow security and the actual registered search indexers."""
+"""Probe workflow security, permission acquisition and search indexers."""
 from __future__ import print_function
 
 from AccessControl.SecurityManagement import newSecurityManager
@@ -22,6 +22,33 @@ def _anonymous_count(catalog, **kw):
         noSecurityManager()
 
 
+def _selected_roles(obj, permission):
+    return [row['name'] for row in obj.rolesOfPermission(permission)
+            if row.get('selected')]
+
+
+def _permission_chain(obj):
+    print('VIEW PERMISSION CHAIN:')
+    chain = []
+    current = obj
+    while current is not None:
+        chain.append(current)
+        parent = getattr(current, 'aq_parent', None)
+        if parent is None or parent is current:
+            break
+        current = parent
+    for item in reversed(chain):
+        path = _path(item) if hasattr(item, 'getPhysicalPath') else repr(item)
+        local = getattr(item, '_View_Permission', '<inherited/no local declaration>')
+        try:
+            roles = _selected_roles(item, 'View')
+        except Exception:
+            roles = '<unavailable>'
+        print('  %s' % path)
+        print('    _View_Permission=%r' % (local,))
+        print('    effective View roles=%r' % (roles,))
+
+
 def _workflow(site, obj):
     wf = site.portal_workflow
     print('TYPE:', obj.portal_type)
@@ -34,10 +61,8 @@ def _workflow(site, obj):
         print('WORKFLOW:', wf_id, 'STATE:', state_id)
         if state is not None:
             print('  permission_roles:', repr(getattr(state, 'permission_roles', None)))
-    print('VIEW ROLES:')
-    for row in obj.rolesOfPermission('View'):
-        if row.get('selected'):
-            print(' ', row)
+    print('VIEW ROLES:', _selected_roles(obj, 'View'))
+    _permission_chain(obj)
 
 
 def _adapter(obj, name):
