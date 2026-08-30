@@ -20,7 +20,6 @@ body.imi-exams-public {
 .imi-exams-public a:hover { color: rgb(165, 69, 191); }
 .imi-exams-public .clear { clear: both; }
 
-/* Original headings used Lucida Grande, not Georgia. */
 .imi-exams-public h1,
 .imi-exams-public h2,
 .imi-exams-public h3,
@@ -34,7 +33,6 @@ body.imi-exams-public {
 .imi-exams-public h1 { font-size: 25px; line-height: 36px; }
 .imi-exams-public h2 { font-size: 16px; }
 
-/* Header from the old #okol layout: intrinsic logo with PREISKAVE beneath. */
 .imi-exams-public #zunanji_okvir,
 .imi-exams-public #okvir { width: 100%; margin: 0; }
 .imi-exams-public .exams-header {
@@ -63,7 +61,6 @@ body.imi-exams-public {
   font-weight: bold;
 }
 
-/* Horizontal menu corresponding to the old .vsebina/#podmeni block. */
 .imi-exams-public #podmeni {
   width: 100%;
   min-height: 76px;
@@ -85,7 +82,6 @@ body.imi-exams-public {
 }
 .imi-exams-public #podmeni a:hover { color: rgb(165, 69, 191); }
 
-/* Main canvas. The old Foundation layout effectively used about 90% width. */
 .imi-exams-public #vsebina_podstran {
   width: 90%;
   margin: 0 auto;
@@ -101,11 +97,10 @@ body.imi-exams-public {
   text-align: center;
 }
 
-/* Launch page. */
 .imi-exams-public .search-choice-grid {
   display: flex;
   width: 100%;
-  padding-top: 70px;
+  padding: 92px 0 0;
   text-align: center;
 }
 .imi-exams-public .search-opcija { width: 25%; padding: 0 15px; }
@@ -121,7 +116,6 @@ body.imi-exams-public {
   font-size: 20px;
 }
 
-/* Facet selectors and alphabetic listings. */
 .imi-exams-public #listing_preiskav { clear: both; padding-top: 30px; }
 .imi-exams-public .facet-form { margin-bottom: 35px; }
 .imi-exams-public .trenutno { color: #666; font-size: 10px; line-height: 18px; }
@@ -186,7 +180,6 @@ body.imi-exams-public {
   font-weight: bold;
 }
 
-/* Sample hierarchy. */
 .imi-exams-public .vzorci_drobtine {
   margin: 30px 0 20px 15px;
   color: #666;
@@ -206,7 +199,6 @@ body.imi-exams-public {
   line-height: 19px;
 }
 
-/* Quick search. */
 .imi-exams-public .legacy-quick-search { text-align: center; }
 .imi-exams-public .legacy-quick-search .LSBox { position: relative; }
 .imi-exams-public #exam-search {
@@ -254,7 +246,6 @@ body.imi-exams-public {
 .imi-exams-public #exam-live-results .LSRow span { color: #fff; font-size: 14px; }
 .imi-exams-public #exam-live-results .LSDescr { display: none; }
 
-/* Examination detail: three columns and the original em-based typography. */
 .imi-exams-public.imi-exam-detail #vsebina_podstran { width: 82%; }
 .imi-exams-public .exam-main-title {
   margin: 0 0 58px;
@@ -295,29 +286,17 @@ body.imi-exams-public {
   line-height: 1.38;
 }
 .imi-exams-public .naslov_vzorca {
-  position: relative;
   margin: 0;
   padding: 0 32px 24px 0;
+  background: url(fajli_dol_new.png) no-repeat right 0;
   color: rgb(165, 69, 191);
   font-family: "Lucida Grande", Arial, Helvetica, sans-serif;
   font-size: 1em;
   cursor: pointer;
 }
-.imi-exams-public .naslov_vzorca:after {
-  content: "⌄";
-  position: absolute;
-  top: -1px;
-  right: 2px;
-  width: 17px;
-  height: 17px;
-  border: 2px solid rgb(165, 69, 191);
-  border-radius: 50%;
-  color: rgb(165, 69, 191);
-  font-size: 12px;
-  line-height: 11px;
-  text-align: center;
+.imi-exams-public .naslov_vzorca.odprt {
+  background-image: url(fajli_gor_new.png);
 }
-.imi-exams-public .naslov_vzorca.odprt:after { content: "⌃"; line-height: 16px; }
 .imi-exams-public .ostali_fajli { margin: -13px 0 28px; font-size: .875em; line-height: 1.38; }
 .imi-exams-public .vzorec_levo,
 .imi-exams-public .vzorec_desno { width: 100%; margin-bottom: 6px; font-size: .875em; line-height: 1.38; }
@@ -326,19 +305,8 @@ body.imi-exams-public {
 .imi-exams-public .packaging-images { margin: 7px 0 10px; }
 .imi-exams-public .embalaza_slika { display: block; width: 315px; max-width: 100%; height: auto; }
 .imi-exams-public .preiskava_tech_data > div { margin-bottom: 25px; }
-.imi-exams-public #opis_preiskave.collapsed { max-height: 74px; overflow: hidden; }
-.imi-exams-public #opis_preiskave.expanded { max-height: none; }
-.imi-exams-public .show-more { margin: 10px 0 18px; }
-.imi-exams-public .show-more a {
-  display: inline-block;
-  padding: 5px 15px;
-  background: #8dc85a;
-  color: #fff;
-  font-size: 14px;
-  font-weight: bold;
-}
+.imi-exams-public .show-more { display: none; }
 
-/* Packaging image popup. */
 .imi-exams-public .exam-lightbox { display: none; position: fixed; inset: 0; z-index: 10000; }
 .imi-exams-public .exam-lightbox.open { display: block; }
 .imi-exams-public .exam-lightbox-bg { position: absolute; inset: 0; background: rgba(0,0,0,.82); }
