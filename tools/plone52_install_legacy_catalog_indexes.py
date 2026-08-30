@@ -32,20 +32,20 @@ def _reindex_objects(site, portal_type, idxs):
 
 
 def _clear_indexes(catalog, names):
-    """Clear named indexes while preserving their acquisition context.
+    """Clear named indexes with portal_catalog as acquisition parent.
 
-    ZCTextIndex.getLexicon() finds its lexicon by acquisition from
-    portal_catalog.  Objects obtained from ``catalog._catalog.indexes`` are
-    acquisition-stripped, so calling ``clear()`` on those directly leaves
-    ZCTextIndex without a parent and therefore without htmltext_lexicon.
-    Fetching each index as an attribute of portal_catalog gives it the normal
-    acquisition wrapper used by ZCatalog management operations.
+    The index objects live in ``catalog._catalog.indexes`` and are not exposed
+    as attributes of portal_catalog.  ZCTextIndex.clear() nevertheless needs
+    portal_catalog as its acquisition parent so getLexicon() can resolve the
+    configured htmltext_lexicon.  Wrap each raw index explicitly with
+    ``__of__(catalog)`` before clearing it.
     """
     cleared = []
     for name in names:
-        if name not in catalog.indexes():
+        raw = catalog._catalog.indexes.get(name)
+        if raw is None:
             continue
-        index = getattr(catalog, name)
+        index = raw.__of__(catalog)
         index.clear()
         cleared.append(name)
     return cleared
@@ -98,10 +98,6 @@ def run(app):
                 found = catalog.unrestrictedSearchResults(SearchableText=term, **scope)
                 print('  SearchableText %r -> %d' % (term, len(found)))
         elif site_id == 'preiskave':
-            # Rebuild every legacy PREISKAVE custom index from scratch. Some
-            # existing KeywordIndexes contain RichTextValue keys from an older
-            # incorrect indexing pass; they cannot safely be incrementally
-            # unindexed on Python 3.
             names = tuple(expected.keys())
             cleared = _clear_indexes(catalog, names)
             print('CLEARED PREISKAVE INDEXES:', cleared)
