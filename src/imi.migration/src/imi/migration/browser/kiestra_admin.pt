@@ -22,6 +22,7 @@
     <p>Novi datum: <input name="nov" type="date" lang="sl" tal:attributes="value view/today_id" /></p>
     <input class="btn btn-primary" type="submit" value="Kopiraj" />
   </form>
+  <script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/legacy-date-picker.js"></script>
 </metal:main>
 </body>
 </html>
