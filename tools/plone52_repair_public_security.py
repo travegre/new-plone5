@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Apply workflow permission mappings to already-migrated content."""
+"""Restore public View permission inherited by the five legacy sites."""
 from __future__ import print_function
 
 import transaction
@@ -8,20 +8,28 @@ import transaction
 SITES = ('portal', 'dezurstva', 'kiestra', 'preiskave', 'nadomescanja')
 
 
+def _selected_roles(obj, permission):
+    return [row['name'] for row in obj.rolesOfPermission(permission)
+            if row.get('selected')]
+
+
 def run(app):
     for site_id in SITES:
         site = app.unrestrictedTraverse(site_id)
-        workflow = site.portal_workflow
         catalog = site.portal_catalog
-        print('\nSITE:', site_id)
-        workflow.updateRoleMappings()
-        # allowedRolesAndUsers is derived from the effective permissions/local
-        # roles. Refresh it after workflow permission maps have been applied.
+        roles = _selected_roles(site, 'View')
+        if 'Anonymous' not in roles:
+            roles.append('Anonymous')
+        # These five migrated applications are public legacy sites. Their
+        # migrated custom Dexterity types have no workflow chain, so workflow
+        # role mapping cannot grant View. Restore View at the site root and let
+        # descendants acquire it, matching their public legacy behaviour.
+        site.manage_permission('View', roles=roles, acquire=True)
         catalog.manage_reindexIndex(ids=['allowedRolesAndUsers'])
-        print('  workflow role mappings applied')
-        print('  allowedRolesAndUsers reindexed')
+        print('%s: View roles=%r; allowedRolesAndUsers reindexed' %
+              (site_id, _selected_roles(site, 'View')))
     transaction.commit()
-    print('\nCOMMITTED public-security repair.')
+    print('\nCOMMITTED public View repair.')
 
 
 if 'app' not in globals():
