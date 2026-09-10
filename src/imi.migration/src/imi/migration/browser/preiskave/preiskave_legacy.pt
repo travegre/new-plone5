@@ -44,7 +44,7 @@
 
     <tal:quick condition="python:view.mode_key() == 'quick'">
       <h1>Hitro iskanje</h1>
-      <form name="searchform" id="searchform" class="searchPage legacy-quick-search" method="get" tal:attributes="action string:${view/portal/absolute_url}/@@preiskave_hitro_view">
+      <form name="searchform" id="searchform" class="searchPage legacy-quick-search" method="get" tal:attributes="action view/mode_url">
         <div class="LSBox">
           <input class="searchPage iskalnik" id="exam-search" name="moj" autocomplete="off" tal:attributes="value view/query" />
           <input class="searchPage searchButton" type="submit" value="Išči" />
@@ -112,7 +112,7 @@
       <h1>Vzorci</h1>
       <div id="listing_preiskav" class="vzorci">
         <span class="trenutno">Trenutno izbrano področje preiskav</span><br />
-        <form class="facet-form" method="get" tal:attributes="action string:${view/portal/absolute_url}/@@preiskave_vzorci_view">
+        <form class="facet-form" method="get" tal:attributes="action view/mode_url">
           <select class="podrocje_select" name="podrocje" onchange="this.form.submit()">
             <option value="" tal:attributes="selected python:not view.selected_area()">VSA PODROČJA</option>
             <option tal:repeat="area_option view/areas" tal:attributes="value area_option; selected python:area_option == view.selected_area()" tal:content="area_option">Področje</option>
