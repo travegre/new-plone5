@@ -1,1 +1,1 @@
-<metal:use xmlns:metal="http://xml.zope.org/namespaces/metal" xmlns:tal="http://xml.zope.org/namespaces/tal" tal:define="target python:context.restrictedTraverse('@@dezurstva-public')" tal:replace="structure target()" />
+dezurstva/duty_public.pt
