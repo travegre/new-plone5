@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KIESTRA</title>
   <link rel="stylesheet" tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/kiestra/kiestra-legacy.css" />
-  <script defer="defer" tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/kiestra/date-picker.js"></script>
 </head>
 <body class="imi-kiestra-public">
 <div id="last-change" tal:condition="view/last_change">Zadnja sprememba: <span tal:replace="view/last_change">datum</span></div>
@@ -37,4 +36,5 @@
   </tal:normal>
   <tal:person condition="view/selected_person"><div class="person-history"><h2>Dežurstva za osebo <span class="person-name" tal:content="view/selected_person_title">Ime</span></h2><p>&nbsp;</p><div class="person-year-list" tal:repeat="year view/person_dates_by_year"><h3 tal:content="year/year">2026</h3><div tal:repeat="month year/months"><h4 tal:content="month/name">avgust</h4><div class="person-date" tal:repeat="item month/dates"><a tal:attributes="href string:${context/absolute_url}?datum=${item/id}" tal:content="item/label">datum</a></div></div></div><p><a tal:attributes="href context/absolute_url">Nazaj</a></p></div></tal:person>
 </div></div>
+<script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/kiestra/date-picker.js"></script>
 </body></html>
