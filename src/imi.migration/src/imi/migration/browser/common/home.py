@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Editor-aware site home routing.
+"""Public site-root dispatcher.
 
-The public site root remains the public frontend for anonymous/read-only users.
-Editors are redirected to the physical ``admin`` folder so the normal Plone
-"Domov" link keeps them inside the administration area.
+Administrative rendering is selected separately by the request browser layer;
+this view deliberately contains no editor/user/path-based switching.
 """
 from plone import api
 from Products.Five import BrowserView
@@ -19,16 +18,10 @@ PUBLIC_VIEWS = {
 
 
 class SiteHomeView(BrowserView):
-    """Send editors to /admin and everybody else to the public frontend."""
+    """Render the public frontend selected for this migrated site."""
 
     def __call__(self):
         site = api.portal.get()
-        if api.user.has_permission('Modify portal content', obj=site):
-            admin = site.get('admin')
-            if admin is not None:
-                self.request.response.redirect(admin.absolute_url())
-                return ''
-
         public_view = PUBLIC_VIEWS.get(site.getId())
         if public_view:
             return site.restrictedTraverse(public_view)()
