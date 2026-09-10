@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
-"""Hostname-selected administrative browser layer.
+"""Hostname-selected administrative presentation.
 
-The same ZODB content tree is rendered differently for administrative requests.
+Admin mode is deliberately detected from the request hostname without changing
+the request's browser-layer interfaces.  This keeps Plone/Barceloneta's normal
+backend layers, viewlets and resource registrations intact.
+
 Locally, requests through 127.0.0.1 activate admin mode.  In production, any
 hostname beginning with ``admin.`` does the same.  Reverse proxies are supported
 through X-Forwarded-Host.
 """
-from zope.interface import alsoProvides
 from Products.Five import BrowserView
 
-from .interfaces import IIMIAdminLayer
 
-
-def _request_host(request):
+def request_host(request):
     environ = getattr(request, 'environ', {}) or {}
     forwarded = environ.get('HTTP_X_FORWARDED_HOST', '')
     raw = (forwarded.split(',')[0].strip() if forwarded else
            environ.get('HTTP_HOST', '') or
            environ.get('SERVER_NAME', ''))
-    # Strip an ordinary host:port suffix while keeping IPv6 literals harmless.
     host = raw.strip().lower()
     if host.startswith('['):
         end = host.find(']')
@@ -29,14 +28,8 @@ def _request_host(request):
 
 
 def is_admin_request(request):
-    host = _request_host(request)
+    host = request_host(request)
     return host == '127.0.0.1' or host.startswith('admin.')
-
-
-def activate_admin_layer(context, event):
-    request = event.request
-    if is_admin_request(request) and not IIMIAdminLayer.providedBy(request):
-        alsoProvides(request, IIMIAdminLayer)
 
 
 class AdminFolderView(BrowserView):
