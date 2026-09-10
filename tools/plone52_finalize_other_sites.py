@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Finalize public and administrative views for all migrated sites.
+"""Finalize public layouts and admin-only utility folders for migrated sites.
 
-Each migrated Plone site keeps its public frontend for ordinary visitors.  A
-physical ``admin`` folder provides the clean ``/admin`` URL.  Sites with an
-import workflow also receive a physical ``uvoz`` folder at the site root; that
-folder is visible to editors in normal Plone navigation and renders the import
-view directly.
+Admin mode is selected by the request hostname/browser layer.  There is no
+physical ``admin`` folder.  Import workflows remain physical ``uvoz`` folders
+at the site root so they can appear naturally in the Plone navigation used by
+administrators.
 """
 
 import transaction
@@ -21,14 +20,6 @@ SITE_LAYOUTS = (
     ('preiskave', '@@preiskave-home'),
     ('nadomescanja', '@@nadomescanja-home'),
 )
-
-ADMIN_LAYOUTS = {
-    'portal': '@@imenik-admin',
-    'dezurstva': '@@dezurstva-admin',
-    'kiestra': '@@kiestra-admin',
-    'preiskave': '@@preiskave-admin',
-    'nadomescanja': '@@nadomescanja-admin',
-}
 
 IMPORT_LAYOUTS = {
     'portal': ('@@imenik-uvoz', u'Uvoz podatkov'),
@@ -119,20 +110,33 @@ def ensure_folder(site, folder_id, title, layout, failures):
     return folder
 
 
-def configure_admin_navigation(site, site_id, failures):
-    admin_layout = ADMIN_LAYOUTS.get(site_id)
-    if admin_layout:
-        admin = ensure_folder(site, 'admin', u'Administracija',
-                              admin_layout, failures)
-        if admin is not None:
-            print('  /admin layout -> %s' % admin_layout)
+def remove_obsolete_admin_folder(site):
+    """Remove only the dummy admin folder created by the previous finalizer."""
+    admin = site.get('admin')
+    if admin is None:
+        return
+    if getattr(admin, 'portal_type', None) != 'Folder':
+        print('  /admin exists but is not a Folder; left untouched')
+        return
+    layout = getattr(admin, 'getLayout', lambda: '')()
+    if layout not in (
+        '@@imenik-admin', '@@dezurstva-admin', '@@kiestra-admin',
+        '@@preiskave-admin', '@@nadomescanja-admin',
+    ):
+        print('  /admin is not the generated dummy folder; left untouched')
+        return
+    api.content.delete(obj=admin)
+    print('  removed obsolete generated /admin folder')
 
+
+def configure_import_navigation(site, site_id, failures):
     import_config = IMPORT_LAYOUTS.get(site_id)
-    if import_config:
-        layout, title = import_config
-        uvoz = ensure_folder(site, 'uvoz', title, layout, failures)
-        if uvoz is not None:
-            print('  /uvoz layout -> %s (title=%r)' % (layout, title))
+    if not import_config:
+        return
+    layout, title = import_config
+    uvoz = ensure_folder(site, 'uvoz', title, layout, failures)
+    if uvoz is not None:
+        print('  /uvoz layout -> %s (title=%r)' % (layout, title))
 
 
 def restore_preiskave_order(base):
@@ -180,7 +184,8 @@ def run(app):
             if not set_layout(site, layout, failures, '/%s' % site_id):
                 continue
 
-            configure_admin_navigation(site, site_id, failures)
+            remove_obsolete_admin_folder(site)
+            configure_import_navigation(site, site_id, failures)
 
             missing = [obj_id for obj_id in REQUIRED_ROOT_OBJECTS.get(site_id, ())
                        if obj_id not in site.objectIds()]
@@ -200,7 +205,7 @@ def run(app):
         transaction.abort()
         raise SystemExit('Finalizer aborted:\n  ' + '\n  '.join(failures))
     transaction.commit()
-    print('All migrated site roots, admin folders and import folders finalized.')
+    print('All migrated site roots and import folders finalized; admin mode is hostname-based.')
 
 
 if 'app' not in globals():
