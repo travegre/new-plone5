@@ -1,6 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:tal="http://xml.zope.org/namespaces/tal"
       xmlns:metal="http://xml.zope.org/namespaces/metal"
+      lang="sl-SI"
       metal:use-macro="context/main_template/macros/master">
   <body>
     <metal:title fill-slot="content-title">
@@ -23,7 +24,7 @@
             <input id="datum"
                    name="datum"
                    type="date"
-                   lang="sl"
+                   lang="sl-SI"
                    required="required" />
           </div>
 
@@ -46,7 +47,7 @@
             <input id="star"
                    name="star"
                    type="date"
-                   lang="sl"
+                   lang="sl-SI"
                    required="required" />
           </div>
 
@@ -56,7 +57,7 @@
             <input id="nov"
                    name="nov"
                    type="date"
-                   lang="sl"
+                   lang="sl-SI"
                    required="required" />
           </div>
 
@@ -65,8 +66,6 @@
           </div>
         </fieldset>
       </form>
-
-      <script defer="defer" tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/dezurstva/date-picker.js"></script>
     </metal:core>
   </body>
 </html>
