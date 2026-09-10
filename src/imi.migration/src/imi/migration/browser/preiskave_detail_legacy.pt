@@ -82,10 +82,10 @@
       </div>
 
       <div class="container _container container-13 preiskava_tech_data clearfix">
-        <div tal:condition="python:bool(view.code())"><p class="text text-16">Šifra preiskave</p><p class="text text-17" tal:content="view/code"></p></div>
+        <div tal:define="object_id python:context.getId(); code python:(getattr(context, 'sifra', '') or (object_id.split('_', 1)[1] if '_' in object_id else object_id))" tal:condition="code"><p class="text text-16">Šifra preiskave</p><p class="text text-17" tal:content="code"></p></div>
         <div tal:condition="python:bool(view.text('laboratoriji'))"><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="view/text/laboratoriji"></p></div>
         <div tal:condition="python:bool(view.rich('urnik'))"><p class="text text-16">Urnik izvajanja</p><div class="text text-17" tal:content="structure python:view.rich('urnik')"></div></div>
-        <div tal:condition="python:bool(view.rich('trajanje'))"><p class="text text-16">Trajanje preiskave</p><div class="text text-17" tal:content="structure python:view.rich('trajanje')"></div></div>
+        <div tal:define="trajanje python:getattr(context, 'trajanje', None); trajanje_html python:(getattr(trajanje, 'output', None) or getattr(trajanje, 'raw', None) or view.rich('trajanje'))" tal:condition="python:bool(trajanje_html)"><p class="text text-16">Trajanje preiskave</p><div class="text text-17" tal:content="structure trajanje_html"></div></div>
         <div tal:condition="python:bool(view.rich('metode'))"><p class="text text-16">Metode preiskave</p><div class="text text-17" tal:content="structure python:view.rich('metode')"></div></div>
       </div>
     </div>
@@ -97,14 +97,29 @@
 <script>
 (function(){
   'use strict';
+  function slideOpen(body){
+    body.style.display='block';
+    body.style.overflow='hidden';
+    body.style.height='0px';
+    body.offsetHeight;
+    body.style.transition='height 220ms ease';
+    body.style.height=body.scrollHeight+'px';
+    window.setTimeout(function(){body.style.height='';body.style.transition='';body.style.overflow='';},230);
+  }
+  function slideClose(body){
+    body.style.overflow='hidden';
+    body.style.height=body.scrollHeight+'px';
+    body.offsetHeight;
+    body.style.transition='height 220ms ease';
+    body.style.height='0px';
+    window.setTimeout(function(){body.style.display='none';body.style.height='';body.style.transition='';body.style.overflow='';},230);
+  }
   document.querySelectorAll('.naslov_vzorca').forEach(function(title){
     var detail=title.nextElementSibling;
-    if(detail){detail.style.display='none';}
     title.addEventListener('click',function(){
       if(!detail)return;
-      var open=title.classList.contains('odprt');
-      title.classList.toggle('odprt',!open);
-      detail.style.display=open?'none':'block';
+      var open=title.classList.toggle('odprt');
+      if(open){slideOpen(detail);}else{slideClose(detail);}
     });
   });
   var lightbox=document.getElementById('exam-lightbox');
