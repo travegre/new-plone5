@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Finalize public layouts and admin-only utility folders for migrated sites.
+"""Finalize public layouts and admin-host presentation for migrated sites.
 
-Admin mode is selected by the request hostname/browser layer.  There is no
-physical ``admin`` folder.  Import workflows remain physical ``uvoz`` folders
-at the site root so they can appear naturally in the Plone navigation used by
-administrators.
+The public applications use standalone legacy-fidelity templates.  The actual
+Plone site itself is kept on Barceloneta so login, folder contents, edit forms,
+toolbar and all other CMS/backend pages have the normal Plone 5 presentation.
+Admin mode is selected by hostname in the browser views: 127.0.0.1 locally or
+an admin.* hostname in production.  There is no physical ``admin`` folder.
+Import workflows remain physical ``uvoz`` folders at the site root.
 """
 
 import transaction
@@ -69,6 +71,27 @@ def set_layout(obj, layout, failures, label):
         obj.reindexObject()
     except Exception:
         pass
+    return True
+
+
+def ensure_barceloneta(site, failures):
+    """Repair theme/browser-layer/resource setup on an existing migrated site."""
+    setup = getattr(site, 'portal_setup', None)
+    if setup is None:
+        failures.append('/%s has no portal_setup' % site.getId())
+        return False
+    try:
+        # Barceloneta's default profile depends on plone.app.theming:default
+        # and activates the ``barceloneta`` Diazo theme.  Re-running the profile
+        # is intentional here: migrated sites may pre-date the target package's
+        # current GenericSetup dependencies.
+        setup.runAllImportStepsFromProfile(
+            'profile-plonetheme.barceloneta:default')
+    except Exception as exc:
+        failures.append('/%s could not activate Barceloneta: %s' %
+                        (site.getId(), exc))
+        return False
+    print('  Barceloneta profile/theme -> active')
     return True
 
 
@@ -178,6 +201,10 @@ def run(app):
         site = app[site_id]
         setSite(site)
         try:
+            # First repair Plone's own backend presentation.  The public IMI
+            # views are standalone templates, so this does not restyle them.
+            ensure_barceloneta(site, failures)
+
             set_default = getattr(site, 'setDefaultPage', None)
             if callable(set_default):
                 set_default(None)
@@ -205,7 +232,7 @@ def run(app):
         transaction.abort()
         raise SystemExit('Finalizer aborted:\n  ' + '\n  '.join(failures))
     transaction.commit()
-    print('All migrated site roots and import folders finalized; admin mode is hostname-based.')
+    print('All migrated sites finalized with Barceloneta backend and hostname-based admin mode.')
 
 
 if 'app' not in globals():
