@@ -1,6 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:tal="http://xml.zope.org/namespaces/tal"
       xmlns:metal="http://xml.zope.org/namespaces/metal"
+      lang="sl-SI"
       metal:use-macro="context/main_template/macros/master">
 <body>
 <metal:main fill-slot="main">
@@ -12,17 +13,16 @@
   </p>
   <h2>Uredi dežurstvo</h2>
   <form tal:attributes="action string:${context/absolute_url}/@@kiestra-select" method="get">
-    <p>Datum: <input name="datum" type="date" lang="sl" tal:attributes="value view/today_id" /></p>
+    <p>Datum: <input name="datum" type="date" lang="sl-SI" tal:attributes="value view/today_id" /></p>
     <input class="btn btn-primary" type="submit" value="Uredi" />
   </form>
   <p>&nbsp;</p>
   <h2>Kopiraj dežurstvo</h2>
   <form tal:attributes="action string:${context/absolute_url}/@@kiestra-copy" method="get">
-    <p>Obstoječi datum: <input name="star" type="date" lang="sl" tal:attributes="value view/today_id" /></p>
-    <p>Novi datum: <input name="nov" type="date" lang="sl" tal:attributes="value view/today_id" /></p>
+    <p>Obstoječi datum: <input name="star" type="date" lang="sl-SI" tal:attributes="value view/today_id" /></p>
+    <p>Novi datum: <input name="nov" type="date" lang="sl-SI" tal:attributes="value view/today_id" /></p>
     <input class="btn btn-primary" type="submit" value="Kopiraj" />
   </form>
-  <script defer="defer" tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/kiestra/date-picker.js"></script>
 </metal:main>
 </body>
 </html>
