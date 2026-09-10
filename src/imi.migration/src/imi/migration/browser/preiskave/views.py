@@ -67,22 +67,43 @@ class ExaminationPublicView(BaseExaminationPublicView):
     template = ViewPageTemplateFile('preiskave_detail_legacy.pt')
 
 
+def _proxy_exam(request):
+    exam_id = str(request.form.get('id') or '').strip()
+    portal = api.portal.get()
+    base = portal.get('preiskave-1')
+    if exam_id and base is not None:
+        for candidate in _walk(base):
+            if (candidate.getId() == exam_id and
+                    getattr(candidate, 'portal_type', None) == 'imi.exams.examination'):
+                return candidate
+    return None
+
+
 class ExaminationPublicProxyView(BrowserView):
     def __call__(self):
-        exam_id = str(self.request.form.get('id') or '').strip()
-        portal = api.portal.get()
-        base = portal.get('preiskave-1')
-        obj = None
-        if exam_id and base is not None:
-            for candidate in _walk(base):
-                if (candidate.getId() == exam_id and
-                        getattr(candidate, 'portal_type', None) == 'imi.exams.examination'):
-                    obj = candidate
-                    break
+        obj = _proxy_exam(self.request)
         if obj is None:
             self.request.response.setStatus(404)
             return u'Preiskava ne obstaja.'
         return ExaminationPublicView(obj, self.request)()
+
+
+class ExaminationAdminProxyView(BrowserView):
+    """Keep legacy proxy links usable while admin hostname is active.
+
+    Public pages historically link to ``@@preiskava-public?id=...``.  In admin
+    mode that URL must not instantiate the public template directly.  Resolve
+    the same object and redirect to its canonical URL; the admin browser layer
+    then selects the editable/admin view for that object.
+    """
+
+    def __call__(self):
+        obj = _proxy_exam(self.request)
+        if obj is None:
+            self.request.response.setStatus(404)
+            return u'Preiskava ne obstaja.'
+        self.request.response.redirect(obj.absolute_url())
+        return ''
 
 
 class ExamsAdminView(BaseExamsHomeView):
