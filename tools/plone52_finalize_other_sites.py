@@ -1,25 +1,40 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Finalize public application views for all migrated sites.
+"""Finalize public and administrative views for all migrated sites.
 
-Site roots receive their public application view. Preiskave additionally keeps
-its legacy content-driven navigation: visible labels still come from the real
-folders under /preiskave/preiskave-1, while their layouts and the original
-folder order are restored once from the 4.3 public site.
+Each migrated Plone site keeps its public frontend for ordinary visitors.  A
+physical ``admin`` folder provides the clean ``/admin`` URL.  Sites with an
+import workflow also receive a physical ``uvoz`` folder at the site root; that
+folder is visible to editors in normal Plone navigation and renders the import
+view directly.
 """
 
 import transaction
+from plone import api
 from zope.component.hooks import setSite
 
 
 SITE_LAYOUTS = (
-    ('portal', '@@imenik-public'),
-    ('dezurstva', '@@dezurstva-public'),
-    ('kiestra', '@@kiestra-public'),
-    # The legacy Preiskave site opens directly on Hitro iskanje.
-    ('preiskave', '@@preiskave_hitro_view'),
-    ('nadomescanja', '@@nadomescanja-public'),
+    ('portal', '@@imenik-home'),
+    ('dezurstva', '@@dezurstva-home'),
+    ('kiestra', '@@kiestra-home'),
+    ('preiskave', '@@preiskave-home'),
+    ('nadomescanja', '@@nadomescanja-home'),
 )
+
+ADMIN_LAYOUTS = {
+    'portal': '@@imenik-admin',
+    'dezurstva': '@@dezurstva-admin',
+    'kiestra': '@@kiestra-admin',
+    'preiskave': '@@preiskave-admin',
+    'nadomescanja': '@@nadomescanja-admin',
+}
+
+IMPORT_LAYOUTS = {
+    'portal': ('@@imenik-uvoz', u'Uvoz podatkov'),
+    'dezurstva': ('@@dezurstva-uvoz-zaposlenih', u'Uvoz zaposlenih'),
+    'preiskave': ('@@preiskave-uvoz', u'Uvoz preiskav'),
+}
 
 REQUIRED_ROOT_OBJECTS = {
     'portal': ('data2',),
@@ -40,9 +55,6 @@ PREISKAVE_FOLDER_LAYOUTS = {
     'skrbniki': '@@preiskave_skrbniki_view',
 }
 
-# Original public order visible in the Plone-4 site. Titles are intentionally
-# not stored here; editors remain free to rename the folders and menu labels
-# continue to come from folder.Title().
 PREISKAVE_FOLDER_ORDER = (
     'hitro-iskanje',
     'preiskave-po-podrocjih',
@@ -67,6 +79,60 @@ def set_layout(obj, layout, failures, label):
     except Exception:
         pass
     return True
+
+
+def ensure_folder(site, folder_id, title, layout, failures):
+    folder = site.get(folder_id)
+    if folder is None:
+        try:
+            folder = api.content.create(
+                container=site,
+                type='Folder',
+                id=folder_id,
+                title=title,
+                safe_id=False,
+            )
+        except Exception as exc:
+            failures.append('/%s/%s could not be created: %s' %
+                            (site.getId(), folder_id, exc))
+            return None
+    elif getattr(folder, 'portal_type', None) != 'Folder':
+        failures.append('/%s/%s exists but is %r, expected Folder' %
+                        (site.getId(), folder_id,
+                         getattr(folder, 'portal_type', None)))
+        return None
+
+    try:
+        folder.setTitle(title)
+    except Exception:
+        pass
+    try:
+        folder.exclude_from_nav = False
+    except Exception:
+        pass
+    set_layout(folder, layout, failures,
+               '/%s/%s' % (site.getId(), folder_id))
+    try:
+        folder.reindexObject()
+    except Exception:
+        pass
+    return folder
+
+
+def configure_admin_navigation(site, site_id, failures):
+    admin_layout = ADMIN_LAYOUTS.get(site_id)
+    if admin_layout:
+        admin = ensure_folder(site, 'admin', u'Administracija',
+                              admin_layout, failures)
+        if admin is not None:
+            print('  /admin layout -> %s' % admin_layout)
+
+    import_config = IMPORT_LAYOUTS.get(site_id)
+    if import_config:
+        layout, title = import_config
+        uvoz = ensure_folder(site, 'uvoz', title, layout, failures)
+        if uvoz is not None:
+            print('  /uvoz layout -> %s (title=%r)' % (layout, title))
 
 
 def restore_preiskave_order(base):
@@ -114,6 +180,8 @@ def run(app):
             if not set_layout(site, layout, failures, '/%s' % site_id):
                 continue
 
+            configure_admin_navigation(site, site_id, failures)
+
             missing = [obj_id for obj_id in REQUIRED_ROOT_OBJECTS.get(site_id, ())
                        if obj_id not in site.objectIds()]
             print('/%s layout -> %s' % (site_id, layout))
@@ -132,7 +200,7 @@ def run(app):
         transaction.abort()
         raise SystemExit('Finalizer aborted:\n  ' + '\n  '.join(failures))
     transaction.commit()
-    print('All migrated site roots/public folder layouts finalized.')
+    print('All migrated site roots, admin folders and import folders finalized.')
 
 
 if 'app' not in globals():
