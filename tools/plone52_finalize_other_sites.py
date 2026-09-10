@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Finalize public layouts and admin-host presentation for migrated sites.
+"""Finalize public layouts and hostname-aware admin presentation.
 
-The public applications use standalone legacy-fidelity templates.  The actual
-Plone site itself is kept on Barceloneta so login, folder contents, edit forms,
-toolbar and all other CMS/backend pages have the normal Plone 5 presentation.
-Admin mode is selected by hostname in the browser views: 127.0.0.1 locally or
-an admin.* hostname in production.  There is no physical ``admin`` folder.
-Import workflows remain physical ``uvoz`` folders at the site root.
+The public applications use standalone legacy-fidelity templates. Diazo is
+configured with the package's ``imi-admin`` theme: normal hosts are explicitly
+left unthemed, while 127.0.0.1 and admin.* hosts fall through to Barceloneta.
+There is no physical ``admin`` folder. Import workflows remain physical
+``uvoz`` folders at the site root.
 """
 
 import transaction
 from plone import api
+from plone.app.theming.interfaces import IThemeSettings
+from plone.registry.interfaces import IRegistry
+from zope.component import getUtility
 from zope.component.hooks import setSite
 
 
@@ -36,11 +38,9 @@ REQUIRED_ROOT_OBJECTS = {
     'nadomescanja': ('laboratoriji', 'sprememba-nadomescanja'),
 }
 
-# This is the stock Products.CMFPlone 5.2 ``Plone Default`` skin path.
-# The old *.podoba packages inserted their own admin/template layers ahead of
-# Plone's layers; several of those layers contain a legacy main_template.pt.
-# Merely selecting Barceloneta does not guarantee that an already-migrated
-# portal_skins selection has been rebuilt, so normalize it explicitly.
+# Stock Products.CMFPlone 5.2 ``Plone Default`` skin path. Legacy *.podoba
+# admin layers contained old main_template.pt files and must not participate in
+# Plone 5 backend template resolution.
 PLONE5_DEFAULT_SKIN_LAYERS = (
     'custom',
     'plone_wysiwyg',
@@ -105,8 +105,6 @@ def repair_plone_default_skin(site, failures):
         return False
 
     try:
-        # addSkinSelection replaces an existing selection with the supplied
-        # path.  make_default=1 also resets any legacy default skin name.
         skins.addSkinSelection('Plone Default', skin_path, make_default=1)
     except Exception as exc:
         failures.append('/%s could not reset Plone Default skin path: %s' %
@@ -118,28 +116,51 @@ def repair_plone_default_skin(site, failures):
     return True
 
 
+def activate_hostname_theme(site, failures):
+    """Activate the IMI Diazo switcher and let its rules decide by hostname."""
+    try:
+        registry = getUtility(IRegistry)
+        settings = registry.forInterface(IThemeSettings, False)
+        settings.enabled = True
+        settings.currentTheme = 'imi-admin'
+        settings.rules = '/++theme++imi-admin/rules.xml'
+        settings.absolutePrefix = '/++theme++barceloneta'
+        # The standard theming UI commonly uses 127.0.0.1 as an unthemed
+        # development hostname. That would bypass Diazo before our $host rule
+        # is evaluated, so host switching belongs exclusively in rules.xml.
+        settings.hostnameBlacklist = []
+    except Exception as exc:
+        failures.append('/%s could not activate IMI hostname theme: %s' %
+                        (site.getId(), exc))
+        return False
+
+    print('  Diazo theme -> imi-admin (127.0.0.1/admin.* = Barceloneta)')
+    print('  Diazo hostname blacklist -> empty')
+    return True
+
+
 def ensure_barceloneta(site, failures):
-    """Repair theme/browser-layer/resource setup on an existing migrated site."""
+    """Repair Barceloneta resources, Plone skin path, and IMI Diazo state."""
     setup = getattr(site, 'portal_setup', None)
     if setup is None:
         failures.append('/%s has no portal_setup' % site.getId())
         return False
     try:
-        # Barceloneta's default profile depends on plone.app.theming:default
-        # and activates the ``barceloneta`` Diazo theme.  Re-running the profile
-        # is intentional here: migrated sites may pre-date the target package's
-        # current GenericSetup dependencies.
+        # Ensure Barceloneta and plone.app.theming resources/profiles exist on
+        # these already-migrated ZODB sites. The IMI theme is activated below.
         setup.runAllImportStepsFromProfile(
             'profile-plonetheme.barceloneta:default')
     except Exception as exc:
-        failures.append('/%s could not activate Barceloneta: %s' %
+        failures.append('/%s could not prepare Barceloneta: %s' %
                         (site.getId(), exc))
         return False
 
     if not repair_plone_default_skin(site, failures):
         return False
+    if not activate_hostname_theme(site, failures):
+        return False
 
-    print('  Barceloneta profile/theme -> active')
+    print('  Barceloneta resources/profile -> ready')
     return True
 
 
@@ -249,8 +270,6 @@ def run(app):
         site = app[site_id]
         setSite(site)
         try:
-            # First repair Plone's own backend presentation.  The public IMI
-            # views are standalone templates, so this does not restyle them.
             ensure_barceloneta(site, failures)
 
             set_default = getattr(site, 'setDefaultPage', None)
@@ -280,7 +299,7 @@ def run(app):
         transaction.abort()
         raise SystemExit('Finalizer aborted:\n  ' + '\n  '.join(failures))
     transaction.commit()
-    print('All migrated sites finalized with Barceloneta backend and hostname-based admin mode.')
+    print('All migrated sites finalized with hostname-aware Barceloneta admin mode.')
 
 
 if 'app' not in globals():
