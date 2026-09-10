@@ -33,6 +33,6 @@
       </dl>
       <div tal:condition="view/report/errors"><h3>Napake</h3><ul><li tal:repeat="error view/report/errors" tal:content="error"></li></ul></div>
     </div>
-    <p><a tal:attributes="href string:${site/absolute_url}/admin">Nazaj na administracijo</a></p>
+    <p><a tal:attributes="href site/absolute_url">Nazaj na administracijo</a></p>
   </div>
 </metal:main></body></html>
