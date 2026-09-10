@@ -7,10 +7,11 @@
 
   <!--
     Public IMI hosts keep their legacy-fidelity frontend completely unthemed.
-    Admin mode is selected only by hostname.  On 127.0.0.1 and admin.* hosts,
-    fall through to Barceloneta's normal rules and theme.
+    Admin mode is selected only by hostname.  plone.app.theming exposes $host;
+    with a direct Waitress URL this may include the port, so accept any host
+    starting with 127.0.0.1 as well as production admin.* hostnames.
   -->
-  <notheme if="not($host = '127.0.0.1' or starts-with($host, 'admin.'))" />
+  <notheme if="not(starts-with($host, '127.0.0.1') or starts-with($host, 'admin.'))" />
 
   <xi:include href="++theme++barceloneta/rules.xml" />
 
