@@ -3,40 +3,40 @@
     xmlns:browser="http://namespaces.zope.org/browser">
 
   <!-- Dežurstva -->
-  <browser:page name="dezurstva-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.views.DutyPublicView" permission="zope.Public" />
+  <browser:page name="dezurstva-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".common.home.SiteHomeView" permission="zope.Public" />
   <browser:page name="dezurstva-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.views.DutyPublicView" permission="zope.Public" />
   <browser:page name="dezurstva-izvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.duty_compat.DutyExportView" permission="zope2.View" />
   <browser:page name="dezurstva-change-request" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.views.DutyChangeRequestView" permission="zope.Public" />
-  <browser:page name="dezurstva-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.duty.DutyAdminView" template="dezurstva/duty_admin.pt" permission="cmf.ModifyPortalContent" />
-  <browser:page name="dezurstva_admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.duty.DutyAdminView" template="dezurstva/duty_admin.pt" permission="cmf.ModifyPortalContent" />
+  <browser:page name="dezurstva-admin" for="*" class=".dezurstva.duty.DutyAdminView" template="dezurstva/duty_admin.pt" permission="cmf.ModifyPortalContent" />
+  <browser:page name="dezurstva_admin" for="*" class=".dezurstva.duty.DutyAdminView" template="dezurstva/duty_admin.pt" permission="cmf.ModifyPortalContent" />
   <browser:page name="izberi_dezurstvo" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.duty.SelectDutyView" permission="cmf.AddPortalContent" />
   <browser:page name="kopiraj_dezurstvo" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.duty.CopyDutyView" permission="cmf.AddPortalContent" />
-  <browser:page name="dezurstva-uvoz-zaposlenih" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.views.StaffImportView" permission="cmf.ModifyPortalContent" />
+  <browser:page name="dezurstva-uvoz-zaposlenih" for="*" class=".dezurstva.views.StaffImportView" permission="cmf.ModifyPortalContent" />
 
   <!-- IMI imenik -->
-  <browser:page name="imenik-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".imenik.views.DirectoryPublicView" permission="zope.Public" />
+  <browser:page name="imenik-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".common.home.SiteHomeView" permission="zope.Public" />
   <browser:page name="imenik-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".imenik.views.DirectoryPublicView" permission="zope.Public" />
   <browser:page name="imenik-livesearch" for="Products.CMFCore.interfaces.ISiteRoot" class=".imenik.runtime.DirectorySearchView" permission="zope.Public" />
   <browser:page name="livesearch_reply" for="Products.CMFCore.interfaces.ISiteRoot" class=".imenik.runtime.DirectorySearchView" permission="zope.Public" />
-  <browser:page name="imenik-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".imenik.views.DirectoryAdminView" permission="cmf.ModifyPortalContent" />
-  <browser:page name="imenik-uvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".imenik.views.DirectoryImportView" permission="cmf.ModifyPortalContent" />
+  <browser:page name="imenik-admin" for="*" class=".imenik.views.DirectoryAdminView" permission="cmf.ModifyPortalContent" />
+  <browser:page name="imenik-uvoz" for="*" class=".imenik.views.DirectoryImportView" permission="cmf.ModifyPortalContent" />
 
   <!-- Kiestra -->
-  <browser:page name="kiestra-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".kiestra.views.KiestraPublicView" permission="zope.Public" />
+  <browser:page name="kiestra-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".common.home.SiteHomeView" permission="zope.Public" />
   <browser:page name="kiestra-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".kiestra.views.KiestraPublicView" permission="zope.Public" />
-  <browser:page name="kiestra-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".kiestra.views.KiestraAdminView" permission="cmf.ModifyPortalContent" />
+  <browser:page name="kiestra-admin" for="*" class=".kiestra.views.KiestraAdminView" permission="cmf.ModifyPortalContent" />
   <browser:page name="kiestra-select" for="Products.CMFCore.interfaces.ISiteRoot" class=".kiestra.views.KiestraSelectView" permission="cmf.AddPortalContent" />
   <browser:page name="kiestra-copy" for="Products.CMFCore.interfaces.ISiteRoot" class=".kiestra.views.KiestraCopyView" permission="cmf.AddPortalContent" />
   <browser:page name="kiestra-edit" for="imi.migration.content.IKiestraWorkDay" class=".kiestra.views.KiestraEditView" permission="cmf.ModifyPortalContent" />
   <browser:page name="edit" for="imi.migration.content.IKiestraWorkDay" class=".kiestra.views.KiestraEditView" permission="cmf.ModifyPortalContent" />
 
   <!-- Preiskave -->
-  <browser:page name="preiskave-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".preiskave.views.ExamsHomeView" permission="zope.Public" />
+  <browser:page name="preiskave-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".common.home.SiteHomeView" permission="zope.Public" />
   <browser:page name="preiskave-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".preiskave.views.ExamsHomeView" permission="zope.Public" />
   <browser:page name="preiskave-livesearch" for="Products.CMFCore.interfaces.ISiteRoot" class=".preiskave.exams_production_fidelity.LegacyExamsLiveSearchView" permission="zope.Public" />
   <browser:page name="preiskava-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".preiskave.views.ExaminationPublicProxyView" permission="zope.Public" />
-  <browser:page name="preiskave-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".preiskave.views.ExamsAdminView" permission="cmf.ModifyPortalContent" />
-  <browser:page name="preiskave-uvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".preiskave.views.ExamsImportView" permission="cmf.ModifyPortalContent" />
+  <browser:page name="preiskave-admin" for="*" class=".preiskave.views.ExamsAdminView" permission="cmf.ModifyPortalContent" />
+  <browser:page name="preiskave-uvoz" for="*" class=".preiskave.views.ExamsImportView" permission="cmf.ModifyPortalContent" />
   <browser:page name="content_view" for="*" class=".preiskave.views.ExamsAllView" permission="zope.Public" />
   <browser:page name="preiskave_view" for="*" class=".preiskave.views.ExamsAllView" permission="zope.Public" />
   <browser:page name="preiskave_hitro_view" for="*" class=".preiskave.views.ExamsQuickView" permission="zope.Public" />
@@ -51,9 +51,9 @@
   <browser:page name="view" for="imi.migration.content.IExamination" class=".preiskave.views.ExaminationPublicView" permission="zope.Public" />
 
   <!-- Nadomeščanja -->
-  <browser:page name="nadomescanja-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".nadomescanja.views.ReplacementsPublicView" permission="zope.Public" />
+  <browser:page name="nadomescanja-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".common.home.SiteHomeView" permission="zope.Public" />
   <browser:page name="nadomescanja-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".nadomescanja.views.ReplacementsPublicView" permission="zope.Public" />
-  <browser:page name="nadomescanja-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".nadomescanja.views.ReplacementsAdminView" permission="cmf.ModifyPortalContent" />
+  <browser:page name="nadomescanja-admin" for="*" class=".nadomescanja.views.ReplacementsAdminView" permission="cmf.ModifyPortalContent" />
   <browser:page name="nadomescanja-select" for="Products.CMFCore.interfaces.ISiteRoot" class=".nadomescanja.views.ReplacementsSelectView" permission="cmf.AddPortalContent" />
   <browser:page name="nadomescanja-copy" for="Products.CMFCore.interfaces.ISiteRoot" class=".nadomescanja.views.ReplacementsCopyView" permission="cmf.AddPortalContent" />
   <browser:page name="nadomescanja-izvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".nadomescanja.views.ReplacementsExportView" permission="zope.Public" />
