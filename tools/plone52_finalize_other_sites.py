@@ -36,6 +36,21 @@ REQUIRED_ROOT_OBJECTS = {
     'nadomescanja': ('laboratoriji', 'sprememba-nadomescanja'),
 }
 
+# This is the stock Products.CMFPlone 5.2 ``Plone Default`` skin path.
+# The old *.podoba packages inserted their own admin/template layers ahead of
+# Plone's layers; several of those layers contain a legacy main_template.pt.
+# Merely selecting Barceloneta does not guarantee that an already-migrated
+# portal_skins selection has been rebuilt, so normalize it explicitly.
+PLONE5_DEFAULT_SKIN_LAYERS = (
+    'custom',
+    'plone_wysiwyg',
+    'plone_prefs',
+    'plone_templates',
+    'plone_form_scripts',
+    'plone_scripts',
+    'plone_images',
+)
+
 PREISKAVE_FOLDER_LAYOUTS = {
     'hitro-iskanje': '@@preiskave_hitro_view',
     'preiskave-po-podrocjih': '@@preiskave_podrocja_view',
@@ -74,6 +89,35 @@ def set_layout(obj, layout, failures, label):
     return True
 
 
+def repair_plone_default_skin(site, failures):
+    """Remove legacy *.podoba layers from main_template resolution."""
+    skins = getattr(site, 'portal_skins', None)
+    if skins is None:
+        failures.append('/%s has no portal_skins' % site.getId())
+        return False
+
+    skin_path = ','.join(PLONE5_DEFAULT_SKIN_LAYERS)
+    missing = [name for name in PLONE5_DEFAULT_SKIN_LAYERS
+               if not hasattr(skins, name)]
+    if missing:
+        failures.append('/%s portal_skins missing Plone 5 layers: %s' %
+                        (site.getId(), ', '.join(missing)))
+        return False
+
+    try:
+        # addSkinSelection replaces an existing selection with the supplied
+        # path.  make_default=1 also resets any legacy default skin name.
+        skins.addSkinSelection('Plone Default', skin_path, make_default=1)
+    except Exception as exc:
+        failures.append('/%s could not reset Plone Default skin path: %s' %
+                        (site.getId(), exc))
+        return False
+
+    actual = skins.getSkinPath('Plone Default')
+    print('  Plone Default skin path -> %s' % actual)
+    return True
+
+
 def ensure_barceloneta(site, failures):
     """Repair theme/browser-layer/resource setup on an existing migrated site."""
     setup = getattr(site, 'portal_setup', None)
@@ -91,6 +135,10 @@ def ensure_barceloneta(site, failures):
         failures.append('/%s could not activate Barceloneta: %s' %
                         (site.getId(), exc))
         return False
+
+    if not repair_plone_default_skin(site, failures):
+        return False
+
     print('  Barceloneta profile/theme -> active')
     return True
 
