@@ -258,10 +258,10 @@ body.imi-exams-public {
 .imi-exams-public .exam-three-columns {
   display: flex;
   align-items: flex-start;
-  gap: 3%;
+  gap: 2.5%;
 }
-.imi-exams-public .preiskava_opis_container { width: 24%; }
-.imi-exams-public .preiskava_vzorci_container { width: 50%; }
+.imi-exams-public .preiskava_opis_container { width: 20%; }
+.imi-exams-public .preiskava_vzorci_container { width: 55%; }
 .imi-exams-public .preiskava_tech_data { width: 20%; }
 .imi-exams-public .text-12,
 .imi-exams-public .text-14,
@@ -297,7 +297,7 @@ body.imi-exams-public {
 .imi-exams-public .naslov_vzorca.odprt {
   background-image: url(fajli_gor_new.png);
 }
-.imi-exams-public .ostali_fajli { margin: -13px 0 28px; font-size: .875em; line-height: 1.38; }
+.imi-exams-public .ostali_fajli { display: none; margin: -13px 0 28px; font-size: .875em; line-height: 1.38; }
 .imi-exams-public .vzorec_levo,
 .imi-exams-public .vzorec_desno { width: 100%; margin-bottom: 6px; font-size: .875em; line-height: 1.38; }
 .imi-exams-public .vzorec_levo { margin-top: 12px; font-weight: bold; }
