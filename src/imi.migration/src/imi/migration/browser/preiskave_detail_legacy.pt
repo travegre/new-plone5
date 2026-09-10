@@ -83,7 +83,7 @@
 
       <div class="container _container container-13 preiskava_tech_data clearfix">
         <div tal:define="object_id python:context.getId(); code python:(getattr(context, 'sifra', '') or (object_id.split('_', 1)[1] if '_' in object_id else object_id))" tal:condition="code"><p class="text text-16">Šifra preiskave</p><p class="text text-17" tal:content="code"></p></div>
-        <div tal:condition="python:bool(view.text('laboratoriji'))"><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="view/text/laboratoriji"></p></div>
+        <div tal:condition="python:bool(view.text('laboratoriji'))"><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="python:view.text('laboratoriji')"></p></div>
         <div tal:condition="python:bool(view.rich('urnik'))"><p class="text text-16">Urnik izvajanja</p><div class="text text-17" tal:content="structure python:view.rich('urnik')"></div></div>
         <div tal:define="trajanje python:getattr(context, 'trajanje', None); trajanje_html python:(getattr(trajanje, 'output', None) or getattr(trajanje, 'raw', None) or view.rich('trajanje'))" tal:condition="python:bool(trajanje_html)"><p class="text text-16">Trajanje preiskave</p><div class="text text-17" tal:content="structure trajanje_html"></div></div>
         <div tal:condition="python:bool(view.rich('metode'))"><p class="text text-16">Metode preiskave</p><div class="text text-17" tal:content="structure python:view.rich('metode')"></div></div>
