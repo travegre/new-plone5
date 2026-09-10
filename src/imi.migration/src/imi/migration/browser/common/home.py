@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Public site-root dispatcher.
-
-Administrative rendering is selected separately by the request browser layer;
-this view deliberately contains no editor/user/path-based switching.
-"""
+"""Hostname-aware site-root dispatcher for migrated IMI sites."""
 from plone import api
 from Products.Five import BrowserView
+
+from .adminmode import is_admin_request
 
 
 PUBLIC_VIEWS = {
@@ -16,12 +14,25 @@ PUBLIC_VIEWS = {
     'nadomescanja': '@@nadomescanja-public',
 }
 
+ADMIN_VIEWS = {
+    'portal': '@@imenik-admin',
+    'dezurstva': '@@dezurstva-admin',
+    'kiestra': '@@kiestra-admin',
+    'preiskave': '@@preiskave-admin',
+    'nadomescanja': '@@nadomescanja-admin',
+}
+
 
 class SiteHomeView(BrowserView):
-    """Render the public frontend selected for this migrated site."""
+    """Render admin or public site home based only on the request hostname."""
 
     def __call__(self):
         site = api.portal.get()
+        if is_admin_request(self.request):
+            admin_view = ADMIN_VIEWS.get(site.getId())
+            if admin_view:
+                return site.restrictedTraverse(admin_view)()
+
         public_view = PUBLIC_VIEWS.get(site.getId())
         if public_view:
             return site.restrictedTraverse(public_view)()
