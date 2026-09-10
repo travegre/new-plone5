@@ -26,7 +26,6 @@
         <tal:opis condition="python:bool(view.rich('opis'))">
           <p class="text text-12 siv-tekst">Opis preiskave</p>
           <div id="opis_preiskave" class="text text-13 opis" tal:content="structure python:view.rich('opis')"></div>
-          <div class="show-more" style="display:none"><a href="#" id="gumb_pokazi_vec">Prikaži več</a></div>
         </tal:opis>
 
         <tal:file define="attachment view/attachment" condition="attachment">
@@ -82,12 +81,12 @@
         </div>
       </div>
 
-      <div class="container _container container-12 preiskava_tech_data clearfix">
-        <tal:code condition="python:bool(context.sifra)"><div><p class="text text-16">Šifra preiskave</p><p class="text text-17" tal:content="context/sifra"></p></div></tal:code>
-        <tal:labs condition="python:bool(context.laboratoriji)"><div><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="context/laboratoriji"></p></div></tal:labs>
-        <tal:schedule condition="python:bool(view.rich('urnik'))"><div><p class="text text-16">Urnik izvajanja</p><div class="text text-17" tal:content="structure python:view.rich('urnik')"></div></div></tal:schedule>
-        <tal:duration condition="python:bool(view.rich('trajanje'))"><div><p class="text text-16">Trajanje preiskave</p><div class="text text-17" tal:content="structure python:view.rich('trajanje')"></div></div></tal:duration>
-        <tal:methods condition="python:bool(view.rich('metode'))"><div><p class="text text-16">Metode preiskave</p><div class="text text-17" tal:content="structure python:view.rich('metode')"></div></div></tal:methods>
+      <div class="container _container container-13 preiskava_tech_data clearfix">
+        <div tal:condition="python:bool(view.code())"><p class="text text-16">Šifra preiskave</p><p class="text text-17" tal:content="view/code"></p></div>
+        <div tal:condition="python:bool(view.text('laboratoriji'))"><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="view/text/laboratoriji"></p></div>
+        <div tal:condition="python:bool(view.rich('urnik'))"><p class="text text-16">Urnik izvajanja</p><div class="text text-17" tal:content="structure python:view.rich('urnik')"></div></div>
+        <div tal:condition="python:bool(view.rich('trajanje'))"><p class="text text-16">Trajanje preiskave</p><div class="text text-17" tal:content="structure python:view.rich('trajanje')"></div></div>
+        <div tal:condition="python:bool(view.rich('metode'))"><p class="text text-16">Metode preiskave</p><div class="text text-17" tal:content="structure python:view.rich('metode')"></div></div>
       </div>
     </div>
     </main>
@@ -100,12 +99,12 @@
   'use strict';
   document.querySelectorAll('.naslov_vzorca').forEach(function(title){
     var detail=title.nextElementSibling;
-    if(detail){detail.style.display='block';title.classList.add('odprt');}
+    if(detail){detail.style.display='none';}
     title.addEventListener('click',function(){
       if(!detail)return;
-      var open=detail.style.display!=='none';
-      detail.style.display=open?'none':'block';
+      var open=title.classList.contains('odprt');
       title.classList.toggle('odprt',!open);
+      detail.style.display=open?'none':'block';
     });
   });
   var lightbox=document.getElementById('exam-lightbox');
