@@ -42,8 +42,9 @@
   <browser:page name="preiskave-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".common.home.SiteHomeView" permission="zope.Public" />
   <browser:page name="preiskave-home" for="Products.CMFCore.interfaces.ISiteRoot" layer=".common.interfaces.IIMIAdminLayer" class=".preiskave.views.ExamsAdminView" permission="cmf.ModifyPortalContent" />
   <browser:page name="preiskave-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".preiskave.views.ExamsHomeView" permission="zope.Public" />
-  <browser:page name="preiskave-livesearch" for="Products.CMFCore.interfaces.ISiteRoot" class=".preiskave.exams_production_fidelity.LegacyExamsLiveSearchView" permission="zope.Public" />
+  <browser:page name="preiskave-livesearch" for="Products.CMFCore.interfaces.ISiteRoot" class=".preiskave.views.LegacyExamsLiveSearchView" permission="zope.Public" />
   <browser:page name="preiskava-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".preiskave.views.ExaminationPublicProxyView" permission="zope.Public" />
+  <browser:page name="preiskava-public" for="Products.CMFCore.interfaces.ISiteRoot" layer=".common.interfaces.IIMIAdminLayer" class=".preiskave.views.ExaminationAdminProxyView" permission="cmf.ModifyPortalContent" />
   <browser:page name="preiskave-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".preiskave.views.ExamsAdminView" permission="cmf.ModifyPortalContent" />
   <browser:page name="preiskave-uvoz" for="*" class=".preiskave.views.ExamsImportView" permission="cmf.ModifyPortalContent" />
 
