@@ -1,11 +1,14 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
     xmlns:browser="http://namespaces.zope.org/browser"
-    xmlns:genericsetup="http://namespaces.zope.org/genericsetup">
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:plone="http://namespaces.plone.org/plone">
 
   <include package="Products.CMFCore" file="permissions.zcml" />
   <includeDependencies package="." />
   <include package=".browser" />
+  <include package="plone.resource" />
+  <include package="plone.app.theming" />
 
   <utility component=".vocabularies.duty_staff_vocabulary" name="imi.duty.staff" />
   <utility component=".vocabularies.form_staff_email_vocabulary" name="imi.form.staff_email" />
@@ -22,6 +25,9 @@
       />
 
   <browser:resourceDirectory name="imi.migration" directory="static" />
+
+  <!-- Diazo switcher: public hosts are unthemed; 127.0.0.1/admin.* use Barceloneta. -->
+  <plone:static directory="theme" name="imi-admin" type="theme" />
 
   <genericsetup:registerProfile
       name="default"
