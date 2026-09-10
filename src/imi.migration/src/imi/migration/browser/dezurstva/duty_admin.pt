@@ -9,63 +9,68 @@
     </metal:title>
 
     <metal:core fill-slot="content-core">
-      <p><img class="imi-admin-logo" tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></p>
-      <p><a class="btn btn-default" tal:attributes="href string:${context/absolute_url}/@@dezurstva-uvoz-zaposlenih">Uvoz zaposlenih</a></p>
+      <div tal:define="site python:context.portal_url.getPortalObject()">
+        <p><img class="imi-admin-logo" tal:attributes="src string:${site/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></p>
+        <p>
+          <a class="btn btn-default" tal:attributes="href string:${site/absolute_url}/uvoz">Uvoz zaposlenih</a>
+          <a class="btn btn-default" tal:attributes="href string:${site/absolute_url}/@@dezurstva-public">Poglej javna dežurstva</a>
+        </p>
 
-      <form action="@@izberi_dezurstvo"
-            method="get"
-            class="enableFormTabbing pat-formautofocus">
-        <fieldset>
-          <legend>Uredi dežurstvo</legend>
+        <form tal:attributes="action string:${site/absolute_url}/@@izberi_dezurstvo"
+              method="get"
+              class="enableFormTabbing pat-formautofocus">
+          <fieldset>
+            <legend>Uredi dežurstvo</legend>
 
-          <div class="field">
-            <label for="datum">Datum</label>
-            <div class="formHelp">Izberite datum obstoječega ali novega dežurstva.</div>
-            <input id="datum"
-                   name="datum"
-                   type="date"
-                   lang="sl-SI"
-                   required="required" />
-          </div>
+            <div class="field">
+              <label for="datum">Datum</label>
+              <div class="formHelp">Izberite datum obstoječega ali novega dežurstva.</div>
+              <input id="datum"
+                     name="datum"
+                     type="date"
+                     lang="sl-SI"
+                     required="required" />
+            </div>
 
-          <div class="formControls">
-            <button type="submit" class="context">Uredi</button>
-          </div>
-        </fieldset>
-      </form>
+            <div class="formControls">
+              <button type="submit" class="context">Uredi</button>
+            </div>
+          </fieldset>
+        </form>
 
-      <form action="@@kopiraj_dezurstvo"
-            method="post"
-            class="enableFormTabbing"
-            style="margin-top: 2em;">
-        <fieldset>
-          <legend>Kopiraj dežurstvo</legend>
+        <form tal:attributes="action string:${site/absolute_url}/@@kopiraj_dezurstvo"
+              method="post"
+              class="enableFormTabbing"
+              style="margin-top: 2em;">
+          <fieldset>
+            <legend>Kopiraj dežurstvo</legend>
 
-          <div class="field">
-            <label for="star">Obstoječi datum</label>
-            <div class="formHelp">Datum dežurstva, ki ga želite kopirati.</div>
-            <input id="star"
-                   name="star"
-                   type="date"
-                   lang="sl-SI"
-                   required="required" />
-          </div>
+            <div class="field">
+              <label for="star">Obstoječi datum</label>
+              <div class="formHelp">Datum dežurstva, ki ga želite kopirati.</div>
+              <input id="star"
+                     name="star"
+                     type="date"
+                     lang="sl-SI"
+                     required="required" />
+            </div>
 
-          <div class="field">
-            <label for="nov">Novi datum</label>
-            <div class="formHelp">Datum nove kopije dežurstva.</div>
-            <input id="nov"
-                   name="nov"
-                   type="date"
-                   lang="sl-SI"
-                   required="required" />
-          </div>
+            <div class="field">
+              <label for="nov">Novi datum</label>
+              <div class="formHelp">Datum nove kopije dežurstva.</div>
+              <input id="nov"
+                     name="nov"
+                     type="date"
+                     lang="sl-SI"
+                     required="required" />
+            </div>
 
-          <div class="formControls">
-            <button type="submit" class="context">Kopiraj</button>
-          </div>
-        </fieldset>
-      </form>
+            <div class="formControls">
+              <button type="submit" class="context">Kopiraj</button>
+            </div>
+          </fieldset>
+        </form>
+      </div>
     </metal:core>
   </body>
 </html>
