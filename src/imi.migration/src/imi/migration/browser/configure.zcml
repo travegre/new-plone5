@@ -5,12 +5,12 @@
   <!-- Dežurstva -->
   <browser:page name="dezurstva-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.views.DutyPublicView" permission="zope.Public" />
   <browser:page name="dezurstva-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.views.DutyPublicView" permission="zope.Public" />
-  <browser:page name="dezurstva-izvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy.duty_compat.DutyExportView" permission="zope2.View" />
+  <browser:page name="dezurstva-izvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.duty_compat.DutyExportView" permission="zope2.View" />
   <browser:page name="dezurstva-change-request" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.views.DutyChangeRequestView" permission="zope.Public" />
-  <browser:page name="dezurstva-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy.duty.DutyAdminView" template="dezurstva/duty_admin.pt" permission="cmf.ModifyPortalContent" />
-  <browser:page name="dezurstva_admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy.duty.DutyAdminView" template="dezurstva/duty_admin.pt" permission="cmf.ModifyPortalContent" />
-  <browser:page name="izberi_dezurstvo" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy.duty.SelectDutyView" permission="cmf.AddPortalContent" />
-  <browser:page name="kopiraj_dezurstvo" for="Products.CMFCore.interfaces.ISiteRoot" class=".legacy.duty.CopyDutyView" permission="cmf.AddPortalContent" />
+  <browser:page name="dezurstva-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.duty.DutyAdminView" template="dezurstva/duty_admin.pt" permission="cmf.ModifyPortalContent" />
+  <browser:page name="dezurstva_admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.duty.DutyAdminView" template="dezurstva/duty_admin.pt" permission="cmf.ModifyPortalContent" />
+  <browser:page name="izberi_dezurstvo" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.duty.SelectDutyView" permission="cmf.AddPortalContent" />
+  <browser:page name="kopiraj_dezurstvo" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.duty.CopyDutyView" permission="cmf.AddPortalContent" />
   <browser:page name="dezurstva-uvoz-zaposlenih" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.views.StaffImportView" permission="cmf.ModifyPortalContent" />
 
   <!-- IMI imenik -->
