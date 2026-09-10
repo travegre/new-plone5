@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IMENIK</title>
+  <link rel="stylesheet" tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/imenik/directory-legacy.css" />
+</head>
+<body class="imi-directory-public">
+  <div id="okolo"><div id="okol">
+    <a tal:attributes="href context/absolute_url"><img id="logo" tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a>
+    <h1><a tal:attributes="href context/absolute_url">IMENIK</a></h1>
+    <div class="forma">
+      <form name="searchform" class="searchPage" action="#" onsubmit="return false;">
+        <div class="LSBox" id="directory-search-box">
+          <p class="opozorilo">Za novo iskanje kliknite zgoraj na <em>IMENIK</em></p>
+          <input class="searchPage" id="searchGadget" name="searchGadget" value="" autocomplete="off" autofocus="autofocus" />
+          <div id="listing">
+            <div class="razvrsti" tal:repeat="category view/categories">
+              <a href="#" tal:attributes="class python:category['children'] and 'kategorija nad' or 'kategorija klik'" tal:content="category/title">Kategorija</a>
+              <div class="listing3" tal:condition="category/children"><div tal:repeat="child category/children"><a href="#" class="kategorija klik" tal:content="child">Podkategorija</a></div></div>
+            </div>
+          </div>
+          <div class="rezultati LSResult" id="directory-results"
+               tal:attributes="data-search-url string:${context/absolute_url}/@@imenik-livesearch"><div class="LSShadow"></div></div>
+        </div>
+      </form>
+    </div>
+  </div></div>
+
+  <div id="directory-modal" class="directory-modal" aria-hidden="true">
+    <div class="directory-modal-backdrop"></div>
+    <div class="directory-modal-dialog" role="dialog" aria-modal="true" aria-label="Kontakt">
+      <button type="button" class="directory-modal-close" aria-label="Zapri">×</button>
+      <div class="directory-modal-content"></div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+  var input = document.getElementById('searchGadget');
+  var listing = document.getElementById('listing');
+  var results = document.getElementById('directory-results');
+  var box = document.getElementById('directory-search-box');
+  var searchUrl = results.getAttribute('data-search-url');
+  var modal = document.getElementById('directory-modal');
+  var modalContent = modal.querySelector('.directory-modal-content');
+  var timer = null;
+
+  function resetResults() {
+    window.clearTimeout(timer);
+    results.innerHTML = '<div class="LSShadow"></div>';
+    listing.style.display = '';
+  }
+  function openModal(html) {
+    modalContent.innerHTML = html;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('directory-modal-open');
+  }
+  function closeModal() {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    modalContent.innerHTML = '';
+    document.body.classList.remove('directory-modal-open');
+  }
+  function search(value) {
+    value = (value || '').trim();
+    if (value.length < 2) { resetResults(); return; }
+    listing.style.display = 'none';
+    fetch(searchUrl + '?q=' + encodeURIComponent(value), {credentials: 'same-origin'})
+      .then(function (r) { return r.text(); })
+      .then(function (html) { results.innerHTML = html; })
+      .catch(function () { results.innerHTML = '<div class="LSShadow">Napaka pri iskanju.</div>'; });
+  }
+
+  input.addEventListener('input', function () {
+    window.clearTimeout(timer);
+    var value = input.value;
+    timer = window.setTimeout(function () { search(value); }, 180);
+  });
+  document.addEventListener('mousedown', function (event) {
+    if (!box.contains(event.target) && !modal.contains(event.target)) { resetResults(); }
+  });
+  document.querySelectorAll('.kategorija.klik').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      input.value = link.textContent.trim();
+      search(input.value);
+      input.focus();
+    });
+  });
+  document.querySelectorAll('.kategorija.nad').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      var sub = link.parentNode.querySelector('.listing3');
+      if (sub) { sub.style.display = sub.style.display === 'block' ? 'none' : 'block'; }
+    });
+  });
+  results.addEventListener('click', function (event) {
+    var row = event.target.closest && event.target.closest('tr.tri');
+    if (!row) { return; }
+    event.preventDefault();
+    var detail = row.nextElementSibling;
+    if (detail && detail.classList.contains('person-detail')) {
+      openModal(detail.querySelector('td').innerHTML);
+    }
+  });
+  modal.querySelector('.directory-modal-close').addEventListener('click', closeModal);
+  modal.querySelector('.directory-modal-backdrop').addEventListener('click', closeModal);
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && modal.classList.contains('open')) { closeModal(); }
+  });
+}());
+</script>
+</body>
+</html>

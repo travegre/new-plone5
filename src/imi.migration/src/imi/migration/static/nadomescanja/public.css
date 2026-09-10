@@ -1,0 +1,30 @@
+html,body{margin:0;padding:0}
+body.imi-replacements-public{background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAIAAAA/Y+msAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAcSURBVHjaYnr69Ol/MIAzGJD5EJIBWR7CBggwAMnZM/mCB9LIAAAAAElFTkSuQmCC)!important;color:#414152;font:16px Tahoma,sans-serif;text-decoration:none}
+.imi-replacements-public #okol{width:95%;margin:30px auto;text-align:center;padding-bottom:30px}
+.imi-replacements-public #okolo{padding-bottom:50px;min-height:900px}
+.imi-replacements-public #logo{margin:0;max-width:80px}
+.imi-replacements-public h1,.imi-replacements-public h2{margin:20px 0;text-align:center;color:#624C9C;text-decoration:none;font-family:Helvetica,Arial,sans-serif}
+.imi-replacements-public h2{margin:0}
+.imi-replacements-public h1 a{color:#624C9C!important;font-size:32px;margin:0}
+.imi-replacements-public a{color:#5fb11e;font-size:16px;text-decoration:none!important}
+.imi-replacements-public a:hover{color:#777;text-decoration:none}
+.imi-replacements-public table{border:1px solid #624c9c;width:100%;border-collapse:collapse}
+.imi-replacements-public table.dezurstva{border-bottom:1px solid #624c9c}
+.imi-replacements-public table td,.imi-replacements-public table th{padding:12px 10px;border:1px solid #624c9c;border-collapse:collapse}
+.imi-replacements-public table.dezurstva tr.head th{font-weight:bold;font-family:Tahoma,sans-serif;font-size:1.3em;padding:1.5em .5em;border-bottom:2px solid #624c9c;color:#624c9c}
+.imi-replacements-public table.dezurstva td{background:white;text-align:left;font-weight:bold;border-top:none;font-size:2em}
+.imi-replacements-public table.dezurstva td span{color:#5fb11e;font-weight:normal;font-size:.9em}
+.imi-replacements-public table.dezurstva td.grey{color:#aaa}
+.imi-replacements-public #last-change{position:absolute;top:5px;right:10px}
+.imi-replacements-public .legacy-date-nav{width:100%}
+.imi-replacements-public .legacy-date-nav .legacy-back{margin-top:4px;width:28%;margin-right:5%;float:left;text-align:right;font-size:16px;font-family:Tahoma,sans-serif}
+.imi-replacements-public .legacy-date-nav h2{width:33%;float:left;text-align:center;font-size:1.5em}
+.imi-replacements-public .legacy-date-nav .legacy-next{margin-top:4px;width:25%;margin-left:5%;float:left;text-align:left;font-size:16px;font-family:Tahoma,sans-serif}
+.imi-replacements-public .legacy-utility-row{width:100%;overflow:hidden;margin-top:35px}
+.imi-replacements-public .legacy-half{width:49%;display:inline-block;vertical-align:top}
+.imi-replacements-public .legacy-half.left{float:left}.imi-replacements-public .legacy-half.right{float:right}
+.imi-replacements-public .legacy-utility-row form{text-align:left}
+.imi-replacements-public .person-name{color:#5fb11e}.imi-replacements-public .person-history{clear:both;padding-top:25px}.imi-replacements-public .person-year-list{width:40%;margin:0 auto 30px;text-align:center}.imi-replacements-public .person-date{display:block;text-align:center}
+.imi-replacements-public .date-range{display:none}.imi-replacements-public .export-row .submit,.imi-replacements-public #nad-obdobje{display:none}.imi-replacements-public .change-request-link{text-align:center;font-size:16px}.imi-replacements-public .clear{clear:both}
+.imi-replacements-public .legacy-easyform{width:40%;margin:20px auto;text-align:left}.imi-replacements-public .legacy-easyform .field{margin:40px 0}.imi-replacements-public .legacy-easyform input,.imi-replacements-public .legacy-easyform select,.imi-replacements-public .legacy-easyform textarea{max-width:100%}.imi-replacements-public .legacy-easyform input[type=text],.imi-replacements-public .legacy-easyform input[type=email],.imi-replacements-public .legacy-easyform select,.imi-replacements-public .legacy-easyform textarea{width:100%;padding:6px;box-sizing:border-box}
+@media(max-width:900px){.imi-replacements-public .legacy-half,.imi-replacements-public .legacy-half.left,.imi-replacements-public .legacy-half.right{width:100%;float:none;display:block}.imi-replacements-public .legacy-easyform,.imi-replacements-public .person-year-list{width:90%}}

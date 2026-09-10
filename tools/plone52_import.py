@@ -17,6 +17,8 @@ from plone.namedfile.file import NamedBlobFile
 from zope.component.hooks import setSite
 from zope.schema import getFields
 
+from imi.migration.setuphandlers import install_catalog_indexes
+
 CUSTOM_TYPE_MAP = {
     ('portal', 'produkti'): 'imi.directory.person',
     ('dezurstva', 'dezurstvo'): 'imi.duty.roster_day',
@@ -26,6 +28,14 @@ CUSTOM_TYPE_MAP = {
     ('nadomescanja', 'dezurstvo'): 'imi.replacements.day',
     ('nadomescanja', 'laboratorij'): 'imi.replacements.laboratory',
 }
+
+# These migrated application types are the public data behind the five legacy
+# sites.  In Plone 4 their content was anonymously viewable even where an
+# object carried a local View permission declaration.  Preserve that effective
+# public behaviour explicitly on the Dexterity objects before cataloging them.
+PUBLIC_CUSTOM_TYPES = frozenset(CUSTOM_TYPE_MAP.values()) | frozenset((
+    'imi.staff.employee',
+))
 
 STANDARD_TYPE_MAP = {
     'Document': 'Document', 'Folder': 'Folder', 'File': 'File',
@@ -39,7 +49,7 @@ SKIP_TYPES = {
 }
 
 # This legacy roster-day object existed only to provide getSampleVocabulary50()
-# to the PFG form.  EasyForm now uses the named imi.form.staff_email vocabulary,
+# to the PFG form. EasyForm now uses the named imi.form.staff_email vocabulary,
 # so the helper is deliberately absent from Plone 5.
 SKIP_PATHS = {
     '/dezurstva/objekt-za-seznam-zaposlenih-v-formi-spremeni-dezurstvo-ne-brisi',
@@ -52,6 +62,7 @@ BASIC_SOURCE_FIELDS = {
 }
 
 COMMIT_EVERY = 500
+SITE_IDS = ('portal', 'dezurstva', 'kiestra', 'preiskave', 'nadomescanja')
 
 
 def parse_input_dir(argv):
@@ -191,6 +202,27 @@ def apply_local_roles(obj, metadata):
                 pass
 
 
+def ensure_public_view(obj):
+    """Keep migrated public application content anonymously viewable.
+
+    The Plone 4 source contains local ``View`` declarations on these custom
+    objects which omit Anonymous.  Copying that declaration literally makes
+    the migrated Plone 5 object challenge anonymous users even though the
+    legacy applications were public.  This is the same correction proven by
+    the post-import security repair, but applied before the object's final
+    catalog pass so ``allowedRolesAndUsers`` is correct immediately.
+    """
+    if getattr(obj, 'portal_type', None) not in PUBLIC_CUSTOM_TYPES:
+        return
+    raw_roles = getattr(obj, '_View_Permission', None)
+    if raw_roles is None:
+        return
+    roles = list(raw_roles)
+    if 'Anonymous' not in roles:
+        roles.append('Anonymous')
+    obj.manage_permission('View', roles=roles, acquire=True)
+
+
 def transition_to_state(obj, state):
     if not state:
         return
@@ -211,6 +243,24 @@ def transition_to_state(obj, state):
         obj.reindexObject(idxs=['review_state'])
     except Exception:
         pass
+
+
+def synchronous_catalog_object(obj):
+    """Catalog the final imported state immediately through Plone's wrapper.
+
+    CatalogTool.catalog_object adapts ``(obj, portal_catalog)`` to
+    ``IIndexableObject`` before ZCatalog sees it, so our named plone.indexer
+    adapters (SearchableText, moj, sklop, ...) are used. Doing this after all
+    fields and security have been assigned avoids relying on the
+    transaction-aware indexing queue for migration correctness.
+    """
+    catalog = plone.api.portal.get_tool('portal_catalog')
+    catalog.catalog_object(
+        obj,
+        uid='/'.join(obj.getPhysicalPath()),
+        idxs=[],
+        update_metadata=1,
+    )
 
 
 def create_record(app, record, input_dir, path_map):
@@ -245,9 +295,23 @@ def create_record(app, record, input_dir, path_map):
     except Exception:
         pass
     transition_to_state(obj, (record.get('metadata') or {}).get('workflow_state'))
-    obj.reindexObject()
+    ensure_public_view(obj)
+    synchronous_catalog_object(obj)
     path_map[(record['site'], rel)] = obj
     return obj
+
+
+def install_migration_catalogs(app):
+    """Ensure every site's legacy catalog definitions exist before import."""
+    for site_id in SITE_IDS:
+        site = app.get(site_id)
+        if site is None:
+            continue
+        setSite(site)
+        changed = install_catalog_indexes(site, reindex=False)
+        if changed:
+            print('Catalog indexes prepared for %s: %s' %
+                  (site_id, ', '.join(changed)))
 
 
 def run(app, input_dir):
@@ -258,6 +322,12 @@ def run(app, input_dir):
     created = skipped = processed = 0
     errors = []
     import transaction
+
+    # A clean export/import must be self-contained: create the catalog indexes
+    # first, then each imported object is indexed only after its final field
+    # values and public security have been assigned.
+    install_migration_catalogs(app)
+    transaction.commit()
 
     with open(objects_file, 'r', encoding='utf-8') as handle:
         for lineno, line in enumerate(handle, 1):
