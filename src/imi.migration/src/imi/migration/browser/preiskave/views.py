@@ -6,6 +6,7 @@ from plone import api
 from Products.Five import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
+from ..common.adminmode import is_admin_request
 from .exams_production_fidelity import ExamsAllView as BaseExamsAllView
 from .exams_production_fidelity import ExamsAreasView as BaseExamsAreasView
 from .exams_production_fidelity import ExamsGroupsView as BaseExamsGroupsView
@@ -43,47 +44,56 @@ class _CanonicalURLMixin(object):
         return self.portal.absolute_url()
 
 
+class _AdminAwareFolderMixin(object):
+    """Use normal Plone folder management on the admin hostname."""
+
+    def __call__(self):
+        if is_admin_request(self.request):
+            return self.context.restrictedTraverse('folder_contents')()
+        return super().__call__()
+
+
 class _ListingTemplateMixin(object):
     template = ViewPageTemplateFile('preiskave_legacy.pt')
 
 
-class ExamsHomeView(_CanonicalURLMixin, _ListingTemplateMixin, BaseExamsHomeView):
+class ExamsHomeView(_AdminAwareFolderMixin, _CanonicalURLMixin, _ListingTemplateMixin, BaseExamsHomeView):
     pass
 
 
-class ExamsAllView(_CanonicalURLMixin, _ListingTemplateMixin, BaseExamsAllView):
+class ExamsAllView(_AdminAwareFolderMixin, _CanonicalURLMixin, _ListingTemplateMixin, BaseExamsAllView):
     pass
 
 
-class ExamsQuickView(_CanonicalURLMixin, _ListingTemplateMixin, BaseExamsQuickView):
+class ExamsQuickView(_AdminAwareFolderMixin, _CanonicalURLMixin, _ListingTemplateMixin, BaseExamsQuickView):
     pass
 
 
-class ExamsLabsView(_CanonicalURLMixin, _ListingTemplateMixin, BaseExamsLabsView):
+class ExamsLabsView(_AdminAwareFolderMixin, _CanonicalURLMixin, _ListingTemplateMixin, BaseExamsLabsView):
     pass
 
 
-class ExamsNewView(_CanonicalURLMixin, _ListingTemplateMixin, BaseExamsNewView):
+class ExamsNewView(_AdminAwareFolderMixin, _CanonicalURLMixin, _ListingTemplateMixin, BaseExamsNewView):
     pass
 
 
-class ExamsUrgentView(_CanonicalURLMixin, _ListingTemplateMixin, BaseExamsUrgentView):
+class ExamsUrgentView(_AdminAwareFolderMixin, _CanonicalURLMixin, _ListingTemplateMixin, BaseExamsUrgentView):
     pass
 
 
-class ExamsAreasView(_CanonicalURLMixin, _ListingTemplateMixin, BaseExamsAreasView):
+class ExamsAreasView(_AdminAwareFolderMixin, _CanonicalURLMixin, _ListingTemplateMixin, BaseExamsAreasView):
     pass
 
 
-class ExamsGroupsView(_CanonicalURLMixin, _ListingTemplateMixin, BaseExamsGroupsView):
+class ExamsGroupsView(_AdminAwareFolderMixin, _CanonicalURLMixin, _ListingTemplateMixin, BaseExamsGroupsView):
     pass
 
 
-class ExamsSamplesView(_CanonicalURLMixin, _ListingTemplateMixin, BaseExamsSamplesView):
+class ExamsSamplesView(_AdminAwareFolderMixin, _CanonicalURLMixin, _ListingTemplateMixin, BaseExamsSamplesView):
     pass
 
 
-class ExamsGuardiansView(_CanonicalURLMixin, BaseExamsGuardiansView):
+class ExamsGuardiansView(_AdminAwareFolderMixin, _CanonicalURLMixin, BaseExamsGuardiansView):
     template = ViewPageTemplateFile('preiskave_skrbniki.pt')
 
 
@@ -91,9 +101,6 @@ class LegacyExamsLiveSearchView(_CanonicalURLMixin, BaseLegacyExamsLiveSearchVie
     """Legacy livesearch markup with canonical result and menu URLs."""
 
     def exam_url(self, obj):
-        # The inherited renderer appends ``&searchterm=...`` because the old
-        # proxy URL already had an ``id`` query parameter. Give it a temporary
-        # query separator and normalize the generated link afterwards.
         return obj.absolute_url() + '?'
 
     def __call__(self):
@@ -106,6 +113,11 @@ class LegacyExamsLiveSearchView(_CanonicalURLMixin, BaseLegacyExamsLiveSearchVie
 
 class ExaminationPublicView(_CanonicalURLMixin, BaseExaminationPublicView):
     template = ViewPageTemplateFile('preiskave_detail_legacy.pt')
+
+    def __call__(self):
+        if is_admin_request(self.request):
+            return self.context.restrictedTraverse('@@edit')()
+        return super().__call__()
 
 
 def _proxy_exam(request):
@@ -132,16 +144,8 @@ class ExaminationPublicProxyView(BrowserView):
         return ''
 
 
-class ExaminationAdminProxyView(BrowserView):
-    """Backward-compatible redirect from the former proxy URL in admin mode."""
-
-    def __call__(self):
-        obj = _proxy_exam(self.request)
-        if obj is None:
-            self.request.response.setStatus(404)
-            return u'Preiskava ne obstaja.'
-        self.request.response.redirect(obj.absolute_url())
-        return ''
+class ExaminationAdminProxyView(ExaminationPublicProxyView):
+    """Backward-compatible alias retained for old registrations/bookmarks."""
 
 
 class ExamsAdminView(BaseExamsHomeView):
