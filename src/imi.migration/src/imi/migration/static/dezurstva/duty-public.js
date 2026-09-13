@@ -1,6 +1,27 @@
 (function () {
   'use strict';
 
+  function toSlovenianDate(value) {
+    var parts = String(value || '').split('-');
+    if (parts.length !== 3) { return value; }
+    return parts[2] + '.' + parts[1] + '.' + parts[0];
+  }
+
+  function normaliseNativeRangeOnSubmit(form) {
+    form.addEventListener('submit', function () {
+      ['od', 'do'].forEach(function (name) {
+        var input = form.querySelector('input[type="date"][name="' + name + '"]');
+        if (!input || !input.value) { return; }
+        var hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = name;
+        hidden.value = toSlovenianDate(input.value);
+        input.disabled = true;
+        form.appendChild(hidden);
+      });
+    });
+  }
+
   function updateExportForm(formId, periodId, personId) {
     var form = document.getElementById(formId);
     if (!form) { return; }
@@ -26,6 +47,7 @@
 
     if (period) { period.addEventListener('change', refresh); }
     if (person) { person.addEventListener('change', refresh); }
+    normaliseNativeRangeOnSubmit(form);
     refresh();
   }
 
