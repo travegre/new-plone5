@@ -75,7 +75,9 @@
                 <tr tal:repeat="row view/readiness_rows">
                   <td tal:content="row/label">BOR</td>
                   <td tal:content="row/name">Ime Priimek</td>
-                  <td class="readiness-contact" tal:content="row/contact">telefon</td>
+                  <td class="readiness-contact"
+                      tal:define="directory python:view._staff_directory(); employee python:directory is not None and directory.get(row['employee_id']) or None"
+                      tal:content="python:employee is not None and (employee.Description() or '').split('|')[0] or ''">telefon</td>
                 </tr>
               </tbody>
             </table>
