@@ -1,0 +1,53 @@
+.sl-date-picker-wrap {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+.sl-date-picker-wrap input.sl-date-picker {
+  width: 8.5em;
+}
+.sl-date-picker-button {
+  margin-left: 3px;
+  cursor: pointer;
+}
+.sl-date-picker-popup {
+  position: absolute;
+  z-index: 10000;
+  left: 0;
+  top: 100%;
+  min-width: 230px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #888;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+}
+.sl-date-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.sl-date-picker-header button,
+.sl-date-picker-grid button,
+.sl-date-picker-today {
+  cursor: pointer;
+}
+.sl-date-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+.sl-date-picker-weekday {
+  font-weight: bold;
+  padding: 3px 1px;
+}
+.sl-date-picker-grid button {
+  min-width: 28px;
+  padding: 4px 2px;
+}
+.sl-date-picker-today {
+  margin-top: 7px;
+}
