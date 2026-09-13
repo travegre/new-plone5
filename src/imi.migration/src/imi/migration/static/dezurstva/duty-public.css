@@ -1,3 +1,6 @@
+body {
+    background: url('/++resource++imi.migration/ozadje_body.png');
+}
 #okol {
   width: 95%;
   margin: 30px auto 30px auto;
@@ -12,11 +15,6 @@
 #logo {
   margin: 0px 0 0px 0;
 }
-
-body {
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAIAAAA/Y+msAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAcSURBVHjaYnr69Ol/MIAzGJD5EJIBWR7CBggwAMnZM/mCB9LIAAAAAElFTkSuQmCC);
-}
-
 h1, h2 {
   margin: 20px 0 20px 0;
   text-align: center;

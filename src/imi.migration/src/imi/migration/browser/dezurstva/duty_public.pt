@@ -79,6 +79,12 @@
           </div>
         </div>
 
+        <div class="clear">&nbsp;</div>
+        <div class="clear">&nbsp;</div>
+        <hr />
+        <div class="clear">&nbsp;</div>
+
+
         <p tal:condition="not:view/roster" class="legacy-empty">Za izbrani dan ni vnesenega dežurstva.</p>
         <div class="clear">&nbsp;</div>
 
@@ -108,6 +114,7 @@
         <div class="clear">&nbsp;</div>
         <div class="clear">&nbsp;</div>
         <div class="clear">&nbsp;</div>
+
 
         <a tal:condition="python:view.roster() and view.easyform_url()"
            class="change-request-link"

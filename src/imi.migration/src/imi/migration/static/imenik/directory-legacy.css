@@ -1,6 +1,9 @@
 /* Plone-5 port of the old imiimenik skin, including the Plone-4 base scale it inherited. */
 html{font-size:100%}
-body.imi-directory-public{margin:0;background:#fff;color:#414152;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.45}
+body {
+    background: url('/++resource++imi.migration/ozadje_body.png');
+    margin:0;color:#414152;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.45
+}
 .imi-directory-public a,.imi-directory-public a:link,.imi-directory-public a:visited,.imi-directory-public a:hover,.imi-directory-public a:active{text-decoration:none!important;border-bottom:0!important;box-shadow:none!important}
 .imi-directory-public #okol{width:1000px;margin:30px auto;text-align:center;padding-bottom:30px}
 .imi-directory-public #okolo{min-height:1500px}
