@@ -23,6 +23,10 @@ KIESTRA_FIELDS = (
     ('antibiogram', 'antibiogram_text', u'ID+ATB, ATB, izolacija'),
     ('odpad', 'odpad_text', u'OFF'),
 )
+KIESTRA_ROW_FIELDS = (
+    'priprava_vzorcev', 'cepljenje_vzorcev', 'odcitavanje',
+    'identifikacija', 'antibiogram', 'izolacija', 'odpad', 'ciscenje',
+)
 KIESTRA_COPY_FIELDS = (
     'priprava_vzorcev', 'priprava_vzorcev_text', 'cepljenje_vzorcev',
     'cepljenje_vzorcev_text', 'odcitavanje', 'odcitavanje_text',
@@ -104,6 +108,8 @@ class KiestraPublicView(BrowserView):
 
     def _short_name(self, identifier):
         title = staff_title(self.context, identifier).strip()
+        if title.startswith('<span>'):
+            return title
         parts = title.split()
         if len(parts) > 1:
             return u'%s %s.' % (parts[0], parts[-1][0])
@@ -123,8 +129,12 @@ class KiestraPublicView(BrowserView):
         return result
 
     def rows(self):
+        obj = self.day_object()
+        if obj is None:
+            return []
         columns = self.columns()
-        maximum = max([len(col['names']) for col in columns] + [0])
+        maximum = max([len(tuple(getattr(obj, field, ()) or ()))
+                       for field in KIESTRA_ROW_FIELDS] + [0]) + 2
         return [[col['names'][idx] if idx < len(col['names']) else '' for col in columns]
                 for idx in range(maximum)]
 
