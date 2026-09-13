@@ -11,6 +11,10 @@
     return pad(date.getDate()) + '.' + pad(date.getMonth() + 1) + '.' + date.getFullYear();
   }
 
+  function formatISO(date) {
+    return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+  }
+
   function parseDate(value) {
     var match = String(value || '').trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
     if (!match) {
@@ -35,6 +39,13 @@
 
     var initial = parseDate(input.value);
     if (initial) { input.value = formatDate(initial); }
+
+    if (input.dataset.submitFormat === 'iso' && input.form) {
+      input.form.addEventListener('submit', function () {
+        var selected = parseDate(input.value);
+        if (selected) { input.value = formatISO(selected); }
+      });
+    }
 
     var wrapper = document.createElement('span');
     wrapper.className = 'sl-date-picker-wrap';
