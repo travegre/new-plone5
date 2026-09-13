@@ -4,13 +4,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Language" content="sl-SI" />
   <title>Dežurstva in pripravljenost</title>
   <link rel="stylesheet"
         tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/dezurstva/duty-public.css" />
-  <link rel="stylesheet"
-        tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/common/sl-date-picker.css" />
   <script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/dezurstva/duty-public.js"></script>
-  <script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/common/sl-date-picker.js"></script>
   <script>
     (function () {
       var now = new Date();
@@ -91,7 +89,7 @@
           <div class="legacy-half left">
             <form method="get" tal:attributes="action string:${context/absolute_url}/@@dezurstva-public">
               <p>Prikaži razpored na izbrani datum: </p>
-              <input name="datum" tal:attributes="value view/selected_date_sl" type="text" class="datepicker sl-date-picker" autocomplete="off" placeholder="dd.mm.llll" />
+              <input name="datum" tal:attributes="value view/selected_date_id" type="date" lang="sl-SI" class="datepicker" />
               <input type="submit" value="Prikaži" />
             </form>
           </div>
@@ -136,7 +134,7 @@
                 <option value="pretekli">za pretekli mesec</option>
                 <option value="oddo">od - do</option>
               </select>
-              <span class="date-range">od <input type="text" class="sl-date-picker" name="od" tal:attributes="value view/selected_date_sl" autocomplete="off" placeholder="dd.mm.llll" /> do <input type="text" class="sl-date-picker" name="do" tal:attributes="value view/selected_date_sl" autocomplete="off" placeholder="dd.mm.llll" /></span>
+              <span class="date-range">od <input type="date" lang="sl-SI" name="od" tal:attributes="value view/selected_date_id" /> do <input type="date" lang="sl-SI" name="do" tal:attributes="value view/selected_date_id" /></span>
               <input class="submit" type="submit" value="Izvozi" />
             </form>
           </div>
@@ -160,7 +158,7 @@
                   <option value="pretekli">za pretekli mesec</option>
                   <option value="oddo">od - do</option>
                 </select>
-                <span class="date-range">od <input type="text" class="sl-date-picker" name="od" tal:attributes="value view/selected_date_sl" autocomplete="off" placeholder="dd.mm.llll" /> do <input type="text" class="sl-date-picker" name="do" tal:attributes="value view/selected_date_sl" autocomplete="off" placeholder="dd.mm.llll" /></span>
+                <span class="date-range">od <input type="date" lang="sl-SI" name="od" tal:attributes="value view/selected_date_id" /> do <input type="date" lang="sl-SI" name="do" tal:attributes="value view/selected_date_id" /></span>
                 <input class="submit" type="submit" value="Izvozi" />
               </div>
             </form>
