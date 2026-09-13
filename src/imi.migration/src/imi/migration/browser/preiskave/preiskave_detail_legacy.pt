@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal" lang="sl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title tal:content="context/Title">Preiskava</title>
+  <link rel="stylesheet" tal:attributes="href string:${view/portal/absolute_url}/++resource++imi.migration/preiskave/preiskave-legacy.css" />
+</head>
+<body class="imi-exams-public imi-exam-detail">
+<div id="zunanji_okvir"><div id="okvir">
+  <div class="exams-header">
+    <a tal:attributes="href view/portal/absolute_url"><img id="logo" tal:attributes="src string:${view/portal/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></a>
+    <h1 class="site-title"><a tal:attributes="href view/portal/absolute_url">PREISKAVE</a></h1>
+  </div>
+  <div class="legacy-preiskave-shell">
+    <div class="vsebina"><div id="podmeni"><ul class="nav_subitems"><li tal:repeat="item view/menu"><a tal:attributes="href python:item[2]" tal:content="python:item[1]">Meni</a></li></ul></div></div>
+
+    <main id="vsebina_podstran" class="legacy-examination">
+    <p class="text text-10 exam-main-title" tal:content="context/Title">Preiskava</p>
+
+    <div class="exam-three-columns">
+      <div class="container _container container-9 preiskava_opis_container clearfix">
+        <p class="text text-12 siv-tekst">Področje preiskave</p>
+        <p class="text text-13" tal:content="python:', '.join(dict.fromkeys(context.podrocje or ()))"></p>
+
+        <tal:opis condition="python:bool(view.rich('opis'))">
+          <p class="text text-12 siv-tekst">Opis preiskave</p>
+          <div id="opis_preiskave" class="text text-13 opis" tal:content="structure python:view.rich('opis')"></div>
+        </tal:opis>
+
+        <tal:file define="attachment view/attachment" condition="attachment">
+          <p class="text text-12 siv-tekst">Dodatna dokumentacija:</p>
+          <p class="text text-13"><a tal:attributes="href string:${context/absolute_url}/@@download/datoteka/${attachment/filename}" tal:content="attachment/filename">datoteka</a></p>
+        </tal:file>
+
+        <tal:opombe condition="python:bool(view.rich('opombe'))">
+          <p class="text text-12 siv-tekst">Opombe</p>
+          <div class="text text-13" tal:content="structure python:view.rich('opombe')"></div>
+        </tal:opombe>
+      </div>
+
+      <div class="container _container container-11 preiskava_vzorci_container clearfix" tal:condition="view/sample_rows">
+        <div class="pad">
+          <p class="text text-14">Vzorci in navodila</p>
+          <div class="div_vzorci">
+            <div class="neki" tal:repeat="sample view/sample_rows">
+              <p class="naslov_vzorca text text-14" tal:content="sample/name">Vzorec</p>
+              <div class="ostali_fajli">
+                <tal:collection condition="sample/collection"><div class="vzorec_levo">Navodila za odvzem:</div><div class="vzorec_desno" tal:content="structure sample/collection"></div></tal:collection>
+                <tal:transport condition="sample/transport"><div class="vzorec_levo">Navodila za transport: </div><div class="vzorec_desno" tal:content="structure sample/transport"></div></tal:transport>
+                <tal:amount condition="sample/amount"><div class="vzorec_levo">Količina in embalaža: </div><div class="vzorec_desno" tal:content="structure sample/amount"></div></tal:amount>
+                <tal:note condition="sample/note"><div class="vzorec_levo">Opomba za klinika: </div><div class="vzorec_desno" tal:content="structure sample/note"></div></tal:note>
+
+                <tal:pack condition="sample/packaging">
+                  <div class="vzorec_levo">Priporočena embalaža: </div><div class="clear"></div>
+                  <div class="row packaging-images"><div class="slika_popup" tal:repeat="code sample/packaging" tal:attributes="data-href python:view.packaging_url(code)"><img class="embalaza_slika" style="width:100%" tal:attributes="src python:view.packaging_url(code); alt code" /></div></div>
+                </tal:pack>
+
+                <tal:video condition="sample/video">
+                  <div class="vzorec_levo">Video: </div>
+                  <div class="clear"></div>
+                  <iframe class="yt_video" style="width:100%" frameborder="0" allowfullscreen="allowfullscreen" tal:attributes="src sample/video"></iframe>
+                </tal:video>
+
+                <tal:labs condition="sample/labs">
+                  <tal:lab repeat="lab sample/labs">
+                    <div class="vzorec_levo lab" tal:condition="lab/name" tal:content="structure lab/name"></div>
+                    <div class="vzorec_desno lab" tal:condition="lab/phone">Telefon: <span class="tel" tal:content="structure lab/phone"></span></div>
+                  </tal:lab>
+                  <div class="clear"></div>
+                  <tal:labcode repeat="lab sample/labs">
+                    <tal:hascode condition="lab/code">
+                      <div class="vzorec_levo" tal:content="python:u'Lab kratica %d: ' % lab['number']">Lab kratica 1: </div>
+                      <div class="vzorec_desno" tal:content="structure lab/code"></div>
+                    </tal:hascode>
+                  </tal:labcode>
+                </tal:labs>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container _container container-13 preiskava_tech_data clearfix">
+        <div tal:define="object_id python:context.getId(); code python:(getattr(context, 'sifra', '') or (object_id.split('_', 1)[1] if '_' in object_id else object_id))" tal:condition="code"><p class="text text-16">Šifra preiskave</p><p class="text text-17" tal:content="code"></p></div>
+        <div tal:condition="python:bool(view.text('laboratoriji'))"><p class="text text-16">Laboratoriji</p><p class="text text-17" tal:content="python:view.text('laboratoriji')"></p></div>
+        <div tal:condition="python:bool(view.rich('urnik'))"><p class="text text-16">Urnik izvajanja</p><div class="text text-17" tal:content="structure python:view.rich('urnik')"></div></div>
+        <div tal:define="trajanje python:getattr(context, 'trajanje', None); trajanje_html python:(getattr(trajanje, 'output', None) or getattr(trajanje, 'raw', None) or view.rich('trajanje'))" tal:condition="python:bool(trajanje_html)"><p class="text text-16">Trajanje preiskave</p><div class="text text-17" tal:content="structure trajanje_html"></div></div>
+        <div tal:condition="python:bool(view.rich('metode'))"><p class="text text-16">Metode preiskave</p><div class="text text-17" tal:content="structure python:view.rich('metode')"></div></div>
+      </div>
+    </div>
+    </main>
+  </div>
+</div></div>
+
+<div class="exam-lightbox" id="exam-lightbox"><div class="exam-lightbox-bg"></div><button type="button">×</button><img src="" alt="" /></div>
+<script>
+(function(){
+  'use strict';
+  function slideOpen(body){
+    body.style.display='block';
+    body.style.overflow='hidden';
+    body.style.height='0px';
+    body.offsetHeight;
+    body.style.transition='height 220ms ease';
+    body.style.height=body.scrollHeight+'px';
+    window.setTimeout(function(){body.style.height='';body.style.transition='';body.style.overflow='';},230);
+  }
+  function slideClose(body){
+    body.style.overflow='hidden';
+    body.style.height=body.scrollHeight+'px';
+    body.offsetHeight;
+    body.style.transition='height 220ms ease';
+    body.style.height='0px';
+    window.setTimeout(function(){body.style.display='none';body.style.height='';body.style.transition='';body.style.overflow='';},230);
+  }
+  document.querySelectorAll('.naslov_vzorca').forEach(function(title){
+    var detail=title.nextElementSibling;
+    title.addEventListener('click',function(){
+      if(!detail)return;
+      var open=title.classList.toggle('odprt');
+      if(open){slideOpen(detail);}else{slideClose(detail);}
+    });
+  });
+  var lightbox=document.getElementById('exam-lightbox');
+  var lightboxImage=lightbox?lightbox.querySelector('img'):null;
+  document.querySelectorAll('.slika_popup').forEach(function(item){item.addEventListener('click',function(){if(lightbox&&lightboxImage){lightboxImage.src=item.getAttribute('data-href');lightbox.classList.add('open');}});});
+  if(lightbox){lightbox.addEventListener('click',function(event){if(event.target===lightboxImage)return;lightbox.classList.remove('open');});}
+}());
+</script>
+</body>
+</html>
