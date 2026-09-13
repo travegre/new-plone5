@@ -24,8 +24,9 @@ Dežurstva, Kiestra and Nadomeščanja used a text date field showing Slovenian 
 - **FIXED** Native `<input type="date">` was a fidelity regression. `lang="sl-SI"` does not guarantee Slovenian presentation and the HTML value remains ISO.
 - **FIXED** Public selected-date inputs now display `dd.mm.yyyy`.
 - **FIXED** Date-range export inputs now display and submit `dd.mm.yyyy`, matching the server parsers.
+- **FIXED** Dežurstva, Kiestra and Nadomeščanja admin dashboards now use the same Slovenian picker. They display `dd.mm.yyyy` and can convert to ISO only at form submission where the existing admin backend expects canonical ISO date IDs.
 - **FIXED** A shared vanilla-JS Slovenian picker replaces the obsolete jQuery UI dependency. It uses Slovenian month/day labels and Monday as the first day of the week.
-- **FIXED** The selected day, rather than always today, is placed in the main date input.
+- **FIXED** The selected day, rather than always today, is placed in the main public date input.
 - **MODERNIZED** jQuery UI is not reintroduced; only its relevant user-visible date behavior is reproduced.
 
 Shared implementation:
@@ -67,6 +68,7 @@ Target:
 
 - `browser/dezurstva/duty.py`
 - `browser/dezurstva/duty_public.pt`
+- `browser/dezurstva/duty_admin.pt`
 - `static/dezurstva/duty-public.js`
 
 Audit results:
@@ -78,6 +80,7 @@ Audit results:
 - **PRESERVED** `vpis` personnel are displayed in reverse list order, matching the legacy `[::-1]` rule.
 - **PRESERVED** "all duties for person" is based on `dezurni_zdravnik`, matching the old catalog query.
 - **FIXED** Public date selection and export ranges use explicit Slovenian `dd.mm.yyyy` input/picker behavior.
+- **FIXED** Admin edit/copy date fields use the Slovenian picker while submitting ISO to the existing admin handlers.
 - **FIXED** Readiness rows (`BOR`, `HIV`, `HUM`, `PRZ`, `IT`, `KLM`, `KOV`, `WHO`, `kiestra`) again show the employee contact value derived from the first `|`-separated part of the employee description, matching the old `Description().split('|')[0]` rule.
 - **MODERNIZED** The old jQuery UI datepicker and tinysort dependencies are removed.
 - **VERIFY/FIX** Compare every legacy readiness field and label, including fields that were commented out in the old template, against the current `TEAM_FIELDS` and `READINESS_FIELDS`. Commented-out legacy fields should remain intentionally omitted rather than being accidentally resurrected.
@@ -93,6 +96,7 @@ Target:
 
 - `browser/kiestra/views.py`
 - `browser/kiestra/kiestra_public.pt`
+- `browser/kiestra/kiestra_admin.pt`
 - `static/kiestra/kiestra-legacy.css`
 
 Verified legacy table rules:
@@ -113,7 +117,7 @@ Audit results:
 - **FIXED** Notes are rendered as structure, matching the old template's behavior.
 - **PRESERVED** Ordinary names are shortened to first name plus surname initial.
 - **PRESERVED** Staff options are alphabetically sorted without jQuery tinysort.
-- **FIXED** Slovenian `dd.mm.yyyy` picker and selected-date display restored.
+- **FIXED** Slovenian `dd.mm.yyyy` picker and selected-date display restored on public and admin pages.
 - **FIXED** Automatic refresh just after midnight restored.
 - **MODERNIZED** jQuery UI datepicker replaced with the shared vanilla-JS Slovenian picker.
 - **OPEN DECISION** Old "Prikaži vsa dežurstva za osebo" queried only `priprava_vzorcev`. The current Plone 5 implementation searches all eight assignment fields. This is broader and arguably more useful, but it is not strict parity. Do not silently change it until we decide whether to preserve the old limitation.
@@ -159,6 +163,7 @@ Target:
 
 - `browser/nadomescanja/views.py`
 - `browser/nadomescanja/replacements_public.pt`
+- `browser/nadomescanja/replacements_admin.pt`
 - `static/nadomescanja/public.js`
 
 Audit results:
@@ -167,9 +172,13 @@ Audit results:
 - **PRESERVED** Last-change display is localized.
 - **PRESERVED** Person-history dates are grouped by year/month with Slovenian month names.
 - **PRESERVED** Replacement table keeps the leader/replacement distinction and marks replaced leaders separately.
+- **PRESERVED** Laboratory rows remain in folder/object order, corresponding to the old `getObjPositionInParent` ordering model.
 - **FIXED** Main selected-date input and export ranges now display `dd.mm.yyyy` with a Slovenian/Monday-first picker.
+- **FIXED** Admin edit/copy date fields now use the same Slovenian picker.
+- **FIXED** Automatic refresh just after midnight (`00:00:10`) restored.
 - **MODERNIZED** jQuery UI datepicker replaced with shared vanilla-JS picker.
-- **VERIFY/FIX** Compare old person-history selection semantics, export period handling, and any old laboratory ordering rules against migrated JSON-backed rows. These need data-backed regression tests because storage was intentionally redesigned.
+- **OPEN DECISION** The old person-history implementation filtered the raw JSON string for an exact replacement-person ID. The new implementation parses JSON and also accepts the stored display name as a fallback. This is more robust but is slightly broader than strict legacy behavior.
+- **VERIFY/FIX** Compare export period handling against migrated JSON-backed rows using real data.
 
 ## Required regression matrix
 
@@ -184,11 +193,18 @@ For each public site, test at minimum:
 7. records with missing employee references;
 8. records containing legacy HTML/RichText where applicable;
 9. export custom `od-do` dates where supported;
-10. midnight-refresh pages (Dežurstva and Kiestra).
+10. midnight-refresh pages (Dežurstva, Kiestra and Nadomeščanja).
 
-## Priority follow-up defects
+For admin dashboards also test:
+
+1. picker displays `dd.mm.yyyy`;
+2. edit/select action opens the expected ISO-ID object;
+3. copy source and destination dates map to the correct objects;
+4. manually entered Slovenian dates convert correctly on submit.
+
+## Priority follow-up defects / decisions
 
 1. Decide whether Kiestra person-history must reproduce the old `priprava_vzorcev`-only query or intentionally keep the broader all-fields behavior.
-2. Run data-backed parity checks for Preiskave menu/search semantics and Nadomeščanja JSON row ordering.
+2. Run data-backed parity checks for Preiskave menu/search semantics and Nadomeščanja exports.
 3. Confirm Dežurstva readiness contact parsing and intervention phone fallback against representative migrated employee data.
-4. Audit admin/edit forms separately from public fidelity. Public legacy behavior and Barceloneta admin behavior are intentionally different presentation layers, but data transformations must remain equivalent.
+4. Continue admin/edit-form data-transformation audit separately from public visual fidelity. Public legacy behavior and Barceloneta admin behavior are intentionally different presentation layers, but data transformations must remain equivalent.
