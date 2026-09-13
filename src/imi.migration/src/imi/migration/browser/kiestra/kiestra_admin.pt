@@ -6,8 +6,6 @@
 <body>
 <metal:main fill-slot="main">
   <div tal:define="site python:context.portal_url.getPortalObject()">
-    <link rel="stylesheet" tal:attributes="href string:${site/absolute_url}/++resource++imi.migration/common/sl-date-picker.css" />
-    <script tal:attributes="src string:${site/absolute_url}/++resource++imi.migration/common/sl-date-picker.js"></script>
     <p><img class="imi-admin-logo" tal:attributes="src string:${site/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></p>
     <h1>KIESTRA</h1>
     <p>
@@ -16,14 +14,14 @@
     </p>
     <h2>Uredi dežurstvo</h2>
     <form tal:attributes="action string:${site/absolute_url}/@@kiestra-select" method="get">
-      <p>Datum: <input name="datum" type="text" class="sl-date-picker" data-submit-format="iso" autocomplete="off" placeholder="dd.mm.llll" tal:attributes="value view/today_id" /></p>
+      <p>Datum: <input name="datum" type="date" lang="sl-SI" tal:attributes="value view/today_id" /></p>
       <input class="btn btn-primary" type="submit" value="Uredi" />
     </form>
     <p>&nbsp;</p>
     <h2>Kopiraj dežurstvo</h2>
     <form tal:attributes="action string:${site/absolute_url}/@@kiestra-copy" method="get">
-      <p>Obstoječi datum: <input name="star" type="text" class="sl-date-picker" data-submit-format="iso" autocomplete="off" placeholder="dd.mm.llll" tal:attributes="value view/today_id" /></p>
-      <p>Novi datum: <input name="nov" type="text" class="sl-date-picker" data-submit-format="iso" autocomplete="off" placeholder="dd.mm.llll" tal:attributes="value view/today_id" /></p>
+      <p>Obstoječi datum: <input name="star" type="date" lang="sl-SI" tal:attributes="value view/today_id" /></p>
+      <p>Novi datum: <input name="nov" type="date" lang="sl-SI" tal:attributes="value view/today_id" /></p>
       <input class="btn btn-primary" type="submit" value="Kopiraj" />
     </form>
   </div>

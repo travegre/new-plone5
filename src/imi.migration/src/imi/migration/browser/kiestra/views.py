@@ -7,6 +7,7 @@ from Products.Five import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
 from ..common.helpers import date_group
+from ..common.helpers import employee_by_id
 from ..common.helpers import formatted_date
 from ..common.helpers import inner_site
 from ..common.helpers import parse_date
@@ -107,7 +108,12 @@ class KiestraPublicView(BrowserView):
             return ''
 
     def _short_name(self, identifier):
-        title = staff_title(self.context, identifier).strip()
+        # Legacy TAL first catalogued the employee ID and returned an empty
+        # string when it no longer resolved.  Do not expose stale numeric IDs.
+        employee = employee_by_id(self.context, identifier)
+        if employee is None:
+            return ''
+        title = (employee.Title() or '').strip()
         if title.startswith('<span>'):
             return title
         parts = title.split()
