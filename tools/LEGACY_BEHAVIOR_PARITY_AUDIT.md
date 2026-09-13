@@ -78,8 +78,8 @@ Audit results:
 - **PRESERVED** `vpis` personnel are displayed in reverse list order, matching the legacy `[::-1]` rule.
 - **PRESERVED** "all duties for person" is based on `dezurni_zdravnik`, matching the old catalog query.
 - **FIXED** Public date selection and export ranges use explicit Slovenian `dd.mm.yyyy` input/picker behavior.
+- **FIXED** Readiness rows (`BOR`, `HIV`, `HUM`, `PRZ`, `IT`, `KLM`, `KOV`, `WHO`, `kiestra`) again show the employee contact value derived from the first `|`-separated part of the employee description, matching the old `Description().split('|')[0]` rule.
 - **MODERNIZED** The old jQuery UI datepicker and tinysort dependencies are removed.
-- **OPEN DEFECT** Readiness rows (`BOR`, `HIV`, `HUM`, `PRZ`, `IT`, `KLM`, `KOV`, `WHO`, `kiestra`) have a third contact column in the template, but the current target row builder does not populate `row['contact']`. The old template obtained the value from the employee `Description().split('|')[0]` (except in the `dezurstva_brez_kontaktov` variant). This must be restored.
 - **VERIFY/FIX** Compare every legacy readiness field and label, including fields that were commented out in the old template, against the current `TEAM_FIELDS` and `READINESS_FIELDS`. Commented-out legacy fields should remain intentionally omitted rather than being accidentally resurrected.
 - **VERIFY/FIX** Confirm intervention-group telephone fallback and employee-contact parsing against representative migrated staff data.
 
@@ -188,7 +188,7 @@ For each public site, test at minimum:
 
 ## Priority follow-up defects
 
-1. Restore Dežurstva readiness contact values from migrated employee data, matching the old `Description().split('|')[0]` rule or the equivalent migrated field.
-2. Decide whether Kiestra person-history must reproduce the old `priprava_vzorcev`-only query or intentionally keep the broader all-fields behavior.
-3. Run data-backed parity checks for Preiskave menu/search semantics and Nadomeščanja JSON row ordering.
+1. Decide whether Kiestra person-history must reproduce the old `priprava_vzorcev`-only query or intentionally keep the broader all-fields behavior.
+2. Run data-backed parity checks for Preiskave menu/search semantics and Nadomeščanja JSON row ordering.
+3. Confirm Dežurstva readiness contact parsing and intervention phone fallback against representative migrated employee data.
 4. Audit admin/edit forms separately from public fidelity. Public legacy behavior and Barceloneta admin behavior are intentionally different presentation layers, but data transformations must remain equivalent.
