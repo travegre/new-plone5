@@ -10,8 +10,6 @@
 
     <metal:core fill-slot="content-core">
       <div tal:define="site python:context.portal_url.getPortalObject()">
-        <link rel="stylesheet" tal:attributes="href string:${site/absolute_url}/++resource++imi.migration/common/sl-date-picker.css" />
-        <script tal:attributes="src string:${site/absolute_url}/++resource++imi.migration/common/sl-date-picker.js"></script>
         <p><img class="imi-admin-logo" tal:attributes="src string:${site/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></p>
         <p>
           <a class="btn btn-default" tal:attributes="href string:${site/absolute_url}/uvoz">Uvoz zaposlenih</a>
@@ -29,11 +27,8 @@
               <div class="formHelp">Izberite datum obstoječega ali novega dežurstva.</div>
               <input id="datum"
                      name="datum"
-                     type="text"
-                     class="sl-date-picker"
-                     data-submit-format="iso"
-                     autocomplete="off"
-                     placeholder="dd.mm.llll"
+                     type="date"
+                     lang="sl-SI"
                      required="required" />
             </div>
 
@@ -55,11 +50,8 @@
               <div class="formHelp">Datum dežurstva, ki ga želite kopirati.</div>
               <input id="star"
                      name="star"
-                     type="text"
-                     class="sl-date-picker"
-                     data-submit-format="iso"
-                     autocomplete="off"
-                     placeholder="dd.mm.llll"
+                     type="date"
+                     lang="sl-SI"
                      required="required" />
             </div>
 
@@ -68,11 +60,8 @@
               <div class="formHelp">Datum nove kopije dežurstva.</div>
               <input id="nov"
                      name="nov"
-                     type="text"
-                     class="sl-date-picker"
-                     data-submit-format="iso"
-                     autocomplete="off"
-                     placeholder="dd.mm.llll"
+                     type="date"
+                     lang="sl-SI"
                      required="required" />
             </div>
 
