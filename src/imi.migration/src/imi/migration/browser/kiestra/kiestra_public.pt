@@ -23,7 +23,7 @@
     <tal:day condition="view/day_object">
       <table class="dezurstva kiestra-table">
         <thead><tr class="head"><th tal:repeat="column view/columns" tal:content="column/label">Naloga</th></tr></thead>
-        <tbody><tr tal:repeat="row view/rows"><td tal:repeat="name row" tal:content="name">Ime P.</td></tr>
+        <tbody><tr tal:repeat="row view/rows"><td tal:repeat="name row" tal:content="structure name">Ime P.</td></tr>
         <tr class="notes-row"><td tal:repeat="note view/notes"><span tal:content="note">opomba</span></td></tr></tbody>
       </table>
       <table class="dezurstva stalni-tekst" tal:condition="view/constant_text"><tr><td tal:content="structure view/constant_text">stalni tekst</td></tr></table>
