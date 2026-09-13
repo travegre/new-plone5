@@ -48,9 +48,11 @@
   var modal = document.getElementById('directory-modal');
   var modalContent = modal.querySelector('.directory-modal-content');
   var timer = null;
+  var searchGeneration = 0;
 
   function resetResults() {
     window.clearTimeout(timer);
+    searchGeneration += 1;
     results.innerHTML = '<div class="LSShadow"></div>';
     listing.style.display = '';
   }
@@ -69,11 +71,18 @@
   function search(value) {
     value = (value || '').trim();
     if (value.length < 2) { resetResults(); return; }
+    var generation = ++searchGeneration;
     listing.style.display = 'none';
     fetch(searchUrl + '?q=' + encodeURIComponent(value), {credentials: 'same-origin'})
       .then(function (r) { return r.text(); })
-      .then(function (html) { results.innerHTML = html; })
-      .catch(function () { results.innerHTML = '<div class="LSShadow">Napaka pri iskanju.</div>'; });
+      .then(function (html) {
+        if (generation !== searchGeneration || input.value.trim() !== value) { return; }
+        results.innerHTML = html;
+      })
+      .catch(function () {
+        if (generation !== searchGeneration || input.value.trim() !== value) { return; }
+        results.innerHTML = '<div class="LSShadow">Napaka pri iskanju.</div>';
+      });
   }
 
   input.addEventListener('input', function () {
