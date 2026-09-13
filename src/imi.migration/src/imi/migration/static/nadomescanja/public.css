@@ -1,8 +1,11 @@
 html,body{margin:0;padding:0}
-body.imi-replacements-public{background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAIAAAA/Y+msAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAcSURBVHjaYnr69Ol/MIAzGJD5EJIBWR7CBggwAMnZM/mCB9LIAAAAAElFTkSuQmCC)!important;color:#414152;font:16px Tahoma,sans-serif;text-decoration:none}
+body.imi-replacements-public{color:#414152;font:16px Tahoma,sans-serif;text-decoration:none}
+body {
+    background: url('/++resource++imi.migration/ozadje_body.png');
+}
 .imi-replacements-public #okol{width:95%;margin:30px auto;text-align:center;padding-bottom:30px}
 .imi-replacements-public #okolo{padding-bottom:50px;min-height:900px}
-.imi-replacements-public #logo{margin:0;max-width:80px}
+.imi-replacements-public #logo{margin:0}
 .imi-replacements-public h1,.imi-replacements-public h2{margin:20px 0;text-align:center;color:#624C9C;text-decoration:none;font-family:Helvetica,Arial,sans-serif}
 .imi-replacements-public h2{margin:0}
 .imi-replacements-public h1 a{color:#624C9C!important;font-size:32px;margin:0}
@@ -17,9 +20,9 @@ body.imi-replacements-public{background:url(data:image/png;base64,iVBORw0KGgoAAA
 .imi-replacements-public table.dezurstva td.grey{color:#aaa}
 .imi-replacements-public #last-change{position:absolute;top:5px;right:10px}
 .imi-replacements-public .legacy-date-nav{width:100%}
-.imi-replacements-public .legacy-date-nav .legacy-back{margin-top:4px;width:28%;margin-right:5%;float:left;text-align:right;font-size:16px;font-family:Tahoma,sans-serif}
+.imi-replacements-public .legacy-date-nav .legacy-back{margin-top:4px;width:28%;margin-right:5%;float:left;text-align:right;font-size:24px;font-family:Tahoma,sans-serif}
 .imi-replacements-public .legacy-date-nav h2{width:33%;float:left;text-align:center;font-size:1.5em}
-.imi-replacements-public .legacy-date-nav .legacy-next{margin-top:4px;width:25%;margin-left:5%;float:left;text-align:left;font-size:16px;font-family:Tahoma,sans-serif}
+.imi-replacements-public .legacy-date-nav .legacy-next{margin-top:4px;width:25%;margin-left:5%;float:left;text-align:left;font-size:24px;font-family:Tahoma,sans-serif}
 .imi-replacements-public .legacy-utility-row{width:100%;overflow:hidden;margin-top:35px}
 .imi-replacements-public .legacy-half{width:49%;display:inline-block;vertical-align:top}
 .imi-replacements-public .legacy-half.left{float:left}.imi-replacements-public .legacy-half.right{float:right}
