@@ -7,7 +7,10 @@
   <title>Dežurstva in pripravljenost</title>
   <link rel="stylesheet"
         tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/dezurstva/duty-public.css" />
+  <link rel="stylesheet"
+        tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/common/sl-date-picker.css" />
   <script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/dezurstva/duty-public.js"></script>
+  <script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/common/sl-date-picker.js"></script>
   <script>
     (function () {
       var now = new Date();
@@ -72,7 +75,9 @@
                 <tr tal:repeat="row view/readiness_rows">
                   <td tal:content="row/label">BOR</td>
                   <td tal:content="row/name">Ime Priimek</td>
-                  <td class="readiness-contact" tal:content="row/contact">telefon</td>
+                  <td class="readiness-contact"
+                      tal:define="directory python:context.get('seznam_zaposlenih'); employee python:directory is not None and directory.get(row['employee_id']) or None"
+                      tal:content="python:employee is not None and (employee.Description() or '').split('|')[0] or ''">telefon</td>
                 </tr>
               </tbody>
             </table>
@@ -92,7 +97,7 @@
           <div class="legacy-half left">
             <form method="get" tal:attributes="action string:${context/absolute_url}/@@dezurstva-public">
               <p>Prikaži razpored na izbrani datum: </p>
-              <input name="datum" tal:attributes="value view/today_id" type="date" lang="sl-SI" class="datepicker" />
+              <input name="datum" tal:attributes="value view/selected_date_sl" type="text" class="datepicker sl-date-picker" autocomplete="off" placeholder="dd.mm.llll" />
               <input type="submit" value="Prikaži" />
             </form>
           </div>
@@ -138,7 +143,7 @@
                 <option value="pretekli">za pretekli mesec</option>
                 <option value="oddo">od - do</option>
               </select>
-              <span class="date-range">od <input type="date" lang="sl-SI" name="od" tal:attributes="value view/today_id" /> do <input type="date" lang="sl-SI" name="do" tal:attributes="value view/today_id" /></span>
+              <span class="date-range">od <input type="text" class="sl-date-picker" name="od" tal:attributes="value view/selected_date_sl" autocomplete="off" placeholder="dd.mm.llll" /> do <input type="text" class="sl-date-picker" name="do" tal:attributes="value view/selected_date_sl" autocomplete="off" placeholder="dd.mm.llll" /></span>
               <input class="submit" type="submit" value="Izvozi" />
             </form>
           </div>
@@ -162,7 +167,7 @@
                   <option value="pretekli">za pretekli mesec</option>
                   <option value="oddo">od - do</option>
                 </select>
-                <span class="date-range">od <input type="date" lang="sl-SI" name="od" tal:attributes="value view/today_id" /> do <input type="date" lang="sl-SI" name="do" tal:attributes="value view/today_id" /></span>
+                <span class="date-range">od <input type="text" class="sl-date-picker" name="od" tal:attributes="value view/selected_date_sl" autocomplete="off" placeholder="dd.mm.llll" /> do <input type="text" class="sl-date-picker" name="do" tal:attributes="value view/selected_date_sl" autocomplete="off" placeholder="dd.mm.llll" /></span>
                 <input class="submit" type="submit" value="Izvozi" />
               </div>
             </form>
