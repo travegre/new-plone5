@@ -21,5 +21,5 @@ class DutyChangeRequestView(BaseDutyChangeRequestView):
         if not isinstance(rendered, str):
             return rendered
         return rendered.replace(
-            '/++resource++imi.migration/duty-public.css',
-            '/++resource++imi.migration/dezurstva/duty-public.css')
+            '/++resource++imi.migration/dezurstva/dezurstva_public.css',
+            '/++resource++imi.migration/dezurstva/dezurstva_public.css')
