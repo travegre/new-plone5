@@ -62,7 +62,7 @@ def _parts(value, separators=('|',)):
 
 
 class ExamsBase(BrowserView):
-    template = ViewPageTemplateFile('preiskave_legacy.pt')
+    template = ViewPageTemplateFile('preiskave_public.pt')
 
     @property
     def portal(self):
