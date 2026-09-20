@@ -201,6 +201,7 @@ class ReplacementsCopyView(ReplacementsBase):
 
 
 class ReplacementEditView(ReplacementsBase):
+    """Faithful Plone-4-style row editor backed by nadomescanja_json."""
     template = ViewPageTemplateFile('replacements_edit.pt')
 
     def __call__(self):
@@ -209,37 +210,57 @@ class ReplacementEditView(ReplacementsBase):
         return self.template()
 
     def edit_rows(self):
-        existing = {str(row.get('laboratorij_okrajsava') or ''): row
-                    for row in self._rows_from_obj(self.context)}
         result = []
-        for lab in self.laboratories():
-            abbreviation = str(getattr(lab, 'okrajsava', '') or lab.getId())
-            leader_ids = tuple(getattr(lab, 'privzeti_vodja', ()) or ())
-            leader_id = str(leader_ids[0]) if leader_ids else ''
+        for row in self._rows_from_obj(self.context):
+            lab_id = str(row.get('laboratorij_id') or '')
+            abbreviation = str(row.get('laboratorij_okrajsava') or '')
+            lab = self.labs_folder().get(lab_id) if self.labs_folder() is not None and lab_id else None
+            if lab is None and abbreviation:
+                lab = next((x for x in self.laboratories()
+                            if str(getattr(x, 'okrajsava', '') or x.getId()) == abbreviation), None)
+            leader_ids = tuple(getattr(lab, 'privzeti_vodja', ()) or ()) if lab is not None else ()
+            leader_id = str(row.get('privzeti_vodja_id') or (leader_ids[0] if leader_ids else ''))
             result.append({
-                'field': 'lab_' + lab.getId().replace('-', '_'),
-                'abbreviation': abbreviation,
-                'leader_id': leader_id,
-                'leader': staff_title(self.context, leader_id),
-                'selected': str(existing.get(abbreviation, {}).get('nadomestni_vodja_id') or ''),
+                'laboratorij_id': str(lab.getId()) if lab is not None else lab_id,
+                'laboratorij_naziv': str(lab.Title()) if lab is not None else str(row.get('laboratorij_naziv') or ''),
+                'laboratorij_okrajsava': str(getattr(lab, 'okrajsava', '') or lab.getId()) if lab is not None else abbreviation,
+                'privzeti_vodja_id': leader_id,
+                'privzeti_vodja_naziv': staff_title(self.context, leader_id) if leader_id else str(row.get('privzeti_vodja_naziv') or ''),
+                'nadomestni_vodja_id': str(row.get('nadomestni_vodja_id') or row.get('nadomestni_vodja') or ''),
             })
         return result
 
+    def laboratory_options(self):
+        return [(lab.getId(), lab.Title() or lab.getId())
+                for lab in self.laboratories()]
+
     def save(self):
+        lab_ids = self.request.form.get('laboratorij_id', [])
+        replacement_ids = self.request.form.get('nadomestni_vodja_id', [])
+        if isinstance(lab_ids, str):
+            lab_ids = [lab_ids]
+        if isinstance(replacement_ids, str):
+            replacement_ids = [replacement_ids]
+        labs = {lab.getId(): lab for lab in self.laboratories()}
         rows = []
-        for item in self.edit_rows():
-            replacement_id = str(self.request.form.get(item['field']) or '')
-            if not replacement_id:
+        for index, lab_id in enumerate(lab_ids):
+            lab_id = str(lab_id or '')
+            lab = labs.get(lab_id)
+            if lab is None:
                 continue
+            replacement_id = str(replacement_ids[index] if index < len(replacement_ids) else '')
+            leader_ids = tuple(getattr(lab, 'privzeti_vodja', ()) or ())
+            leader_id = str(leader_ids[0]) if leader_ids else ''
             rows.append({
-                'laboratorij_okrajsava': item['abbreviation'],
-                'privzeti_vodja_id': item['leader_id'],
-                'privzeti_vodja_naziv': item['leader'],
+                'laboratorij_id': lab_id,
+                'laboratorij_naziv': lab.Title() or lab_id,
+                'laboratorij_okrajsava': str(getattr(lab, 'okrajsava', '') or lab_id),
+                'privzeti_vodja_id': leader_id,
+                'privzeti_vodja_naziv': staff_title(self.context, leader_id) if leader_id else '',
                 'nadomestni_vodja_id': replacement_id,
-                'nadomestni_vodja_naziv': staff_title(self.context, replacement_id),
+                'nadomestni_vodja_naziv': staff_title(self.context, replacement_id) if replacement_id else '',
             })
-        self.context.nadomescanja_json = json.dumps(
-            rows, ensure_ascii=False, separators=(',', ':'))
+        self.context.nadomescanja_json = json.dumps(rows, ensure_ascii=False, separators=(',', ':'))
         self.context.reindexObject()
         import transaction
         transaction.commit()
