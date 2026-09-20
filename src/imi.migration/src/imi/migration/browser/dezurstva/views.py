@@ -8,7 +8,7 @@ from .staff_import import StaffImportView as BaseStaffImportView
 
 
 class DutyPublicView(BaseDutyPublicView):
-    template = ViewPageTemplateFile('duty_public.pt')
+    template = ViewPageTemplateFile('dezurstva_public.pt')
 
 
 class StaffImportView(BaseStaffImportView):
