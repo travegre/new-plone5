@@ -150,6 +150,17 @@ class ReplacementsPublicView(ReplacementsBase):
 class ReplacementsAdminView(ReplacementsBase):
     template = ViewPageTemplateFile('nadomescanja_admin.pt')
 
+    def admin_laboratories(self):
+        result = []
+        for lab in self.laboratories():
+            leaders = tuple(getattr(lab, 'privzeti_vodja', ()) or ())
+            leader_id = str(leaders[0]) if leaders else ''
+            result.append({'title': lab.Title() or lab.getId(),
+                           'abbreviation': str(getattr(lab, 'okrajsava', '') or lab.getId()),
+                           'leader': staff_title(self.context, leader_id) if leader_id else '',
+                           'url': lab.absolute_url()})
+        return result
+
     def __call__(self):
         return self.template()
 
