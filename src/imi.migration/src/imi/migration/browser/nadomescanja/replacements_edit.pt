@@ -13,7 +13,7 @@
             </select></td>
             <td class="nad-leader" tal:content="row/privzeti_vodja_naziv">Vodja</td>
             <td><select name="nadomestni_vodja_id"><option value="">-- nadomestnik --</option>
-              <option tal:repeat="person view/staff_options" tal:condition="python:person[0] != row['privzeti_vodja_id']" tal:attributes="value python:person[0]; selected python:person[0] == row['nadomestni_vodja_id']" tal:content="python:person[1]">Ime</option>
+              <option tal:repeat="person view/staff_options" tal:attributes="value python:person[0]; selected python:person[0] == row['nadomestni_vodja_id']; style python:'display:none' if person[0] == row['privzeti_vodja_id'] else None" tal:content="python:person[1]">Ime</option>
             </select></td><td><button type="button" class="btn btn-danger nad-remove">−</button></td>
           </tr>
         </tbody>
