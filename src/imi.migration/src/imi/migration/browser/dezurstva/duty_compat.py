@@ -145,7 +145,7 @@ class DutyChangeRequestView(BrowserView):
         embedded.update()
         body = embedded.render()
         portal_url = api.portal.get().absolute_url()
-        css_url = portal_url + '/++resource++imi.migration/duty-public.css'
+        css_url = portal_url + '/++resource++imi.migration/dezurstva/dezurstva_public.css'
         easyform_css = portal_url + '/++resource++easyform.css'
         logo_url = portal_url + '/++resource++imi.migration/logo.png'
         home_url = portal_url
