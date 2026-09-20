@@ -10,7 +10,7 @@
       $row.find('select').val('');
       $row.find('.nad-leader').text('');
     } else {
-      $row = $('<tr><td><select name="laboratorij_id" class="nad-lab-select"></select></td><td class="nad-leader"></td><td><select name="nadomestni_vodja_id"></select></td><td><button type="button" class="btn btn-danger nad-remove">−</button></td></tr>');
+      $row = $('#nad-row-template').clone(false).removeAttr('id');
     }
     $('#nadomescanja-rows').append($row);
   });
