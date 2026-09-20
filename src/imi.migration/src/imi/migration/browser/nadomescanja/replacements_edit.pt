@@ -9,11 +9,11 @@
           <tr tal:repeat="row view/edit_rows">
             <td><select name="laboratorij_id" class="nad-lab-select">
               <option value="">-- laboratorij --</option>
-              <option tal:repeat="lab view/laboratory_options" tal:attributes="value python:lab[0]; selected python:lab[0] == row['laboratorij_id']; data-leader-id python:lab[2]; data-leader-name python:lab[3]" tal:content="python:lab[1]">Lab</option>
+              <option tal:repeat="lab view/laboratory_options" tal:attributes="value python:lab[0]; selected python:'selected' if lab[0] == row['laboratorij_id'] else None; data-leader-id python:lab[2]; data-leader-name python:lab[3]" tal:content="python:lab[1]">Lab</option>
             </select></td>
             <td class="nad-leader" tal:content="row/privzeti_vodja_naziv">Vodja</td>
             <td><select name="nadomestni_vodja_id"><option value="">-- nadomestnik --</option>
-              <option tal:repeat="person view/staff_options" tal:attributes="value python:person[0]; selected python:person[0] == row['nadomestni_vodja_id']; style python:'display:none' if person[0] == row['privzeti_vodja_id'] else None" tal:content="python:person[1]">Ime</option>
+              <option tal:repeat="person view/staff_options" tal:attributes="value python:person[0]; selected python:'selected' if person[0] == row['nadomestni_vodja_id'] else None; style python:'display:none' if person[0] == row['privzeti_vodja_id'] else None" tal:content="python:person[1]">Ime</option>
             </select></td><td><button type="button" class="btn btn-danger nad-remove">−</button></td>
           </tr>
         </tbody>
