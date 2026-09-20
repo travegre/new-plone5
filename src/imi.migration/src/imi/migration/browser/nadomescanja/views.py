@@ -301,6 +301,7 @@ class ReplacementEditView(ReplacementsBase):
         import transaction
         transaction.commit()
         api.portal.show_message(u'Nadomeščanja so shranjena.', request=self.request)
+        self.request.response.redirect(self.context.absolute_url() + '/view')
 
 
 class ReplacementsExportView(ReplacementsBase):
