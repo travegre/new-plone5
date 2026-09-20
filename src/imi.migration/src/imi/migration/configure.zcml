@@ -11,6 +11,7 @@
   <include package="plone.app.theming" />
 
   <utility component=".vocabularies.duty_staff_vocabulary" name="imi.duty.staff" />
+  <utility component=".vocabularies.replacements_staff_vocabulary" name="imi.replacements.staff" />
   <utility component=".vocabularies.form_staff_email_vocabulary" name="imi.form.staff_email" />
 
   <!-- plone.indexer adapters are named (content, catalog) -> IIndexer adapters. -->
