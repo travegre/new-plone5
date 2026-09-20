@@ -231,8 +231,13 @@ class ReplacementEditView(ReplacementsBase):
         return result
 
     def laboratory_options(self):
-        return [(lab.getId(), lab.Title() or lab.getId())
-                for lab in self.laboratories()]
+        result = []
+        for lab in self.laboratories():
+            leaders = tuple(getattr(lab, 'privzeti_vodja', ()) or ())
+            leader_id = str(leaders[0]) if leaders else ''
+            result.append((lab.getId(), lab.Title() or lab.getId(), leader_id,
+                           staff_title(self.context, leader_id) if leader_id else ''))
+        return result
 
     def save(self):
         lab_ids = self.request.form.get('laboratorij_id', [])
