@@ -1,0 +1,26 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="context/main_template/macros/master">
+<body>
+  <metal:main fill-slot="main">
+    <div tal:define="site python:context.portal_url.getPortalObject()">
+      <p><img class="imi-admin-logo" tal:attributes="src string:${site/absolute_url}/++resource++imi.migration/logo.png" alt="IMI" /></p>
+      <h1>IMENIK</h1>
+      <p>Upravljanje imenika</p>
+      <p>
+        <a class="btn btn-primary" tal:attributes="href string:${site/absolute_url}/folder_contents">Vsebine</a>
+        <a class="btn btn-default" tal:attributes="href string:${site/absolute_url}/@@imenik-public">Poglej javni imenik</a>
+        <a class="btn btn-default" tal:attributes="href string:${site/absolute_url}/uvoz">Uvoz podatkov</a>
+      </p>
+      <h2>Kategorije</h2>
+      <ul>
+        <li tal:repeat="category view/categories">
+          <strong tal:content="category/title">Kategorija</strong>
+          <span tal:condition="category/children"> — <span tal:replace="python:', '.join(category['children'])">podkategorije</span></span>
+        </li>
+      </ul>
+    </div>
+  </metal:main>
+</body>
+</html>
