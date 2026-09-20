@@ -1,0 +1,5 @@
+.nadomescanja-editor-table { width:100%; table-layout:fixed; }
+.nadomescanja-editor-table th,.nadomescanja-editor-table td { padding:6px 10px; vertical-align:middle; }
+.nadomescanja-editor-table select { width:100%; }
+.nadomescanja-editor-table th:nth-child(1){width:30%}.nadomescanja-editor-table th:nth-child(2){width:25%}.nadomescanja-editor-table th:nth-child(3){width:35%}.nadomescanja-editor-table th:nth-child(4){width:10%}
+.nad-leader { font-style:italic; }
