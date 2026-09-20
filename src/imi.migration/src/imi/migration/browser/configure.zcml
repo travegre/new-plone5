@@ -51,6 +51,8 @@
   <browser:page name="preiskava_view" for="imi.migration.content.IExamination" class=".preiskave.views.ExaminationPublicView" permission="zope.Public" />
   <browser:page name="view" for="imi.migration.content.IExamination" class=".preiskave.views.ExaminationPublicView" permission="zope.Public" />
 
+  <browser:page name="view" for="imi.migration.content.IReplacementDay" class=".nadomescanja.views.ReplacementDayView" permission="zope.Public" />
+
   <!-- Nadomeščanja -->
   <browser:page name="nadomescanja-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".common.home.SiteHomeView" permission="zope.Public" />
   <browser:page name="nadomescanja-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".nadomescanja.views.ReplacementsPublicView" permission="zope.Public" />
