@@ -54,7 +54,7 @@ class _AdminAwareFolderMixin(object):
 
 
 class _ListingTemplateMixin(object):
-    template = ViewPageTemplateFile('preiskave_legacy.pt')
+    template = ViewPageTemplateFile('preiskave_public.pt')
 
 
 class ExamsHomeView(_AdminAwareFolderMixin, _CanonicalURLMixin, _ListingTemplateMixin, BaseExamsHomeView):
@@ -149,7 +149,7 @@ class ExaminationAdminProxyView(ExaminationPublicProxyView):
 
 
 class ExamsAdminView(BaseExamsHomeView):
-    template = ViewPageTemplateFile('exams_admin.pt')
+    template = ViewPageTemplateFile('preiskave_admin.pt')
 
     def __call__(self):
         return self.template()

@@ -8,7 +8,7 @@ from .imports import DirectoryImportView
 
 
 class DirectoryPublicView(BrowserView):
-    template = ViewPageTemplateFile('directory_public.pt')
+    template = ViewPageTemplateFile('imenik_public.pt')
 
     def __call__(self):
         return self.template()
@@ -38,7 +38,7 @@ class DirectoryPublicView(BrowserView):
 
 
 class DirectoryAdminView(DirectoryPublicView):
-    template = ViewPageTemplateFile('directory_admin.pt')
+    template = ViewPageTemplateFile('imenik_admin.pt')
 
     def __call__(self):
         return self.template()

@@ -141,14 +141,14 @@ class ReplacementsBase(BrowserView):
 
 
 class ReplacementsPublicView(ReplacementsBase):
-    template = ViewPageTemplateFile('replacements_public.pt')
+    template = ViewPageTemplateFile('nadomescanja_public.pt')
 
     def __call__(self):
         return self.template()
 
 
 class ReplacementsAdminView(ReplacementsBase):
-    template = ViewPageTemplateFile('replacements_admin.pt')
+    template = ViewPageTemplateFile('nadomescanja_admin.pt')
 
     def __call__(self):
         return self.template()
