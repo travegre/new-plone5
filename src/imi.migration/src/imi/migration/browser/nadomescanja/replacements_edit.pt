@@ -1,20 +1,26 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal" metal:use-macro="context/main_template/macros/master">
 <body><metal:main fill-slot="main">
-  <h1>Uredi nadomeščanja</h1>
-  <h2 tal:content="context/Title">Datum</h2>
-  <form method="post" class="replacement-editor">
-    <table class="listing replacement-editor-table">
-      <thead><tr><th>Enota</th><th>Vodja</th><th>Nadomešča</th></tr></thead>
-      <tbody><tr tal:repeat="row view/edit_rows">
-        <td tal:content="row/abbreviation">Enota</td>
-        <td tal:content="row/leader">Vodja</td>
-        <td><select tal:attributes="name row/field"><option value=""></option>
-          <option tal:repeat="option view/staff_options"
-                  tal:attributes="value python:option[0]; selected python:option[0] == row['selected']"
-                  tal:content="python:option[1]">Ime</option>
-        </select></td>
-      </tr></tbody>
-    </table>
-    <div class="formControls"><input class="btn btn-primary" type="submit" value="Shrani" /> <a class="btn btn-default" tal:attributes="href string:${context/portal_url}/@@nadomescanja-admin">Nazaj</a></div>
-  </form>
+  <div tal:define="site python:context.portal_url.getPortalObject()">
+    <link rel="stylesheet" tal:attributes="href string:${site/absolute_url}/++resource++imi.migration/nadomescanja/nadomescanja_admin.css" />
+    <h1>Uredi nadomeščanja</h1><h2 tal:content="context/Title">Datum</h2>
+    <form method="post" id="nadomescanja-row-editor">
+      <table class="listing nadomescanja-editor-table"><thead><tr><th>Laboratorij</th><th>Privzeti vodja</th><th>Nadomestni vodja</th><th></th></tr></thead>
+        <tbody id="nadomescanja-rows">
+          <tr tal:repeat="row view/edit_rows">
+            <td><select name="laboratorij_id" class="nad-lab-select">
+              <option value="">-- laboratorij --</option>
+              <option tal:repeat="lab view/laboratory_options" tal:attributes="value python:lab[0]; selected python:lab[0] == row['laboratorij_id']" tal:content="python:lab[1]">Lab</option>
+            </select></td>
+            <td class="nad-leader" tal:content="row/privzeti_vodja_naziv">Vodja</td>
+            <td><select name="nadomestni_vodja_id"><option value="">-- nadomestnik --</option>
+              <option tal:repeat="person view/staff_options" tal:condition="python:person[0] != row['privzeti_vodja_id']" tal:attributes="value python:person[0]; selected python:person[0] == row['nadomestni_vodja_id']" tal:content="python:person[1]">Ime</option>
+            </select></td><td><button type="button" class="btn btn-danger nad-remove">−</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <p><button type="button" class="btn btn-default" id="nad-add">+ Dodaj nadomeščanje</button></p>
+      <div class="formControls"><button class="btn btn-primary" type="submit">Shrani</button> <a class="btn btn-default" tal:attributes="href string:${site/absolute_url}/@@nadomescanja-admin">Nazaj</a></div>
+    </form>
+    <script tal:attributes="src string:${site/absolute_url}/++resource++imi.migration/nadomescanja/nadomescanja_admin.js"></script>
+  </div>
 </metal:main></body></html>
