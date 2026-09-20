@@ -20,6 +20,15 @@ from ..common.helpers import staff_title
 class ReplacementsBase(BrowserView):
     @property
     def portal(self):
+        # Views may run on the site root or on objects several levels below it.
+        # Always resolve the actual Nadomeščanja Plone site, not the current
+        # content object.
+        current = self.context
+        while current is not None:
+            if getattr(current, 'getId', lambda: '')() == 'nadomescanja' and \
+                    getattr(current, 'portal_type', None) == 'Plone Site':
+                return current
+            current = getattr(current, 'aq_parent', None)
         return inner_site(self.context, 'nadomescanja')
 
     def days_folder(self):
