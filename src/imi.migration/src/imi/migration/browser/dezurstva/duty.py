@@ -90,7 +90,7 @@ def _publish_if_possible(obj):
 class DutyPublicView(BrowserView):
     """Public Dežurstva frontend preserving the Plone-4 skin semantics."""
 
-    template = ViewPageTemplateFile('duty_public.pt')
+    template = ViewPageTemplateFile('dezurstva_public.pt')
 
     def __call__(self):
         return self.template()
@@ -357,7 +357,7 @@ class DutyAdminView(BrowserView):
 class DutyHomeView(BrowserView):
     """Default site-root view: editor dashboard for editors, public roster otherwise."""
 
-    admin_template = ViewPageTemplateFile('duty_admin.pt')
+    admin_template = ViewPageTemplateFile('dezurstva_admin.pt')
 
     def __call__(self):
         portal = _portal(self.context)
