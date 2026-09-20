@@ -9,7 +9,7 @@
           <tr tal:repeat="row view/edit_rows">
             <td><select name="laboratorij_id" class="nad-lab-select">
               <option value="">-- laboratorij --</option>
-              <option tal:repeat="lab view/laboratory_options" tal:attributes="value python:lab[0]; selected python:lab[0] == row['laboratorij_id']" tal:content="python:lab[1]">Lab</option>
+              <option tal:repeat="lab view/laboratory_options" tal:attributes="value python:lab[0]; selected python:lab[0] == row['laboratorij_id']" data-leader-id="" data-leader-name="" tal:attributes="value python:lab[0]; selected python:lab[0] == row['laboratorij_id']; data-leader-id python:lab[2]; data-leader-name python:lab[3]" tal:content="python:lab[1]">Lab</option>
             </select></td>
             <td class="nad-leader" tal:content="row/privzeti_vodja_naziv">Vodja</td>
             <td><select name="nadomestni_vodja_id"><option value="">-- nadomestnik --</option>
@@ -21,6 +21,7 @@
       <p><button type="button" class="btn btn-default" id="nad-add">+ Dodaj nadomeščanje</button></p>
       <div class="formControls"><button class="btn btn-primary" type="submit">Shrani</button> <a class="btn btn-default" tal:attributes="href string:${site/absolute_url}/@@nadomescanja-admin">Nazaj</a></div>
     </form>
+    <select id="nad-lab-data" style="display:none"><option tal:repeat="lab view/laboratory_options" tal:attributes="value python:lab[0]; data-leader-id python:lab[2]; data-leader-name python:lab[3]"></option></select>
     <script tal:attributes="src string:${site/absolute_url}/++resource++imi.migration/nadomescanja/nadomescanja_admin.js"></script>
   </div>
 </metal:main></body></html>
