@@ -21,6 +21,18 @@
       <p><button type="button" class="btn btn-default" id="nad-add">+ Dodaj nadomeščanje</button></p>
       <div class="formControls"><button class="btn btn-primary" type="submit">Shrani</button> <a class="btn btn-default" tal:attributes="href string:${site/absolute_url}/@@nadomescanja-admin">Nazaj</a></div>
     </form>
+    <table style="display:none"><tbody><tr id="nad-row-template">
+      <td><select name="laboratorij_id" class="nad-lab-select">
+        <option value="">-- laboratorij --</option>
+        <option tal:repeat="lab view/laboratory_options" tal:attributes="value python:lab[0]; data-leader-id python:lab[2]; data-leader-name python:lab[3]" tal:content="python:lab[1]">Lab</option>
+      </select></td>
+      <td class="nad-leader"></td>
+      <td><select name="nadomestni_vodja_id">
+        <option value="">-- nadomestnik --</option>
+        <option tal:repeat="person view/staff_options" tal:attributes="value python:person[0]" tal:content="python:person[1]">Ime</option>
+      </select></td>
+      <td><button type="button" class="btn btn-danger nad-remove">−</button></td>
+    </tr></tbody></table>
     <select id="nad-lab-data" style="display:none"><option tal:repeat="lab view/laboratory_options" tal:attributes="value python:lab[0]; data-leader-id python:lab[2]; data-leader-name python:lab[3]"></option></select>
     <script tal:attributes="src string:${site/absolute_url}/++resource++imi.migration/nadomescanja/nadomescanja_admin.js"></script>
   </div>
