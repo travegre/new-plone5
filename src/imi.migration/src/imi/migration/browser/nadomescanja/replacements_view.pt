@@ -13,6 +13,5 @@
         <td tal:content="python:row.get('nadomestni_vodja_naziv') or u'—'">Nadomestnik</td>
       </tr></tbody>
     </table>
-    <div class="formControls"><a class="btn btn-primary" tal:attributes="href string:${context/absolute_url}/edit">Uredi</a></div>
   </div>
 </metal:main></body></html>
