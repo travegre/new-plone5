@@ -157,15 +157,17 @@ class ReplacementsPublicView(ReplacementsBase):
 
 
 class ReplacementDayView(ReplacementsBase):
-    """Human-readable view of one persisted Nadomeščanja day."""
+    """Admin view of one persisted Nadomeščanja day."""
+    template = ViewPageTemplateFile('replacements_edit.pt')
 
     def __call__(self):
-        # Keep canonical object URLs useful in admin mode without exposing the
-        # implementation field nadomescanja_json.
-        day = self.context.getId()
-        self.request.response.redirect(
-            self.portal.absolute_url() + '/@@nadomescanja-public?datum=' + day)
-        return ''
+        return self.template()
+
+    def edit_rows(self):
+        return ReplacementEditView.edit_rows(self)
+
+    def laboratory_options(self):
+        return ReplacementEditView.laboratory_options(self)
 
 
 class ReplacementsAdminView(ReplacementsBase):
