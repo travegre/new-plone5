@@ -157,17 +157,14 @@ class ReplacementsPublicView(ReplacementsBase):
 
 
 class ReplacementDayView(ReplacementsBase):
-    """Admin view of one persisted Nadomeščanja day."""
-    template = ViewPageTemplateFile('replacements_edit.pt')
+    """Read-only Barceloneta view of one persisted Nadomeščanja day."""
+    template = ViewPageTemplateFile('replacements_view.pt')
+
+    def rows(self):
+        return self._rows_from_obj(self.context)
 
     def __call__(self):
         return self.template()
-
-    def edit_rows(self):
-        return ReplacementEditView.edit_rows(self)
-
-    def laboratory_options(self):
-        return ReplacementEditView.laboratory_options(self)
 
 
 class ReplacementsAdminView(ReplacementsBase):
