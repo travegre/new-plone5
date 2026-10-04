@@ -222,6 +222,27 @@ def source_local_roles(record):
     return sorted((str(principal), sorted(list(roles))) for principal, roles in value)
 
 
+def date_text(value):
+    if value is None:
+        return ''
+    for name in ('ISO8601', 'ISO'):
+        method = getattr(value, name, None)
+        if callable(method):
+            try:
+                return str(method())
+            except Exception:
+                pass
+    return str(value)
+
+
+def target_owner_id(obj):
+    try:
+        owner = obj.getOwner()
+        return str(owner.getId()) if owner is not None else ''
+    except Exception:
+        return ''
+
+
 def check_record(app, record, input_dir):
     source_type = record.get('portal_type')
     expected_type = target_type(record)
@@ -294,6 +315,40 @@ def check_record(app, record, input_dir):
     if src_roles != tgt_roles:
         result['local_roles'] = {'source': src_roles, 'target': tgt_roles}
         result['differences'].append('local roles differ')
+    # Metadata that must survive a production cut-over.
+    expected_owner = str(metadata.get('owner') or '')
+    if expected_owner:
+        actual_owner = target_owner_id(obj)
+        if expected_owner != actual_owner:
+            result['owner'] = {'source': expected_owner, 'target': actual_owner}
+            result['differences'].append('owner differs')
+    try:
+        actual_creators = [str(v) for v in (obj.Creators() or ())]
+    except Exception:
+        actual_creators = []
+    expected_creators = [str(v) for v in (metadata.get('creators') or ())]
+    if expected_creators != actual_creators:
+        result['creators'] = {'source': expected_creators, 'target': actual_creators}
+        result['differences'].append('creators differ')
+    for source_name, target_name in (
+            ('created', 'creation_date'), ('modified', 'modification_date'),
+            ('effective', 'effective'), ('expires', 'expires')):
+        expected = date_text(metadata.get(source_name))
+        if not expected:
+            continue
+        try:
+            target_value = getattr(obj, target_name)
+            if callable(target_value):
+                target_value = target_value()
+            actual = date_text(target_value)
+        except Exception:
+            actual = ''
+        # DateTime string formats can differ while representing the same instant;
+        # compare their stable leading date/time portion first.
+        if expected[:19] != actual[:19]:
+            result.setdefault('date_metadata', {})[source_name] = {
+                'source': expected, 'target': actual}
+            result['differences'].append('%s differs' % source_name)
     if result['differences']:
         result['status'] = 'different'
     return result
