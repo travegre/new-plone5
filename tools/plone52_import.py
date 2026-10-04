@@ -10,6 +10,7 @@ import os
 import sys
 
 import plone.api
+from DateTime import DateTime
 from plone.app.textfield import RichText
 from plone.app.textfield.value import RichTextValue
 from plone.dexterity.utils import iterSchemata
@@ -187,6 +188,66 @@ def apply_custom_fields(obj, record, input_dir):
         setattr(obj, name, value)
 
 
+def as_datetime(value):
+    if not value:
+        return None
+    try:
+        return DateTime(str(value))
+    except Exception:
+        return None
+
+
+def apply_metadata(obj, record):
+    """Restore source Dublin Core/security metadata after object creation."""
+    metadata = record.get('metadata') or {}
+    errors = []
+
+    creators = metadata.get('creators')
+    if creators is not None:
+        setter = getattr(obj, 'setCreators', None)
+        if callable(setter):
+            try:
+                setter(tuple(str(v) for v in creators))
+            except Exception as exc:
+                errors.append('creators: %r' % (exc,))
+
+    for source_name, setter_name in (
+            ('effective', 'setEffectiveDate'),
+            ('expires', 'setExpirationDate')):
+        value = as_datetime(metadata.get(source_name))
+        setter = getattr(obj, setter_name, None)
+        if value is not None and callable(setter):
+            try:
+                setter(value)
+            except Exception as exc:
+                errors.append('%s: %r' % (source_name, exc))
+
+    created = as_datetime(metadata.get('created'))
+    modified = as_datetime(metadata.get('modified'))
+    if created is not None:
+        try:
+            obj.creation_date = created
+        except Exception as exc:
+            errors.append('created: %r' % (exc,))
+    if modified is not None:
+        try:
+            obj.modification_date = modified
+        except Exception as exc:
+            errors.append('modified: %r' % (exc,))
+
+    owner_id = metadata.get('owner')
+    if owner_id:
+        try:
+            user = plone.api.user.get(username=str(owner_id))
+            if user is None:
+                errors.append('owner %s does not exist in target site' % owner_id)
+            else:
+                obj.changeOwnership(user, recursive=False)
+        except Exception as exc:
+            errors.append('owner %s: %r' % (owner_id, exc))
+    return errors
+
+
 def apply_local_roles(obj, metadata):
     for principal, principal_roles in metadata.get('local_roles') or []:
         try:
@@ -287,6 +348,10 @@ def create_record(app, record, input_dir, path_map):
             title=record.get('title') or obj_id,
             description=record.get('description') or '', safe_id=False)
     apply_custom_fields(obj, record, input_dir)
+    metadata_errors = apply_metadata(obj, record)
+    if metadata_errors:
+        raise ValueError('metadata restore failed for %s: %s' %
+                         (record.get('source_path'), '; '.join(metadata_errors)))
     apply_local_roles(obj, record.get('metadata') or {})
     try:
         value = record.get('metadata', {}).get('exclude_from_nav')
