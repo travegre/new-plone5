@@ -315,6 +315,14 @@ def check_record(app, record, input_dir):
     if src_roles != tgt_roles:
         result['local_roles'] = {'source': src_roles, 'target': tgt_roles}
         result['differences'].append('local roles differ')
+    source_block = bool(metadata.get('local_role_block'))
+    try:
+        target_block = bool(obj.get_local_role_block())
+    except Exception:
+        target_block = False
+    if source_block != target_block:
+        result['local_role_block'] = {'source': source_block, 'target': target_block}
+        result['differences'].append('local role inheritance block differs')
     # Metadata that must survive a production cut-over.
     expected_owner = str(metadata.get('owner') or '')
     if expected_owner:
