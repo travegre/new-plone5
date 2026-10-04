@@ -53,8 +53,13 @@ binaries/
 reports/
 ```
 
-Review the source export error reports before touching the target. The source
-remains authoritative until all target parity gates pass.
+Review the source export error reports before touching the target. In particular
+review `reports/uncataloged-zodb.json`: the normal content import intentionally
+uses cataloged/active content, but the hardened exporter now enumerates
+contained ZODB objects absent from the catalog so archive/stale/business data
+cannot disappear silently. Decide explicitly whether any such path must be
+added to migration policy before cut-over. The source remains authoritative
+until all target parity gates pass.
 
 The hardened source exporter also records each object's owner. Use the
 `migration-cutover-hardening` branch of `travegre/my-plone-migration` (or
