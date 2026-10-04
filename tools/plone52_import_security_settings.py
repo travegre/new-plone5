@@ -25,7 +25,7 @@ VIRTUAL_GROUPS = frozenset((
     'Anonymous Users',
     'Authenticated Users',
 ))
-BASE_USER_ROLES = ('Member',)
+BASE_USER_ROLES = ()
 
 
 def parse_input_dir(argv):
