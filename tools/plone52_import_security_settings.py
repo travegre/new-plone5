@@ -5,7 +5,8 @@
 Reads ``security-settings.json`` created by
 ``plone43_export_security_settings.py``. Users are recreated with random,
 unknown passwords because the normal export deliberately contains no password
-material. Administrators must reset passwords separately.
+material. If a private security-credentials.json file is supplied, compatible
+site-local PAS password hashes and SMTP credentials are restored.
 
 The importer is idempotent. PAS virtual groups such as ``AuthenticatedUsers``
 are ignored because they are computed automatically and are not ordinary
@@ -14,6 +15,7 @@ stored groups in Plone 5.
 import json
 import os
 import secrets
+import stat
 import sys
 
 import plone.api
@@ -274,6 +276,65 @@ def apply_workflow_chains(site, chains):
     return applied, skipped
 
 
+
+def read_credentials(input_dir):
+    path = os.path.join(input_dir, 'security-credentials.json')
+    if not os.path.isfile(path):
+        print('No private credentials file: user passwords require reset and SMTP passwords are unchanged.')
+        return {}
+    if stat.S_IMODE(os.stat(path).st_mode) & 0o077:
+        raise RuntimeError('%s must not be readable by group/others (chmod 600)' % path)
+    with open(path, 'r', encoding='utf-8') as handle:
+        data = json.load(handle)
+    if data.get('schema_version') != 1 or not isinstance(data.get('sites'), dict):
+        raise ValueError('Unsupported security-credentials.json format')
+    return data['sites']
+
+
+def restore_password_hashes(site, records):
+    """Install existing hashes into the same standard PAS ZODBUserManager."""
+    stored = getattr(getattr(site.acl_users, 'source_users', None),
+                     '_user_passwords', None)
+    hashes = records.get('password_hashes') or {}
+    restored = []
+    errors = []
+    if not hashes:
+        return restored, errors
+    if stored is None:
+        return restored, ['site has no compatible source_users password store']
+    for user_id, password_hash in hashes.items():
+        if not isinstance(password_hash, str) or not password_hash:
+            errors.append('invalid password hash for %s' % user_id)
+            continue
+        if plone.api.user.get(username=user_id) is None:
+            errors.append('password hash user missing: %s' % user_id)
+            continue
+        if user_id not in stored:
+            errors.append('user %s is not in site-local source_users; refusing to change another authentication plugin' % user_id)
+            continue
+        try:
+            stored[user_id] = password_hash
+            if stored[user_id] != password_hash:
+                raise ValueError('stored hash differs')
+            restored.append(user_id)
+        except Exception as exc:
+            errors.append('restore password hash for %s: %r' % (user_id, exc))
+    return restored, errors
+
+
+def restore_smtp_password(site, records):
+    if not records or records.get('smtp_password') is None:
+        return False, []
+    mh = getattr(site, 'MailHost', None)
+    if mh is None:
+        return False, ['missing MailHost for SMTP password']
+    try:
+        mh.smtp_pwd = records['smtp_password']
+        return True, []
+    except Exception as exc:
+        return False, ['SMTP password restore: %r' % (exc,)]
+
+
 def run(app, input_dir):
     path = os.path.join(input_dir, 'security-settings.json')
     if not os.path.isfile(path):
@@ -281,6 +342,7 @@ def run(app, input_dir):
     with open(path, 'r', encoding='utf-8') as handle:
         payload = json.load(handle)
 
+    credentials = read_credentials(input_dir)
     import transaction
     report = {'sites': {}, 'password_resets_required': {}}
     try:
@@ -296,6 +358,10 @@ def run(app, input_dir):
             errors.extend(group_errors)
             users_created, users_existing, resets, user_roles, user_errors = create_users(site, record.get('users') or ())
             errors.extend(user_errors)
+            site_credentials = credentials.get(site_id) or {}
+            restored_passwords, password_errors = restore_password_hashes(site, site_credentials)
+            errors.extend(password_errors)
+            resets = [user_id for user_id in resets if user_id not in restored_passwords]
             memberships_added, memberships_existing, memberships_virtual, membership_errors = add_memberships(record.get('users') or ())
             errors.extend(membership_errors)
             local_roles, local_role_errors = apply_site_local_roles(site, record.get('site_local_roles') or ())
@@ -304,6 +370,8 @@ def run(app, input_dir):
             props = apply_site_properties(site, record.get('properties') or {})
             registry_email = apply_registry_email(site, record.get('properties') or {})
             mail = apply_mailhost(site, record.get('mailhost'))
+            smtp_restored, smtp_errors = restore_smtp_password(site, site_credentials)
+            errors.extend(smtp_errors)
             workflows, workflows_skipped = apply_workflow_chains(site, record.get('workflow_chains') or {})
             try:
                 site.portal_catalog.manage_reindexIndex(ids=['allowedRolesAndUsers'])
@@ -320,9 +388,10 @@ def run(app, input_dir):
                 'virtual_memberships_skipped': memberships_virtual,
                 'site_local_roles_applied': local_roles, 'site_identity_applied': identity,
                 'site_properties_applied': props, 'registry_email_applied': registry_email,
-                'mailhost_fields_applied': mail, 'workflow_chains_applied': workflows,
+                'mailhost_fields_applied': mail, 'password_hashes_restored': len(restored_passwords),
+                'smtp_password_restored': smtp_restored, 'workflow_chains_applied': workflows,
                 'workflow_chains_skipped': workflows_skipped,
-                'smtp_password_required': bool((record.get('mailhost') or {}).get('smtp_password_configured')),
+                'smtp_password_required': bool((record.get('mailhost') or {}).get('smtp_password_configured')) and not smtp_restored,
                 'errors': errors,
             }
             report['password_resets_required'][site_id] = resets
@@ -336,8 +405,10 @@ def run(app, input_dir):
                 print('  ERROR: %s' % error)
             for skipped in workflows_skipped:
                 print('  WORKFLOW SKIPPED: %s <- %s' % (skipped['portal_type'], ','.join(skipped['source_chain'])))
-            if (record.get('mailhost') or {}).get('smtp_password_configured'):
-                print('  WARNING: SMTP password was configured on source and must be set separately.')
+            print('  password hashes restored: %d; SMTP password restored: %s' %
+                  (len(restored_passwords), smtp_restored))
+            if (record.get('mailhost') or {}).get('smtp_password_configured') and not smtp_restored:
+                print('  WARNING: SMTP password was configured on source but not restored.')
             transaction.commit()
     finally:
         setSite(None)
@@ -348,8 +419,7 @@ def run(app, input_dir):
     with open(report_path, 'w', encoding='utf-8') as handle:
         json.dump(report, handle, ensure_ascii=False, indent=2, sort_keys=True)
     print('Security/settings report: %s' % report_path)
-    print('User passwords were NOT migrated; newly-created users require password reset.')
-    print('SMTP password was NOT migrated and must be configured securely if required.')
+    print('Credential migration counts are in the report; verify logins and SMTP delivery.')
 
 
 if 'app' not in globals():
