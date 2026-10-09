@@ -121,7 +121,15 @@ def create_users(site, records):
         else:
             existing += 1
             try:
-                plone.api.user.update(user=user, email=email, properties=props)
+                # plone.api.user has no update() in Plone 5.2.
+                # portal_membership handles properties of existing members.
+                member = site.portal_membership.getMemberById(user_id)
+                if member is None:
+                    raise ValueError('no portal_membership member for %s' % user_id)
+                updated_properties = dict(props)
+                if email is not None:
+                    updated_properties['email'] = email
+                member.setMemberProperties(updated_properties)
             except Exception as exc:
                 errors.append('update user %s properties: %r' % (user_id, exc))
         assigned, role_errors = assign_principal_roles(site, user_id, record.get('roles') or ())
