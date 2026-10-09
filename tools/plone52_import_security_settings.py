@@ -355,7 +355,7 @@ def add_cross_site_user(records, credentials):
 
     for target_id, user_ids in (
             ('kiestra', ('udermota',)),
-            ('nadomescanja', ('robert',))):
+            ('nadomescanja', ('robert', 'udermota'))):
         target = sites.get(target_id)
         if target is None:
             raise ValueError('Missing %s in security export' % target_id)
