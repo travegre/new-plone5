@@ -7,8 +7,6 @@ Run inside the target container with::
     bin/instance run tools/plone52_create_sites.py
 """
 from Products.CMFPlone.factory import addPloneSite
-from plone.registry.interfaces import IRegistry
-from zope.component import getUtility
 from zope.component.hooks import setSite
 
 SITES = (
@@ -23,17 +21,6 @@ EXTENSION_IDS = (
     'plone.app.theming:default',
     'plonetheme.barceloneta:default',
 )
-
-
-def ensure_imi_types_in_navigation(site):
-    """Add every current/future ``imi.*`` FTI to Plone navigation types."""
-    registry = getUtility(IRegistry)
-    key = 'plone.displayed_types'
-    current = list(registry.get(key, ()) or ())
-    for type_id in sorted(site.portal_types.objectIds()):
-        if str(type_id).startswith('imi.') and type_id not in current:
-            current.append(type_id)
-    registry[key] = tuple(current)
 
 
 def configure_site_root(site, site_id):
@@ -61,7 +48,6 @@ def ensure_site(app, site_id, title):
     setSite(site)
     setup = site.portal_setup
     setup.runAllImportStepsFromProfile(PROFILE)
-    ensure_imi_types_in_navigation(site)
     configure_site_root(site, site_id)
     return site
 

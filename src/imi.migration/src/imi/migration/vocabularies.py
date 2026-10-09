@@ -80,3 +80,9 @@ def form_staff_email_vocabulary(context):
         seen_tokens.add(token)
         terms.append(SimpleTerm(value=value, token=token, title=title))
     return SimpleVocabulary(terms)
+
+
+@provider(IVocabularyFactory)
+def replacements_staff_vocabulary(context):
+    """Employee ids/titles for Nadomeščanja laboratory and day editors."""
+    return duty_staff_vocabulary(context)

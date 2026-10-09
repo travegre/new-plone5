@@ -1,0 +1,58 @@
+(function () {
+  'use strict';
+
+  function toSlovenianDate(value) {
+    var parts = String(value || '').split('-');
+    if (parts.length !== 3) { return value; }
+    return parts[2] + '.' + parts[1] + '.' + parts[0];
+  }
+
+  function normaliseNativeRangeOnSubmit(form) {
+    form.addEventListener('submit', function () {
+      ['od', 'do'].forEach(function (name) {
+        var input = form.querySelector('input[type="date"][name="' + name + '"]');
+        if (!input || !input.value) { return; }
+        var hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = name;
+        hidden.value = toSlovenianDate(input.value);
+        input.disabled = true;
+        form.appendChild(hidden);
+      });
+    });
+  }
+
+  function updateExportForm(formId, periodId, personId) {
+    var form = document.getElementById(formId);
+    if (!form) { return; }
+    var period = document.getElementById(periodId);
+    var person = personId ? document.getElementById(personId) : null;
+    var range = form.querySelector('.date-range');
+    var submit = form.querySelector('.submit');
+    var periodContainer = person ? form.querySelector('#obdobje') : null;
+
+    function refresh() {
+      var mode = period ? period.value : '';
+      var personOk = !person || !!person.value;
+      if (periodContainer) {
+        periodContainer.style.display = personOk ? 'block' : 'none';
+      }
+      if (range) {
+        range.style.display = (mode === 'oddo' && personOk) ? 'inline-block' : 'none';
+      }
+      if (submit) {
+        submit.style.display = (mode && personOk) ? 'inline' : 'none';
+      }
+    }
+
+    if (period) { period.addEventListener('change', refresh); }
+    if (person) { person.addEventListener('change', refresh); }
+    normaliseNativeRangeOnSubmit(form);
+    refresh();
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    updateExportForm('izvoz-1', 'izvoz-1-izbira', null);
+    updateExportForm('izvoz-2', 'izvoz-2-izbira', 'izvoz-2-oseba');
+  });
+}());

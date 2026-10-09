@@ -189,7 +189,10 @@ class IReplacementDay(model.Schema):
 
 class IReplacementLaboratory(model.Schema):
     okrajsava = _textline(u'Okrajšava', required=True)
-    privzeti_vodja = _tuple(u'Privzeti vodja')
+    form.widget('privzeti_vodja', SelectFieldWidget)
+    privzeti_vodja = schema.Tuple(
+        title=u'Privzeti vodja', required=False,
+        value_type=schema.Choice(vocabulary='imi.replacements.staff'))
 
 
 class IExamination(model.Schema):

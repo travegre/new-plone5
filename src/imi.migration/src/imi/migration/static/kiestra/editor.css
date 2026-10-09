@@ -1,0 +1,11 @@
+.kiestra-editor-grid { display:grid; grid-template-columns:repeat(3,minmax(230px,1fr)); gap:20px; align-items:start; }
+.kiestra-editor-field { border:1px solid #ddd; padding:15px; border-radius:3px; }
+.kiestra-editor-field h3 { margin-top:0; }
+.kiestra-editor-field .staff-filter,
+.kiestra-editor-field select,
+.kiestra-editor-field input[type=text] { width:100%; box-sizing:border-box; margin:5px 0 10px; }
+.kiestra-editor-field select { min-height:180px; }
+.kiestra-constant { margin-top:25px; }
+.kiestra-constant textarea { width:100%; box-sizing:border-box; }
+.formControls { margin-top:25px; }
+@media (max-width:900px) { .kiestra-editor-grid { grid-template-columns:1fr; } }

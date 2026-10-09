@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules
+    xmlns="http://namespaces.plone.org/diazo"
+    xmlns:css="http://namespaces.plone.org/diazo/css"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <!--
+    Public IMI hosts keep their legacy-fidelity frontend completely unthemed.
+    Admin mode is selected only by hostname.  plone.app.theming exposes $host;
+    with a direct Waitress URL this may include the port, so accept any host
+    starting with 127.0.0.1 as well as production admin.* hostnames.
+  -->
+  <notheme if="not(starts-with($host, '127.0.0.1') or starts-with($host, 'admin.'))" />
+
+  <xi:include href="++theme++barceloneta/rules.xml" />
+
+  <!--
+    Because this theme inherits Barceloneta's rules rather than activating
+    Barceloneta directly, inject the theme stylesheet explicitly at the site
+    root.  This avoids plone.app.theming generating
+    /<site>//++theme++barceloneta/... from the custom manifest prefix.
+  -->
+  <after css:theme-children="head">
+    <link rel="stylesheet"
+          href="/++theme++barceloneta/less/barceloneta-compiled.css" />
+  </after>
+
+</rules>
