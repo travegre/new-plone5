@@ -2,7 +2,25 @@
 <html>
   <head>
     <title>Plone Theme</title>
-    <script defer src="/++resource++imi.migration/admin/hide-eol-warnings.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        if (!/(?:^|\/)@@?overview-controlpanel\/?$/.test(window.location.pathname)) {
+          return;
+        }
+        var patterns = [
+          'You are using a Python version that is not supported',
+          'You are using a Plone version that is out of maintenance support',
+          'You are using a Plone version that is out of security support',
+          'Go to the Plone release schedule'
+        ];
+        document.querySelectorAll('.portalMessage.warning, .alert-warning').forEach(function (message) {
+          var text = (message.textContent || '').replace(/\s+/g, ' ').trim();
+          if (patterns.some(function (pattern) { return text.indexOf(pattern) !== -1; })) {
+            message.style.display = 'none';
+          }
+        });
+      });
+    </script>
     <link rel="shortcut icon" type="image/x-icon"
           href="/++theme++barceloneta/barceloneta-favicon.ico" />
     <link rel="apple-touch-icon"
