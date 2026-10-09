@@ -236,6 +236,9 @@ def apply_metadata(obj, record):
             errors.append('modified: %r' % (exc,))
 
     owner_id = metadata.get('owner')
+    # The legacy root-level account robert2 is replaced by robert.
+    if owner_id == 'robert2':
+        owner_id = 'robert'
     if owner_id:
         try:
             user = plone.api.user.get(username=str(owner_id))
