@@ -4,6 +4,7 @@ from Products.ZCTextIndex.HTMLSplitter import HTMLWordSplitter
 from Products.ZCTextIndex.Lexicon import CaseNormalizer
 from Products.ZCTextIndex.Lexicon import StopWordRemover
 from Products.ZCTextIndex.ZCTextIndex import PLexicon
+from zope.component.hooks import getSite
 
 
 HTMLTEXT_LEXICON_ID = 'htmltext_lexicon'
@@ -127,4 +128,4 @@ def install_catalog_indexes(portal, reindex=True):
 
 
 def post_install(context):
-    install_catalog_indexes(context.getSite(), reindex=True)
+    install_catalog_indexes(getSite(), reindex=True)
