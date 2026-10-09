@@ -343,6 +343,33 @@ def restore_smtp_password(site, records):
         return False, ['SMTP password restore: %r' % (exc,)]
 
 
+def add_cross_site_user(records, credentials):
+    """Copy udermota from dezurstva into kiestra, including credential hash.
+
+    Keep the exported files unchanged. This makes security import rerunnable.
+    """
+    sites = {str(site.get('id')): site for site in records}
+    source = sites.get('dezurstva')
+    target = sites.get('kiestra')
+    if source is None or target is None:
+        raise ValueError('Both dezurstva and kiestra must be present to copy udermota')
+    matches = [user for user in (source.get('users') or ())
+               if user.get('id') == 'udermota']
+    if len(matches) != 1:
+        raise ValueError('Expected exactly one udermota in dezurstva security export')
+    if not any(user.get('id') == 'udermota' for user in (target.get('users') or ())):
+        # Deep-copy properties, roles and memberships from the source record.
+        target.setdefault('users', []).append(json.loads(json.dumps(matches[0])))
+    source_hash = ((credentials.get('dezurstva') or {})
+                   .get('password_hashes') or {}).get('udermota')
+    if source_hash:
+        credentials.setdefault('kiestra', {}).setdefault(
+            'password_hashes', {})['udermota'] = source_hash
+    else:
+        print('WARNING: no exported udermota password hash in dezurstva; '
+              'kiestra account will need a password reset')
+
+
 def run(app, input_dir):
     path = os.path.join(input_dir, 'security-settings.json')
     if not os.path.isfile(path):
@@ -351,6 +378,7 @@ def run(app, input_dir):
         payload = json.load(handle)
 
     credentials = read_credentials(input_dir)
+    add_cross_site_user(payload.get('sites') or [], credentials)
     import transaction
     report = {'sites': {}, 'password_resets_required': {}}
     try:
