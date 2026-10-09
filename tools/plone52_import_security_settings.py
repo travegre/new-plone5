@@ -344,30 +344,37 @@ def restore_smtp_password(site, records):
 
 
 def add_cross_site_user(records, credentials):
-    """Copy udermota from dezurstva into kiestra, including credential hash.
+    """Copy selected dezurstva users to other sites, with exported credentials.
 
-    Keep the exported files unchanged. This makes security import rerunnable.
+    Do not modify the source export or overwrite existing target user records.
     """
     sites = {str(site.get('id')): site for site in records}
     source = sites.get('dezurstva')
-    target = sites.get('kiestra')
-    if source is None or target is None:
-        raise ValueError('Both dezurstva and kiestra must be present to copy udermota')
-    matches = [user for user in (source.get('users') or ())
-               if user.get('id') == 'udermota']
-    if len(matches) != 1:
-        raise ValueError('Expected exactly one udermota in dezurstva security export')
-    if not any(user.get('id') == 'udermota' for user in (target.get('users') or ())):
-        # Deep-copy properties, roles and memberships from the source record.
-        target.setdefault('users', []).append(json.loads(json.dumps(matches[0])))
-    source_hash = ((credentials.get('dezurstva') or {})
-                   .get('password_hashes') or {}).get('udermota')
-    if source_hash:
-        credentials.setdefault('kiestra', {}).setdefault(
-            'password_hashes', {})['udermota'] = source_hash
-    else:
-        print('WARNING: no exported udermota password hash in dezurstva; '
-              'kiestra account will need a password reset')
+    if source is None:
+        raise ValueError('Missing dezurstva in security export')
+
+    for target_id, user_ids in (
+            ('kiestra', ('udermota',)),
+            ('nadomescanja', ('robert', 'udermota'))):
+        target = sites.get(target_id)
+        if target is None:
+            raise ValueError('Missing %s in security export' % target_id)
+        for user_id in user_ids:
+            matches = [user for user in (source.get('users') or ())
+                       if user.get('id') == user_id]
+            if len(matches) != 1:
+                raise ValueError('Expected exactly one %s in dezurstva export' % user_id)
+            if not any(user.get('id') == user_id for user in (target.get('users') or ())):
+                target.setdefault('users', []).append(
+                    json.loads(json.dumps(matches[0])))
+            source_hash = ((credentials.get('dezurstva') or {})
+                           .get('password_hashes') or {}).get(user_id)
+            if source_hash:
+                credentials.setdefault(target_id, {}).setdefault(
+                    'password_hashes', {})[user_id] = source_hash
+            else:
+                print('WARNING: no exported %s password hash in dezurstva; '
+                      '%s account may need a password reset' % (user_id, target_id))
 
 
 def run(app, input_dir):
