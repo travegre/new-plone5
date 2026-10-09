@@ -333,7 +333,7 @@ def check_record(app, record, input_dir):
             result['owner'] = {'source': expected_owner, 'target': actual_owner}
             result['differences'].append('owner differs')
     try:
-        actual_creators = [str(v) for v in (obj.Creators() or ())]
+        actual_creators = [str(v) for v in (obj.listCreators() or ())]
     except Exception:
         actual_creators = []
     expected_creators = [str(v) for v in (metadata.get('creators') or ())]
