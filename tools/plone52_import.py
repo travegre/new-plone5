@@ -364,6 +364,11 @@ def create_record(app, record, input_dir, path_map):
         pass
     transition_to_state(obj, (record.get('metadata') or {}).get('workflow_state'))
     ensure_public_view(obj)
+    # Workflow transitions and content events can update modification_date.
+    # Restore the exported timestamp only after all other object mutations.
+    modified = as_datetime((record.get('metadata') or {}).get('modified'))
+    if modified is not None:
+        obj.modification_date = modified
     synchronous_catalog_object(obj)
     path_map[(record['site'], rel)] = obj
     return obj
