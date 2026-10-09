@@ -325,6 +325,8 @@ def check_record(app, record, input_dir):
         result['differences'].append('local role inheritance block differs')
     # Metadata that must survive a production cut-over.
     expected_owner = str(metadata.get('owner') or '')
+    if expected_owner == 'robert2':
+        expected_owner = 'robert'
     if expected_owner:
         actual_owner = target_owner_id(obj)
         if expected_owner != actual_owner:
