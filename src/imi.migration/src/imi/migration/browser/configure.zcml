@@ -27,6 +27,7 @@
   <browser:page name="kiestra-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".kiestra.views.KiestraAdminView" permission="cmf.ModifyPortalContent" />
   <browser:page name="kiestra-select" for="Products.CMFCore.interfaces.ISiteRoot" class=".kiestra.views.KiestraSelectView" permission="cmf.AddPortalContent" />
   <browser:page name="kiestra-copy" for="Products.CMFCore.interfaces.ISiteRoot" class=".kiestra.views.KiestraCopyView" permission="cmf.AddPortalContent" />
+  <browser:page name="view" for="imi.migration.content.IKiestraWorkDay" class=".kiestra.views.KiestraDayView" permission="cmf.ModifyPortalContent" />
   <browser:page name="kiestra-day" for="imi.migration.content.IKiestraWorkDay" class=".kiestra.views.KiestraDayView" permission="cmf.ModifyPortalContent" />
   <browser:page name="kiestra-edit" for="imi.migration.content.IKiestraWorkDay" class=".kiestra.views.KiestraEditView" permission="cmf.ModifyPortalContent" />
   <browser:page name="edit" for="imi.migration.content.IKiestraWorkDay" class=".kiestra.views.KiestraEditView" permission="cmf.ModifyPortalContent" />
