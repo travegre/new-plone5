@@ -1,0 +1,12 @@
+.imi-date-wrapper{position:relative;display:inline-flex;align-items:center;vertical-align:middle;gap:3px}
+.imi-date-original{display:none!important}
+.imi-date-display{width:135px!important;max-width:100%;box-sizing:border-box}
+.imi-date-trigger{cursor:pointer;padding:5px 9px;border:1px solid #aaa;border-radius:3px;background:#f7f7f7;color:#222}
+.imi-calendar-popup{position:absolute;top:100%;left:0;z-index:10000;width:270px;padding:10px;background:white;color:#222;border:1px solid #bbb;border-radius:5px;box-shadow:0 5px 16px #0003;box-sizing:border-box;font:14px Arial,sans-serif}
+.imi-calendar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.imi-calendar-head button{font-size:22px;border:0;background:transparent;cursor:pointer;color:#222}
+.imi-calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.imi-calendar-weekday{font-weight:bold;padding:5px 0}
+.imi-calendar-grid button{border:0;background:#f4f4f4;color:#222;padding:7px 0;cursor:pointer;border-radius:3px}
+.imi-calendar-grid button:hover,.imi-calendar-grid .imi-calendar-selected{background:#176da5;color:white}
+.imi-calendar-grid button:disabled{opacity:.3;cursor:not-allowed}
