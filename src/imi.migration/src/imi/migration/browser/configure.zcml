@@ -56,6 +56,7 @@
   <browser:page name="view" for="imi.migration.content.IReplacementDay" class=".nadomescanja.views.ReplacementDayView" permission="zope.Public" />
 
   <!-- Nadomeščanja -->
+  <browser:page name="edit" for="imi.migration.content.IReplacementLaboratory" class=".nadomescanja.laboratory_edit.ReplacementLaboratoryEditView" permission="cmf.ModifyPortalContent" />
   <browser:page name="nadomescanja-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".common.home.SiteHomeView" permission="zope.Public" />
   <browser:page name="nadomescanja-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".nadomescanja.views.ReplacementsPublicView" permission="zope.Public" />
   <browser:page name="nadomescanja-admin" for="Products.CMFCore.interfaces.ISiteRoot" class=".nadomescanja.views.ReplacementsAdminView" permission="cmf.ModifyPortalContent" />
