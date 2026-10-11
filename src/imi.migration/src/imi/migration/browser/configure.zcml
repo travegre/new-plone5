@@ -3,6 +3,10 @@
     xmlns:browser="http://namespaces.zope.org/browser">
 
   <!-- Dežurstva -->
+  <browser:page name="edit" for="imi.migration.content.IDutyRosterDay" class=".dezurstva.cards.DutyCardsEdit" permission="cmf.ModifyPortalContent" />
+  <browser:page name="duty-cards-edit" for="imi.migration.content.IDutyRosterDay" class=".dezurstva.cards.DutyCardsEdit" permission="cmf.ModifyPortalContent" />
+  <browser:page name="view" for="imi.migration.content.IDutyRosterDay" class=".dezurstva.cards.DutyCardsView" permission="zope2.View" />
+
   <browser:page name="dezurstva-home" for="Products.CMFCore.interfaces.ISiteRoot" class=".common.home.SiteHomeView" permission="zope.Public" />
   <browser:page name="dezurstva-public" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.views.DutyPublicView" permission="zope.Public" />
   <browser:page name="dezurstva-izvoz" for="Products.CMFCore.interfaces.ISiteRoot" class=".dezurstva.duty_compat.DutyExportView" permission="zope2.View" />
