@@ -23,7 +23,7 @@
     </script>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-        if (!/^\/preiskave(?:\/|$)/.test(window.location.pathname)) {
+        if (!/^\/(?:portal|dezurstva|kiestra|preiskave|nadomescanja)(?:\/|$)/.test(window.location.pathname)) {
           return;
         }
         var logo = document.querySelector('#portal-logo');
