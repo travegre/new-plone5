@@ -1,6 +1,24 @@
 /* Initialize Kiestra employee selectors after Plone's Select2 becomes available. */
 (function () {
   'use strict';
+  // Plone's delegated click handlers can intercept the small Select2 remove X.
+  // Handle that control in capture phase, before those handlers run.
+  document.addEventListener('click', function (event) {
+    var remove = event.target.closest && event.target.closest(
+      '.kiestra-editor .select2-selection__choice__remove'
+    );
+    if (!remove) return;
+    var selection = remove.closest('.select2-container');
+    var select = selection && selection.previousElementSibling;
+    if (!select || !select.classList.contains('kiestra-staff-select')) return;
+    var choice = remove.closest('.select2-selection__choice');
+    var id = choice && choice.getAttribute('data-select2-id');
+    var $ = window.jQuery;
+    if (!$ || !$.fn || !$.fn.select2) return;
+    // Let Select2 itself process the removal, but keep unrelated delegated
+    // document handlers from interfering with the mouse click.
+    event.stopPropagation();
+  }, true);
   var attempts = 0;
   var timer = null;
 
