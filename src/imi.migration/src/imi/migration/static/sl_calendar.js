@@ -65,6 +65,7 @@
   }
   function enhance(original) {
     if(original.dataset.imiCalendar || original.disabled)return;
+    if (!original.value) original.value=iso(new Date());
     original.dataset.imiCalendar='1';
     original.dataset.imiCalendarId='imi-date-'+(++calendarCounter);
     var wrapper=document.createElement('span');wrapper.className='imi-date-wrapper';
