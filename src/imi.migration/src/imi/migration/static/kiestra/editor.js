@@ -44,6 +44,22 @@
     $(select).trigger('change');
   }, true);
 
+  function slovenianKey(value) {
+    return String(value || '').toLocaleLowerCase().replace(/č/g, 'c~')
+      .replace(/š/g, 's~').replace(/ž/g, 'z~');
+  }
+
+  function sortStaffOptions(select) {
+    // Select2 3.x reads the underlying <option> order at initialization.
+    var options = Array.prototype.slice.call(select.options);
+    options.sort(function (a, b) {
+      var aa = slovenianKey(a.text || '');
+      var bb = slovenianKey(b.text || '');
+      return aa < bb ? -1 : (aa > bb ? 1 : 0);
+    });
+    options.forEach(function (option) { select.appendChild(option); });
+  }
+
   var attempts = 0;
   var timer = null;
 
@@ -61,6 +77,7 @@
 
       // The server already supplies alphabetically sorted employee options.
       // Reordering DOM options on each attempt caused an initialization error.
+      sortStaffOptions(select);
       $(select).select2({
         width: '100%',
         placeholder: 'Izberite osebe',
