@@ -246,6 +246,26 @@ class KiestraCopyView(BrowserView):
         return ''
 
 
+class KiestraDayView(BrowserView):
+    """Administrative view of one Kiestra roster day."""
+    template = ViewPageTemplateFile('kiestra_day.pt')
+
+    def __call__(self):
+        return self.template()
+
+    def fields(self):
+        rows = []
+        for field, note_field, label in KIESTRA_EDIT_FIELDS:
+            ids = getattr(self.context, field, ()) or ()
+            rows.append({'label': label,
+                         'people': [staff_title(self.context, str(value)) for value in ids],
+                         'note': str(getattr(self.context, note_field, '') or '')})
+        return rows
+
+    def constant_text(self):
+        return rich(getattr(self.context, 'stalni_tekst', None))
+
+
 class KiestraEditView(BrowserView):
     template = ViewPageTemplateFile('kiestra_edit.pt')
 
@@ -255,13 +275,8 @@ class KiestraEditView(BrowserView):
         self.request.response.setHeader('Pragma', 'no-cache')
         if self.request.method == 'POST':
             self.save()
-            portal = sibling_site(self.context, 'kiestra')
-            if portal is None:
-                raise ValueError('Kiestra site not found')
-            day_id = self.context.getId()
             self.request.response.redirect(
-                portal.absolute_url() + '/@@kiestra-public?datum=' + day_id,
-                status=303)
+                self.context.absolute_url() + '/@@kiestra-day', status=303)
             return ''
         return self.template()
 
