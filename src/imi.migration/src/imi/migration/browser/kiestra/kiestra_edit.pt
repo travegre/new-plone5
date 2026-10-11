@@ -7,13 +7,12 @@
     <div class="kiestra-editor-grid">
       <section class="kiestra-editor-field" tal:repeat="row view/fields">
         <h3 tal:content="row/label">Polje</h3>
-        <input class="staff-filter" type="search" placeholder="Filtriraj osebe" tal:attributes="data-target string:kiestra-${row/field}" />
-        <select multiple="multiple" size="8" tal:attributes="name row/field; id string:kiestra-${row/field}">
+        <select class="kiestra-staff-select" multiple="multiple" size="8" tal:attributes="name row/field; id string:kiestra-${row/field}">
           <option tal:repeat="option view/staff_options"
                   tal:attributes="value python:option[0]; selected python:option[0] in row['selected']"
                   tal:content="python:option[1]">Ime</option>
         </select>
-        <label>Opomba</label><input type="text" tal:attributes="name row/note_field; value row/note" />
+        <label class="kiestra-note-label">Opomba</label><input type="text" tal:attributes="name row/note_field; value row/note" />
       </section>
     </div>
     <div class="kiestra-constant"><label for="stalni_tekst">Stalni tekst</label><textarea id="stalni_tekst" name="stalni_tekst" rows="8" tal:content="view/constant_text"></textarea></div>
