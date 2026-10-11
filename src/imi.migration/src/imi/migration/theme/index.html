@@ -21,6 +21,25 @@
         });
       });
     </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        if (!/^\/preiskave(?:\/|$)/.test(window.location.pathname)) {
+          return;
+        }
+        var logo = document.querySelector('#portal-logo');
+        if (!logo) {
+          return;
+        }
+        var img = logo.querySelector('img');
+        if (!img) {
+          img = document.createElement('img');
+          logo.textContent = '';
+          logo.appendChild(img);
+        }
+        img.src = '/preiskave/++resource++imi.migration/logo.png';
+        img.alt = 'IMI';
+      });
+    </script>
     <link rel="shortcut icon" type="image/x-icon"
           href="/++theme++barceloneta/barceloneta-favicon.ico" />
     <link rel="apple-touch-icon"
