@@ -285,7 +285,7 @@ class KiestraEditView(BrowserView):
         if self.request.method == 'POST':
             self.save()
             self.request.response.redirect(
-                self.context.absolute_url() + '/@@kiestra-day', status=303)
+                self.context.absolute_url(), status=303)
             return ''
         return self.template()
 
