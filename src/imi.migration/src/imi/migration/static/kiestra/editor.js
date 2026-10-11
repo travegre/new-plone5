@@ -36,24 +36,4 @@
     setup();
   }
   window.addEventListener('load', setup);
-  // Plone can inject editor markup without a document reload. Scripts inside
-  // injected fragments are not guaranteed to execute, so initialize new cards
-  // whenever the content region is replaced.
-  function watch() {
-    if (!window.MutationObserver || !document.body) return;
-    var observer = new MutationObserver(function (mutations) {
-      for (var i = 0; i < mutations.length; i++) {
-        if (mutations[i].addedNodes.length) {
-          setup();
-          break;
-        }
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', watch);
-  } else {
-    watch();
-  }
 })();
