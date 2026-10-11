@@ -4,6 +4,8 @@ from datetime import datetime
 from datetime import timedelta
 from io import BytesIO
 
+from ..common.helpers import slovenian_sort_key
+
 from plone import api
 from Products.Five import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
@@ -212,7 +214,7 @@ class DutyPublicView(BrowserView):
                 continue
             employee_id = str(employee.getId())
             result.append((employee_id, employee.Title() or employee_id))
-        return sorted(result, key=lambda item: item[1].lower())
+        return sorted(result, key=lambda item: slovenian_sort_key(item[1]))
 
     def selected_person(self):
         return str(self.request.form.get('oseba') or '')
