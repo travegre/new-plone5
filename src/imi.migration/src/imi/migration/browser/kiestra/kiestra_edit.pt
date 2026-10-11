@@ -1,8 +1,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal" metal:use-macro="context/main_template/macros/master">
 <body><metal:main fill-slot="main">
   <h1>Uredi dežurstvo</h1><h2 tal:content="context/Title">Datum</h2>
-  <link rel="stylesheet" tal:attributes="href string:${context/portal_url}/++resource++imi.migration/kiestra/editor.css?v=20261011-4" />
-  <script tal:attributes="src string:${context/portal_url}/++resource++imi.migration/kiestra/editor.js?v=20261011-4"></script>
+  <link rel="stylesheet" tal:attributes="href string:${context/portal_url}/++resource++imi.migration/kiestra/editor.css?v=20261011-5" />
+  <script tal:attributes="src string:${context/portal_url}/++resource++imi.migration/kiestra/editor.js?v=20261011-5"></script>
   <form method="post" class="kiestra-editor" tal:attributes="action string:${context/absolute_url}/@@kiestra-edit">
     <div class="kiestra-editor-grid">
       <section class="kiestra-editor-field" tal:repeat="row view/fields">
