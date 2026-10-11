@@ -4,6 +4,12 @@
   function setup() {
     document.querySelectorAll('.kiestra-editor .kiestra-staff-select').forEach(function (select) {
       if (select.dataset.imiStaffReady) return;
+      // Sort available employees alphabetically in the dropdown, irrespective of stored order.
+      var options = Array.prototype.slice.call(select.options);
+      options.sort(function (a, b) {
+        return a.textContent.localeCompare(b.textContent, 'sl', { sensitivity: 'base' });
+      });
+      options.forEach(function (option) { select.appendChild(option); });
       var $ = window.jQuery;
       if ($ && $.fn && $.fn.select2) {
         select.dataset.imiStaffReady = '1';
