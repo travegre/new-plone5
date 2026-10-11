@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Small helpers genuinely shared by the five browser applications."""
 from datetime import date, datetime, timedelta
+import unicodedata
 
 from plone import api
 
@@ -73,10 +74,24 @@ def staff_title(context, identifier):
     return employee.Title() if employee is not None else str(identifier or '')
 
 
+def slovenian_sort_key(value):
+    """Sort č after c, š after s and ž after z, without OS locale settings."""
+    text = (value or u'').lower()
+    key = []
+    for char in text:
+        if char in (u'č', u'š', u'ž'):
+            key.append({u'č': u'c~', u'š': u's~', u'ž': u'z~'}[char])
+        else:
+            normalized = unicodedata.normalize('NFD', char)
+            key.append(u''.join(c for c in normalized
+                                if not unicodedata.combining(c)))
+    return u''.join(key)
+
+
 def staff_options(context):
     items = [(employee_id(employee), employee.Title() or employee_id(employee))
              for employee in staff_objects(context)]
-    return sorted(items, key=lambda item: item[1].lower())
+    return sorted(items, key=lambda item: slovenian_sort_key(item[1]))
 
 
 def parse_date(value, default_today=False):
