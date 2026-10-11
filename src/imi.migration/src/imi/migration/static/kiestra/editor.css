@@ -9,3 +9,8 @@
 .kiestra-constant textarea { width:100%; box-sizing:border-box; }
 .formControls { margin-top:25px; }
 @media (max-width:900px) { .kiestra-editor-grid { grid-template-columns:1fr; } }
+
+
+input[type="date"] {
+    width: auto;
+}

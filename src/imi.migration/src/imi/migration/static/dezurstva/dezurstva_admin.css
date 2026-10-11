@@ -77,3 +77,7 @@
         width: 100%;
     }
 }
+
+input[type="date"] {
+    width: auto;
+}
