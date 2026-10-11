@@ -4,6 +4,7 @@
   var months = ['januar','februar','marec','april','maj','junij','julij','avgust','september','oktober','november','december'];
   var weekdays = ['Po','To','Sr','Če','Pe','So','Ne'];
   var active = null;
+  var calendarCounter = 0;
   function pad(n) { return String(n).padStart(2, '0'); }
   function iso(d) { return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
   function display(s) { var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(s || ''); return m ? m[3]+'.'+m[2]+'.'+m[1] : ''; }
@@ -14,6 +15,13 @@
     return d.getFullYear()===y && d.getMonth()===mo-1 && d.getDate()===day ? d : null;
   }
   function close() { if(active) { active.remove(); active=null; } }
+  function position(panel, anchor) {
+    var rect=anchor.getBoundingClientRect(), width=270, height=305;
+    var left=Math.max(8,Math.min(rect.left,window.innerWidth-width-8));
+    var top=rect.bottom+5;
+    if(top+height>window.innerHeight && rect.top>height)top=rect.top-height-5;
+    panel.style.left=left+'px';panel.style.top=Math.max(8,top)+'px';
+  }
   function render(panel, input, original, year, month) {
     panel.textContent = '';
     var head=document.createElement('div'); head.className='imi-calendar-head';
@@ -42,7 +50,8 @@
     for(var day=1;day<=length;day++){
       (function(day){
         var d=new Date(year,month,day), b=document.createElement('button');b.type='button';b.textContent=day;
-        if(iso(d)===original.value)b.className='imi-calendar-selected';
+        var today=iso(new Date());
+        if(iso(d)===(original.value || today))b.className='imi-calendar-selected';
         if((original.min && iso(d)<original.min)||(original.max && iso(d)>original.max))b.disabled=true;
         b.addEventListener('click',function(){
           original.value=iso(d);input.value=display(original.value);input.setCustomValidity('');
@@ -57,6 +66,7 @@
   function enhance(original) {
     if(original.dataset.imiCalendar || original.disabled)return;
     original.dataset.imiCalendar='1';
+    original.dataset.imiCalendarId='imi-date-'+(++calendarCounter);
     var wrapper=document.createElement('span');wrapper.className='imi-date-wrapper';
     var input=document.createElement('input');input.type='text';input.className=(original.className || '')+' imi-date-display';
     input.placeholder='DD.MM.LLLL';input.setAttribute('aria-label',original.getAttribute('aria-label') || 'Datum (DD.MM.LLLL)');
@@ -77,9 +87,11 @@
     input.addEventListener('blur',function(){sync();if(original.value)input.value=display(original.value);});
     original.addEventListener('change',function(){input.value=display(original.value);input.setCustomValidity('');});
     button.addEventListener('click',function(e){
-      e.stopPropagation();if(active && active.parentNode===wrapper){close();return;}close();
+      e.stopPropagation();if(active && active.dataset.owner===original.dataset.imiCalendarId){close();return;}close();
       var panel=document.createElement('div');panel.className='imi-calendar-popup';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Izbira datuma');
-      wrapper.appendChild(panel);active=panel;
+      panel.dataset.owner=original.dataset.imiCalendarId;
+      document.body.appendChild(panel);active=panel;
+      position(panel,button);
       // Keep calendar navigation clicks from triggering document or Plone handlers.
       panel.addEventListener('click',function(event){event.stopPropagation();});
       panel.addEventListener('mousedown',function(event){event.stopPropagation();});
@@ -90,8 +102,12 @@
       sync();if(!input.checkValidity()){e.preventDefault();input.reportValidity();}
     });
   }
-  document.addEventListener('click',function(e){if(active && (!active.isConnected || !active.contains(e.target) && !active.parentNode.contains(e.target)))close();});
+  document.addEventListener('click',function(e){
+    if(active && !active.contains(e.target) && !e.target.closest('.imi-date-trigger'))close();
+  });
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+  window.addEventListener('resize',close);
+  window.addEventListener('scroll',close,true);
   function init(){document.querySelectorAll('input[type="date"]:not([data-imi-calendar])').forEach(enhance);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
   new MutationObserver(function(){init();}).observe(document.documentElement,{childList:true,subtree:true});
