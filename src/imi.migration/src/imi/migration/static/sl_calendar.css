@@ -10,3 +10,7 @@
 .imi-calendar-grid button{border:0;background:#f4f4f4;color:#222;padding:7px 0;cursor:pointer;border-radius:3px}
 .imi-calendar-grid button:hover,.imi-calendar-grid .imi-calendar-selected{background:#176da5;color:white}
 .imi-calendar-grid button:disabled{opacity:.3;cursor:not-allowed}
+
+.imi-calendar-caption{display:flex;align-items:center;gap:7px}
+.imi-calendar-year{width:78px!important;min-width:78px;max-width:78px;padding:3px;font-size:14px;color:#222;background:#fff;border:1px solid #aaa;border-radius:3px}
+.imi-calendar-head button{min-width:30px;min-height:30px}
