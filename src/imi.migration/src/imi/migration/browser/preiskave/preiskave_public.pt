@@ -35,9 +35,21 @@
     <tal:all condition="python:view.mode_key() == 'all'">
       <h1>Preiskave</h1>
       <div class="search-choice-grid slikce_filtrov row legacy-preiskave-launch">
-        <a tal:repeat="item view/launch_items" tal:attributes="class python:'search-opcija ' + item[0]; href python:item[2]">
-          <img class="search-choice-image" tal:attributes="src python:view.portal.absolute_url() + '/++resource++imi.migration/' + item[3]" alt="" />
-          <p tal:content="python:item[1]">Iskanje</p>
+        <a class="search-opcija quick" href="/preiskave/preiskave-1/hitro-iskanje">
+          <img class="search-choice-image" alt="" src="/preiskave/++resource++imi.migration/search-quick.png">
+          <p>Hitro iskanje</p>
+        </a>
+        <a class="search-opcija areas" href="/preiskave/preiskave-1/preiskave-po-podrocjih">
+          <img class="search-choice-image" alt="" src="/preiskave/++resource++imi.migration/search-podrocja.png">
+          <p>Po področjih</p>
+        </a>
+        <a class="search-opcija samples" href="/preiskave/preiskave-1/preiskave-po-vzorcih">
+          <img class="search-choice-image" alt="" src="/preiskave/++resource++imi.migration/search-vzorci.png">
+          <p>Po vzorcih</p>
+        </a>
+        <a class="search-opcija labs" href="/preiskave/preiskave-1/preiskave-po-laboratorijih">
+          <img class="search-choice-image" alt="" src="/preiskave/++resource++imi.migration/search-lab.png">
+          <p>Po laboratorijih</p>
         </a>
       </div>
     </tal:all>
