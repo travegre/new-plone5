@@ -1,50 +1,47 @@
 /* Initialize Kiestra employee selectors after Plone's Select2 becomes available. */
 (function () {
   'use strict';
-  // In the Plone toolbar, the first mouse press on a Select2 choice's X
-  // can be consumed by focus/dropdown handlers. Remove that choice directly
-  // on the first pointer press instead of relying on Select2's click handler.
+  // Plone ships Select2 3.x, whose multi-choice remove button is an <a>
+  // inside .select2-search-choice (not Select2 4's choice__remove).
+  // Remove the corresponding selected option on the first mouse press.
   document.addEventListener('mousedown', function (event) {
     if (event.button !== 0) return;
     var target = event.target;
     var remove = target.closest && target.closest(
-      '.kiestra-editor .select2-selection__choice__remove'
+      '.kiestra-editor .select2-search-choice-close'
     );
     if (!remove) return;
-    var choice = remove.closest('.select2-selection__choice');
-    var container = remove.closest('.select2-container');
-    var select = container && container.previousElementSibling;
-    if (!choice || !select || !select.classList.contains('kiestra-staff-select')) return;
+    var choice = remove.closest('.select2-search-choice');
+    var container = remove.closest('.select2-container-multi');
+    var select = container && container.nextElementSibling;
+    if (!choice || !select || select.tagName !== 'SELECT' ||
+        !select.classList.contains('kiestra-staff-select')) return;
     var $ = window.jQuery;
     if (!$ || !$.fn || !$.fn.select2) return;
 
-    var data = $(choice).data('data');
-    if (!data && $.fn.select2.amd) {
-      try {
-        var utils = $.fn.select2.amd.require('select2/utils');
-        data = utils.GetData(choice, 'data');
-      } catch (error) { /* Older Select2 stores data on the jQuery node. */ }
+    // Select2 3.x stores its choice data with jQuery.
+    var data = $(choice).data('select2-data') || $(choice).data('data');
+    var id = data && data.id != null ? String(data.id) : null;
+    if (id === null) {
+      // Fallback for versions which keep the choice data privately:
+      // match the visible employee label to its option.
+      var label = choice.querySelector('div');
+      var name = label && label.textContent.trim();
+      Array.prototype.some.call(select.options, function (option) {
+        if (option.selected && option.textContent.trim() === name) {
+          id = option.value;
+          return true;
+        }
+        return false;
+      });
     }
-    if (!data || data.id == null) return;
+    if (id === null) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    var id = String(data.id);
     Array.prototype.forEach.call(select.options, function (option) {
       if (option.value === id) option.selected = false;
     });
     $(select).trigger('change');
-    // Suppress the subsequent click; the mousedown already removed the choice.
-    remove.dataset.imiRemoved = '1';
-  }, true);
-  document.addEventListener('click', function (event) {
-    var target = event.target;
-    var remove = target.closest && target.closest(
-      '.kiestra-editor .select2-selection__choice__remove'
-    );
-    if (remove && remove.dataset.imiRemoved === '1') {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-    }
   }, true);
 
   var attempts = 0;
