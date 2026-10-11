@@ -257,8 +257,17 @@ class KiestraDayView(BrowserView):
         rows = []
         for field, note_field, label in KIESTRA_EDIT_FIELDS:
             ids = getattr(self.context, field, ()) or ()
+            # Resolve saved employee IDs against the shared Dežurstva directory.
+            # As in the public roster, never display raw numeric IDs.
+            people = []
+            for value in ids:
+                employee = employee_by_id(self.context, str(value))
+                if employee is not None:
+                    name = (employee.Title() or '').strip()
+                    if name:
+                        people.append(name)
             rows.append({'label': label,
-                         'people': [staff_title(self.context, str(value)) for value in ids],
+                         'people': people,
                          'note': str(getattr(self.context, note_field, '') or '')})
         return rows
 
