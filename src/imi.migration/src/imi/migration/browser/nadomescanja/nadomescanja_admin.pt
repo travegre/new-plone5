@@ -55,11 +55,10 @@
 
       <h2>Laboratoriji in privzeti vodje</h2>
       <table class="listing nadomescanja-editor-table">
-        <thead><tr><th>Laboratorij</th><th>Okrajšava</th><th>Privzeti vodja</th><th></th></tr></thead>
+        <thead><tr><th>Laboratorij</th><th>Privzeti vodja</th><th></th></tr></thead>
         <tbody>
           <tr tal:repeat="lab view/admin_laboratories">
             <td tal:content="lab/title">Lab</td>
-            <td tal:content="lab/abbreviation">LAB</td>
             <td tal:content="lab/leader">Vodja</td>
             <td><a tal:attributes="href string:${lab/url}/edit">Uredi</a></td>
           </tr>
