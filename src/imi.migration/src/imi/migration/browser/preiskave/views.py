@@ -151,5 +151,15 @@ class ExaminationAdminProxyView(ExaminationPublicProxyView):
 class ExamsAdminView(BaseExamsHomeView):
     template = ViewPageTemplateFile('preiskave_admin.pt')
 
+    def subfolders(self):
+        """Direct child folders for the admin landing page."""
+        catalog = api.portal.get_tool('portal_catalog')
+        site = api.portal.get()
+        brains = catalog(path={'query': '/'.join(site.getPhysicalPath()),
+                               'depth': 1}, portal_type='Folder',
+                         sort_on='sortable_title')
+        return [{'url': brain.getURL(), 'title': brain.Title or brain.getId}
+                for brain in brains]
+
     def __call__(self):
         return self.template()
