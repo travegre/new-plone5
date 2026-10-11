@@ -1,0 +1,26 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal" metal:use-macro="context/main_template/macros/master">
+<body>
+<metal:title fill-slot="content-title"><h1 class="documentFirstHeading">Uredi IMI Duty Roster Day – <span tal:replace="context/Title">Datum</span></h1></metal:title>
+<metal:core fill-slot="content-core">
+<link rel="stylesheet" tal:attributes="href string:${context/portal_url}/++resource++imi.migration/kiestra/editor.css?v=20261011-11" />
+<script tal:attributes="src string:${context/portal_url}/++resource++imi.migration/kiestra/editor.js?v=20261011-11"></script>
+<form method="post" class="kiestra-editor" tal:attributes="action string:${context/absolute_url}/@@duty-cards-edit">
+<div tal:repeat="group view/groups">
+<h2 tal:content="group/heading">Skupina</h2>
+<div class="kiestra-editor-grid">
+<section class="kiestra-editor-field" tal:repeat="row group/rows">
+<h3 tal:content="row/label">Polje</h3>
+<select class="kiestra-staff-select" multiple="multiple" size="8" tal:attributes="name row/field; id string:duty-${row/field}">
+<option tal:repeat="option python:view.options_for(row)" tal:attributes="value python:option[0]; selected python:option[0] in row['selected']" tal:content="python:option[1]">Oseba</option>
+</select>
+</section>
+</div>
+</div>
+<div class="kiestra-constant">
+<label for="intervencijska_skupina_telefon">Intervencijska skupina – telefon</label>
+<input type="text" id="intervencijska_skupina_telefon" name="intervencijska_skupina_telefon" tal:attributes="value view/intervention_phone" />
+<p><label><input type="checkbox" name="klukca" value="1" tal:attributes="checked python:view.copy_week() and 'checked' or None" /> Kopiraj to stanje pripravljenosti na cel tekoči teden</label></p>
+</div>
+<div class="formControls"><input class="btn btn-primary" type="submit" value="Shrani" /> <a class="btn btn-default" tal:attributes="href string:${context/portal_url}/@@dezurstva-admin">Nazaj</a></div>
+</form>
+</metal:core></body></html>
