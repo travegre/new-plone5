@@ -1,15 +1,32 @@
+/* Match the standard Dežurstva multi-person editor, retaining Kiestra cards. */
 (function () {
   'use strict';
-  document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.staff-filter[data-target]').forEach(function (input) {
-      var select = document.getElementById(input.getAttribute('data-target'));
-      if (!select) { return; }
-      input.addEventListener('input', function () {
-        var needle = input.value.toLowerCase();
-        Array.prototype.forEach.call(select.options, function (option) {
-          option.hidden = needle && option.text.toLowerCase().indexOf(needle) === -1 && !option.selected;
+  function setup() {
+    document.querySelectorAll('.kiestra-editor .kiestra-staff-select').forEach(function (select) {
+      if (select.dataset.imiStaffReady) return;
+      var $ = window.jQuery;
+      if ($ && $.fn && $.fn.select2) {
+        select.dataset.imiStaffReady = '1';
+        $(select).select2({
+          width: '100%',
+          placeholder: 'Izberite osebe',
+          allowClear: true,
+          closeOnSelect: false,
+          language: {
+            noResults: function () { return 'Ni zadetkov'; },
+            searching: function () { return 'Iskanje …'; }
+          }
         });
-      });
+      } else {
+        // Keep the native multiple-selection widget usable if Select2 is absent.
+        select.classList.add('kiestra-native-select');
+      }
     });
-  });
-}());
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+  window.addEventListener('load', setup);
+})();
