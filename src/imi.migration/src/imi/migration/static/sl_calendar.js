@@ -23,7 +23,16 @@
       head.appendChild(b);
     }
     nav('‹',-1);
-    var caption=document.createElement('strong');caption.textContent=months[month]+' '+year;head.appendChild(caption);
+    var caption=document.createElement('span');caption.className='imi-calendar-caption';
+    var monthLabel=document.createElement('strong');monthLabel.textContent=months[month];caption.appendChild(monthLabel);
+    var yearSelect=document.createElement('select');yearSelect.className='imi-calendar-year';yearSelect.setAttribute('aria-label','Leto');
+    for(var y=year-20;y<=year+20;y++){
+      var option=document.createElement('option');option.value=String(y);option.textContent=String(y);
+      if(y===year)option.selected=true;
+      yearSelect.appendChild(option);
+    }
+    yearSelect.addEventListener('change',function(e){e.stopPropagation();render(panel,input,original,+yearSelect.value,month);});
+    caption.appendChild(yearSelect);head.appendChild(caption);
     nav('›',1);panel.appendChild(head);
     var grid=document.createElement('div');grid.className='imi-calendar-grid';
     weekdays.forEach(function(w){var c=document.createElement('span');c.className='imi-calendar-weekday';c.textContent=w;grid.appendChild(c);});
@@ -71,6 +80,9 @@
       e.stopPropagation();if(active && active.parentNode===wrapper){close();return;}close();
       var panel=document.createElement('div');panel.className='imi-calendar-popup';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Izbira datuma');
       wrapper.appendChild(panel);active=panel;
+      // Keep calendar navigation clicks from triggering document or Plone handlers.
+      panel.addEventListener('click',function(event){event.stopPropagation();});
+      panel.addEventListener('mousedown',function(event){event.stopPropagation();});
       var d=parse(input.value) || (original.value && parse(display(original.value))) || new Date();
       render(panel,input,original,d.getFullYear(),d.getMonth());
     });
@@ -78,7 +90,7 @@
       sync();if(!input.checkValidity()){e.preventDefault();input.reportValidity();}
     });
   }
-  document.addEventListener('click',function(e){if(active && !active.parentNode.contains(e.target))close();});
+  document.addEventListener('click',function(e){if(active && (!active.isConnected || !active.contains(e.target) && !active.parentNode.contains(e.target)))close();});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
   function init(){document.querySelectorAll('input[type="date"]:not([data-imi-calendar])').forEach(enhance);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
