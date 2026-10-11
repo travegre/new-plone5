@@ -10,6 +10,9 @@
 
     <metal:core fill-slot="content-core">
       <div tal:define="site python:context.portal_url.getPortalObject()">
+      <link rel="stylesheet" tal:attributes="href string:${site/absolute_url}/++resource++imi.migration/sl_calendar.css" />
+  <script tal:attributes="src string:${site/absolute_url}/++resource++imi.migration/sl_calendar.js"></script>
+  
         <link rel="stylesheet" tal:attributes="href string:${site/absolute_url}/++resource++imi.migration/dezurstva/dezurstva_admin.css" />
         <script tal:attributes="src string:${site/absolute_url}/++resource++imi.migration/dezurstva/dezurstva_admin.js"></script>
         
