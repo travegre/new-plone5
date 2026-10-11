@@ -4,6 +4,8 @@
 Keep the legacy roster's stored employee IDs and field semantics intact.
 """
 from plone import api
+from zope.event import notify
+from zope.lifecycleevent import ObjectModifiedEvent
 from Products.Five import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
@@ -86,5 +88,6 @@ class DutyCardsEdit(DutyCardsBase):
         self.context.intervencijska_skupina_telefon = str(
             request.get('intervencijska_skupina_telefon') or '')
         self.context.klukca = bool(request.get('klukca'))
+        notify(ObjectModifiedEvent(self.context))
         self.context.reindexObject()
         api.portal.show_message(u'Dežurstvo je shranjeno.', request=self.request)
