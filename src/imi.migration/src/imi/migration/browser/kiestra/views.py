@@ -14,6 +14,7 @@ from ..common.helpers import parse_date
 from ..common.helpers import rich
 from ..common.helpers import staff_options
 from ..common.helpers import staff_title
+from ..common.helpers import sibling_site
 
 
 KIESTRA_FIELDS = (
@@ -249,12 +250,18 @@ class KiestraEditView(BrowserView):
     template = ViewPageTemplateFile('kiestra_edit.pt')
 
     def __call__(self):
+        # Do not reuse an old edit form when navigating back to this date.
+        self.request.response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
+        self.request.response.setHeader('Pragma', 'no-cache')
         if self.request.method == 'POST':
             self.save()
-            portal = api.portal.get()
+            portal = sibling_site(self.context, 'kiestra')
+            if portal is None:
+                raise ValueError('Kiestra site not found')
             day_id = self.context.getId()
             self.request.response.redirect(
-                portal.absolute_url() + '/@@kiestra-public?datum=' + day_id)
+                portal.absolute_url() + '/@@kiestra-public?datum=' + day_id,
+                status=303)
             return ''
         return self.template()
 
