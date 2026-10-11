@@ -1,47 +1,45 @@
-/* Match the standard Dežurstva multi-person editor, retaining Kiestra cards. */
+/* Initialize Kiestra employee selectors after Plone's Select2 becomes available. */
 (function () {
   'use strict';
-  function setup() {
-    document.querySelectorAll('.kiestra-editor .kiestra-staff-select').forEach(function (select) {
-      if (select.dataset.imiStaffReady) return;
-      // Sort available employees alphabetically in the dropdown, irrespective of stored order.
-      var options = Array.prototype.slice.call(select.options);
-      options.sort(function (a, b) {
-        return a.textContent.localeCompare(b.textContent, 'sl', { sensitivity: 'base' });
-      });
-      options.forEach(function (option) { select.appendChild(option); });
-      var $ = window.jQuery;
-      if ($ && $.fn && $.fn.select2) {
-        $(select).select2({
-          width: '100%',
-          placeholder: 'Izberite osebe',
-          allowClear: true,
-          closeOnSelect: false,
-          language: {
-            noResults: function () { return 'Ni zadetkov'; },
-            searching: function () { return 'Iskanje …'; }
-          }
-        });
-        select.dataset.imiStaffReady = '1';
-      } else {
-        // Keep the native multiple-selection widget usable if Select2 is absent.
-        select.classList.add('kiestra-native-select');
-      }
-    });
-  }
-  // Plone may load Select2 after DOMContentLoaded. Retry only until it is
-  // available, with a bounded number of attempts and no DOM observer.
   var attempts = 0;
+  var timer = null;
+
+  function setup() {
+    var selects = document.querySelectorAll('.kiestra-editor .kiestra-staff-select');
+    if (!selects.length) return true;
+
+    var $ = window.jQuery;
+    if (!$ || !$.fn || typeof $.fn.select2 !== 'function') return false;
+
+    for (var i = 0; i < selects.length; i++) {
+      var select = selects[i];
+      if (select.dataset.imiStaffReady === '1' ||
+          select.classList.contains('select2-hidden-accessible')) continue;
+
+      // The server already supplies alphabetically sorted employee options.
+      // Reordering DOM options on each attempt caused an initialization error.
+      $(select).select2({
+        width: '100%',
+        placeholder: 'Izberite osebe',
+        allowClear: true,
+        closeOnSelect: false
+      });
+      select.dataset.imiStaffReady = '1';
+      select.classList.remove('kiestra-native-select');
+    }
+    return true;
+  }
+
   function initializeWhenReady() {
-    setup();
-    var pending = document.querySelectorAll(
-      '.kiestra-editor .kiestra-staff-select:not(.select2-hidden-accessible)'
-    );
-    if (pending.length && !(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2)
-        && attempts++ < 40) {
-      window.setTimeout(initializeWhenReady, 150);
+    if (timer !== null) {
+      window.clearTimeout(timer);
+      timer = null;
+    }
+    if (!setup() && attempts++ < 40) {
+      timer = window.setTimeout(initializeWhenReady, 150);
     }
   }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeWhenReady);
   } else {
