@@ -16,7 +16,8 @@
   </script>
   <link rel="stylesheet" tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/sl_calendar.css" />
   <script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/sl_calendar.js"></script>
-  </head>
+    <script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/staff_sort.js?v=20261011-1"></script>
+</head>
 <body class="imi-kiestra-public">
 <div id="last-change" tal:condition="view/last_change">Zadnja sprememba: <span tal:replace="view/last_change">datum</span></div>
 <div id="okolo"><div id="okol">
@@ -42,7 +43,7 @@
     <p tal:condition="not:view/day_object">Razpored za ta datum še ni določen.</p>
     <div class="legacy-utility-row">
       <div class="legacy-half left"><form method="get" tal:attributes="action context/absolute_url"><p>Prikaži razpored na izbrani datum: </p><input name="datum" type="date" lang="sl-SI" tal:attributes="value view/selected_date_id" /><input type="submit" value="Prikaži" /></form></div>
-      <div class="legacy-half right"><form method="get" tal:attributes="action context/absolute_url"><p>Prikaži vsa dežurstva za osebo:</p><select name="oseba" id="oseba"><option value=""></option><option tal:repeat="option view/staff_options" tal:attributes="value python:option[0]" tal:content="python:option[1]">Ime</option></select><input type="submit" value="Prikaži" /></form></div>
+      <div class="legacy-half right"><form method="get" tal:attributes="action context/absolute_url"><p>Prikaži vsa dežurstva za osebo:</p><select name="oseba" id="oseba" class="imi-staff-sorted"><option value=""></option><option tal:repeat="option view/staff_options" tal:attributes="value python:option[0]" tal:content="python:option[1]">Ime</option></select><input type="submit" value="Prikaži" /></form></div>
     </div>
   </tal:normal>
   <tal:person condition="view/selected_person"><div class="person-history"><h2>Dežurstva za osebo <span class="person-name" tal:content="view/selected_person_title">Ime</span></h2><p>&nbsp;</p><div class="person-year-list" tal:repeat="year view/person_dates_by_year"><h3 tal:content="year/year">2026</h3><div tal:repeat="month year/months"><h4 tal:content="month/name">avgust</h4><div class="person-date" tal:repeat="item month/dates"><a tal:attributes="href string:${context/absolute_url}?datum=${item/id}" tal:content="item/label">datum</a></div></div></div><p><a tal:attributes="href context/absolute_url">Nazaj</a></p></div></tal:person>
