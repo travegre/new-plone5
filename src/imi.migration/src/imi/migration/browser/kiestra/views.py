@@ -251,7 +251,7 @@ class KiestraEditView(BrowserView):
     def __call__(self):
         if self.request.method == 'POST':
             self.save()
-            portal = inner_site(self.context, 'kiestra')
+            portal = api.portal.get()
             day_id = self.context.getId()
             self.request.response.redirect(
                 portal.absolute_url() + '/@@kiestra-public?datum=' + day_id)
