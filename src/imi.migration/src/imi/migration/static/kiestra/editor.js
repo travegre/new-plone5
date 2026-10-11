@@ -9,6 +9,7 @@
       options.sort(function (a, b) {
         return a.textContent.localeCompare(b.textContent, 'sl', { sensitivity: 'base' });
       });
+      select.dataset.imiStaffReady = '1';
       options.forEach(function (option) { select.appendChild(option); });
       var $ = window.jQuery;
       if ($ && $.fn && $.fn.select2) {
