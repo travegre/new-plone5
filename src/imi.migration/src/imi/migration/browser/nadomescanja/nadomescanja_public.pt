@@ -14,7 +14,9 @@
       if (delay > 0) { window.setTimeout(function () { window.location.reload(true); }, delay); }
     }());
   </script>
-</head>
+  <link rel="stylesheet" tal:attributes="href string:${context/absolute_url}/++resource++imi.migration/sl_calendar.css" />
+  <script tal:attributes="src string:${context/absolute_url}/++resource++imi.migration/sl_calendar.js"></script>
+  </head>
 <body class="imi-replacements-public">
 <div id="last-change" tal:condition="view/last_change">Zadnja sprememba: <span tal:replace="view/last_change">datum</span></div>
 <div id="okolo"><div id="okol">
