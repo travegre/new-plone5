@@ -10,12 +10,15 @@ import os
 import sys
 
 import plone.api
+from DateTime import DateTime
 from plone.app.textfield import RichText
 from plone.app.textfield.value import RichTextValue
 from plone.dexterity.utils import iterSchemata
 from plone.namedfile.file import NamedBlobFile
 from zope.component.hooks import setSite
 from zope.schema import getFields
+
+from imi.migration.setuphandlers import install_catalog_indexes
 
 CUSTOM_TYPE_MAP = {
     ('portal', 'produkti'): 'imi.directory.person',
@@ -26,6 +29,14 @@ CUSTOM_TYPE_MAP = {
     ('nadomescanja', 'dezurstvo'): 'imi.replacements.day',
     ('nadomescanja', 'laboratorij'): 'imi.replacements.laboratory',
 }
+
+# These migrated application types are the public data behind the five legacy
+# sites.  In Plone 4 their content was anonymously viewable even where an
+# object carried a local View permission declaration.  Preserve that effective
+# public behaviour explicitly on the Dexterity objects before cataloging them.
+PUBLIC_CUSTOM_TYPES = frozenset(CUSTOM_TYPE_MAP.values()) | frozenset((
+    'imi.staff.employee',
+))
 
 STANDARD_TYPE_MAP = {
     'Document': 'Document', 'Folder': 'Folder', 'File': 'File',
@@ -39,7 +50,7 @@ SKIP_TYPES = {
 }
 
 # This legacy roster-day object existed only to provide getSampleVocabulary50()
-# to the PFG form.  EasyForm now uses the named imi.form.staff_email vocabulary,
+# to the PFG form. EasyForm now uses the named imi.form.staff_email vocabulary,
 # so the helper is deliberately absent from Plone 5.
 SKIP_PATHS = {
     '/dezurstva/objekt-za-seznam-zaposlenih-v-formi-spremeni-dezurstvo-ne-brisi',
@@ -52,6 +63,7 @@ BASIC_SOURCE_FIELDS = {
 }
 
 COMMIT_EVERY = 500
+SITE_IDS = ('portal', 'dezurstva', 'kiestra', 'preiskave', 'nadomescanja')
 
 
 def parse_input_dir(argv):
@@ -176,6 +188,69 @@ def apply_custom_fields(obj, record, input_dir):
         setattr(obj, name, value)
 
 
+def as_datetime(value):
+    if not value:
+        return None
+    try:
+        return DateTime(str(value))
+    except Exception:
+        return None
+
+
+def apply_metadata(obj, record):
+    """Restore source Dublin Core/security metadata after object creation."""
+    metadata = record.get('metadata') or {}
+    errors = []
+
+    creators = metadata.get('creators')
+    if creators is not None:
+        setter = getattr(obj, 'setCreators', None)
+        if callable(setter):
+            try:
+                setter(tuple(str(v) for v in creators))
+            except Exception as exc:
+                errors.append('creators: %r' % (exc,))
+
+    for source_name, setter_name in (
+            ('effective', 'setEffectiveDate'),
+            ('expires', 'setExpirationDate')):
+        value = as_datetime(metadata.get(source_name))
+        setter = getattr(obj, setter_name, None)
+        if value is not None and callable(setter):
+            try:
+                setter(value)
+            except Exception as exc:
+                errors.append('%s: %r' % (source_name, exc))
+
+    created = as_datetime(metadata.get('created'))
+    modified = as_datetime(metadata.get('modified'))
+    if created is not None:
+        try:
+            obj.creation_date = created
+        except Exception as exc:
+            errors.append('created: %r' % (exc,))
+    if modified is not None:
+        try:
+            obj.modification_date = modified
+        except Exception as exc:
+            errors.append('modified: %r' % (exc,))
+
+    owner_id = metadata.get('owner')
+    # The legacy root-level account robert2 is replaced by robert.
+    if owner_id == 'robert2':
+        owner_id = 'robert'
+    if owner_id:
+        try:
+            user = plone.api.user.get(username=str(owner_id))
+            if user is None:
+                errors.append('owner %s does not exist in target site' % owner_id)
+            else:
+                obj.changeOwnership(user, recursive=False)
+        except Exception as exc:
+            errors.append('owner %s: %r' % (owner_id, exc))
+    return errors
+
+
 def apply_local_roles(obj, metadata):
     for principal, principal_roles in metadata.get('local_roles') or []:
         try:
@@ -189,6 +264,27 @@ def apply_local_roles(obj, metadata):
                 method()
             except Exception:
                 pass
+
+
+def ensure_public_view(obj):
+    """Keep migrated public application content anonymously viewable.
+
+    The Plone 4 source contains local ``View`` declarations on these custom
+    objects which omit Anonymous.  Copying that declaration literally makes
+    the migrated Plone 5 object challenge anonymous users even though the
+    legacy applications were public.  This is the same correction proven by
+    the post-import security repair, but applied before the object's final
+    catalog pass so ``allowedRolesAndUsers`` is correct immediately.
+    """
+    if getattr(obj, 'portal_type', None) not in PUBLIC_CUSTOM_TYPES:
+        return
+    raw_roles = getattr(obj, '_View_Permission', None)
+    if raw_roles is None:
+        return
+    roles = list(raw_roles)
+    if 'Anonymous' not in roles:
+        roles.append('Anonymous')
+    obj.manage_permission('View', roles=roles, acquire=True)
 
 
 def transition_to_state(obj, state):
@@ -211,6 +307,24 @@ def transition_to_state(obj, state):
         obj.reindexObject(idxs=['review_state'])
     except Exception:
         pass
+
+
+def synchronous_catalog_object(obj):
+    """Catalog the final imported state immediately through Plone's wrapper.
+
+    CatalogTool.catalog_object adapts ``(obj, portal_catalog)`` to
+    ``IIndexableObject`` before ZCatalog sees it, so our named plone.indexer
+    adapters (SearchableText, moj, sklop, ...) are used. Doing this after all
+    fields and security have been assigned avoids relying on the
+    transaction-aware indexing queue for migration correctness.
+    """
+    catalog = plone.api.portal.get_tool('portal_catalog')
+    catalog.catalog_object(
+        obj,
+        uid='/'.join(obj.getPhysicalPath()),
+        idxs=[],
+        update_metadata=1,
+    )
 
 
 def create_record(app, record, input_dir, path_map):
@@ -237,6 +351,10 @@ def create_record(app, record, input_dir, path_map):
             title=record.get('title') or obj_id,
             description=record.get('description') or '', safe_id=False)
     apply_custom_fields(obj, record, input_dir)
+    metadata_errors = apply_metadata(obj, record)
+    if metadata_errors:
+        raise ValueError('metadata restore failed for %s: %s' %
+                         (record.get('source_path'), '; '.join(metadata_errors)))
     apply_local_roles(obj, record.get('metadata') or {})
     try:
         value = record.get('metadata', {}).get('exclude_from_nav')
@@ -245,9 +363,28 @@ def create_record(app, record, input_dir, path_map):
     except Exception:
         pass
     transition_to_state(obj, (record.get('metadata') or {}).get('workflow_state'))
-    obj.reindexObject()
+    ensure_public_view(obj)
+    # Workflow transitions and content events can update modification_date.
+    # Restore the exported timestamp only after all other object mutations.
+    modified = as_datetime((record.get('metadata') or {}).get('modified'))
+    if modified is not None:
+        obj.modification_date = modified
+    synchronous_catalog_object(obj)
     path_map[(record['site'], rel)] = obj
     return obj
+
+
+def install_migration_catalogs(app):
+    """Ensure every site's legacy catalog definitions exist before import."""
+    for site_id in SITE_IDS:
+        site = app.get(site_id)
+        if site is None:
+            continue
+        setSite(site)
+        changed = install_catalog_indexes(site, reindex=False)
+        if changed:
+            print('Catalog indexes prepared for %s: %s' %
+                  (site_id, ', '.join(changed)))
 
 
 def run(app, input_dir):
@@ -258,6 +395,12 @@ def run(app, input_dir):
     created = skipped = processed = 0
     errors = []
     import transaction
+
+    # A clean export/import must be self-contained: create the catalog indexes
+    # first, then each imported object is indexed only after its final field
+    # values and public security have been assigned.
+    install_migration_catalogs(app)
+    transaction.commit()
 
     with open(objects_file, 'r', encoding='utf-8') as handle:
         for lineno, line in enumerate(handle, 1):

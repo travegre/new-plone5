@@ -1,0 +1,10 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal" metal:use-macro="context/main_template/macros/master">
+<body>
+  <metal:title fill-slot="content-title"><h1 class="documentFirstHeading">PREISKAVE</h1></metal:title>
+  <metal:core fill-slot="content-core">
+  <div tal:define="site python:context.portal_url.getPortalObject()">
+
+   
+  </div>
+</metal:core>
+</body></html>

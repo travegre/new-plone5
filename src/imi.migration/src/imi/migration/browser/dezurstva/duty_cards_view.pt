@@ -1,0 +1,21 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal" metal:use-macro="context/main_template/macros/master">
+<body>
+<metal:title fill-slot="content-title"><h1 class="documentFirstHeading">Dežurstvo – <span tal:replace="context/Title">Datum</span></h1></metal:title>
+<metal:core fill-slot="content-core">
+<link rel="stylesheet" tal:attributes="href string:${context/portal_url}/++resource++imi.migration/kiestra/editor.css?v=20261011-11" />
+<div class="formControls" style="margin-bottom:1.5em">
+<a class="btn btn-primary" tal:attributes="href string:${context/absolute_url}/@@duty-cards-edit">Uredi</a>
+<a class="btn btn-default" tal:attributes="href string:${context/portal_url}/@@dezurstva-admin">Nazaj na pregled</a>
+</div>
+<div tal:repeat="group view/groups">
+<h2 tal:content="group/heading">Skupina</h2>
+<div class="kiestra-editor-grid">
+<section class="kiestra-editor-field" tal:repeat="row group/rows">
+<h3 tal:content="row/label">Polje</h3>
+<ul tal:condition="row/people"><li tal:repeat="person row/people" tal:content="person">Oseba</li></ul>
+<p tal:condition="not:row/people">—</p>
+</section>
+</div>
+</div>
+<div class="kiestra-constant" tal:condition="view/intervention_phone"><strong>Intervencijska skupina – telefon:</strong> <span tal:replace="view/intervention_phone">Telefon</span></div>
+</metal:core></body></html>

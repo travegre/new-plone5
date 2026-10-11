@@ -1,0 +1,14 @@
+.kiestra-editor-grid { display:grid; grid-template-columns:repeat(3,minmax(230px,1fr)); gap:16px; align-items:start; }
+.kiestra-editor-field { min-width:0; border:1px solid #d8dfe5; padding:16px; border-radius:6px; background:#fff; box-sizing:border-box; }
+.kiestra-editor-field h3 { margin:0 0 12px; font-size:1.15em; }
+.kiestra-editor-field select,
+.kiestra-editor-field input[type=text] { width:100%; max-width:100%; box-sizing:border-box; }
+.kiestra-editor-field .select2-container { width:100%!important; max-width:100%; margin-bottom:12px; }
+.kiestra-editor-field .select2-selection--multiple { min-height:42px; }
+.kiestra-editor-field .kiestra-native-select { min-height:180px; margin-bottom:12px; }
+.kiestra-note-label { display:block; margin:8px 0 5px; }
+.kiestra-constant { margin-top:25px; }
+.kiestra-constant textarea { width:100%; box-sizing:border-box; }
+.kiestra-editor .formControls { margin-top:25px; clear:both; }
+@media (max-width:1000px) { .kiestra-editor-grid { grid-template-columns:repeat(2,minmax(230px,1fr)); } }
+@media (max-width:620px) { .kiestra-editor-grid { grid-template-columns:1fr; } }

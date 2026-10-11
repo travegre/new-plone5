@@ -96,9 +96,9 @@ def compare_site(site, source):
             continue
         expected_roles = role_set(record.get('roles'))
         actual_roles = target_user_roles(site, user_id)
-        if not expected_roles.issubset(actual_roles):
-            diffs.append('user roles differ %s: missing %s' %
-                         (user_id, sorted(expected_roles - actual_roles)))
+        if expected_roles != actual_roles:
+            diffs.append('user roles differ %s: source=%s target=%s' %
+                         (user_id, sorted(expected_roles), sorted(actual_roles)))
         expected_groups = set(str(g) for g in record.get('groups') or ()
                               if str(g) not in VIRTUAL_GROUPS)
         actual_groups = target_groups_for_user(user_id)
@@ -117,9 +117,9 @@ def compare_site(site, source):
             continue
         expected_roles = role_set(record.get('roles'))
         actual_roles = target_group_roles(site, group_id)
-        if not expected_roles.issubset(actual_roles):
-            diffs.append('group roles differ %s: missing %s' %
-                         (group_id, sorted(expected_roles - actual_roles)))
+        if expected_roles != actual_roles:
+            diffs.append('group roles differ %s: source=%s target=%s' %
+                         (group_id, sorted(expected_roles), sorted(actual_roles)))
         expected_members = set(str(m) for m in record.get('members') or ())
         try:
             actual_members = set(str(m.getId()) for m in group.getGroupMembers())

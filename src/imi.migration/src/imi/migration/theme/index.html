@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Plone Theme</title>
+    <link rel="stylesheet" href="/++resource++imi.migration/sl_calendar.css" />
+    <script src="/++resource++imi.migration/sl_calendar.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        if (!/(?:^|\/)@@?overview-controlpanel\/?$/.test(window.location.pathname)) {
+          return;
+        }
+        var patterns = [
+          'You are using a Python version that is not supported',
+          'You are using a Plone version that is out of maintenance support',
+          'You are using a Plone version that is out of security support',
+          'Go to the Plone release schedule'
+        ];
+        document.querySelectorAll('.portalMessage.warning, .alert-warning').forEach(function (message) {
+          var text = (message.textContent || '').replace(/\s+/g, ' ').trim();
+          if (patterns.some(function (pattern) { return text.indexOf(pattern) !== -1; })) {
+            message.style.display = 'none';
+          }
+        });
+      });
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        if (!/^\/(?:portal|dezurstva|kiestra|preiskave|nadomescanja)(?:\/|$)/.test(window.location.pathname)) {
+          return;
+        }
+        var logo = document.querySelector('#portal-logo');
+        if (!logo) {
+          return;
+        }
+        var img = logo.querySelector('img');
+        if (!img) {
+          img = document.createElement('img');
+          logo.textContent = '';
+          logo.appendChild(img);
+        }
+        img.src = '/++resource++imi.migration/logo.png';
+        img.alt = 'IMI';
+      });
+    </script>
+    <script>
+      // Plone toolbar may replace the content area via AJAX when Edit is clicked.
+      // Kiestra uses a custom editor with its own assets: force a complete page load.
+      document.addEventListener("click", function (event) {
+        var link = event.target.closest && event.target.closest("a[href]");
+        if (!link || event.defaultPrevented || event.button !== 0 ||
+            event.ctrlKey || event.metaKey || event.shiftKey || event.altKey ||
+            link.target === "_blank") return;
+        var url;
+        try { url = new URL(link.href, window.location.href); } catch (e) { return; }
+        if (url.origin !== window.location.origin ||
+            !/^\/kiestra\/.*\/(?:edit|@@edit|@@kiestra-edit)\/?$/.test(url.pathname)) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        window.location.assign(url.href);
+      }, true);
+    </script>
+    <link rel="shortcut icon" type="image/x-icon"
+          href="/++theme++barceloneta/barceloneta-favicon.ico" />
+    <link rel="apple-touch-icon"
+          href="/++theme++barceloneta/barceloneta-apple-touch-icon.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="144x144"
+          href="/++theme++barceloneta/barceloneta-apple-touch-icon-144x144-precomposed.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="114x114"
+          href="/++theme++barceloneta/barceloneta-apple-touch-icon-114x114-precomposed.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="72x72"
+          href="/++theme++barceloneta/barceloneta-apple-touch-icon-72x72-precomposed.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="57x57"
+          href="/++theme++barceloneta/barceloneta-apple-touch-icon-57x57-precomposed.png" />
+    <link rel="apple-touch-icon-precomposed"
+          href="/++theme++barceloneta/barceloneta-apple-touch-icon-precomposed.png" />
+  </head>
+  <body>
+    <section id="portal-toolbar"></section>
+    <div class="outer-wrapper">
+      <header id="content-header">
+        <div class="container">
+          <header id="portal-top"></header>
+          <div id="anonymous-actions"></div>
+        </div>
+      </header>
+      <div id="mainnavigation-wrapper">
+        <div id="mainnavigation"></div>
+      </div>
+      <div id="hero" class="principal">
+        <div class="container">
+          <div class="gigantic"></div>
+        </div>
+      </div>
+      <div id="above-content-wrapper">
+        <div id="above-content"></div>
+      </div>
+      <div class="container">
+        <div class="row">
+          <aside id="global_statusmessage"></aside>
+        </div>
+        <main id="main-container" class="row row-offcanvas row-offcanvas-right">
+          <div id="content-container"></div>
+          <div id="column1-container"></div>
+          <div id="column2-container"></div>
+        </main>
+      </div>
+    </div>
+    <footer id="portal-footer-wrapper">
+      <div class="container" id="portal-footer">
+        <div class="doormat row"></div>
+        <div class="copyright row"><div class="col-xs-12"></div></div>
+        <div class="colophon row"><div class="col-xs-12"></div></div>
+        <div class="site-actions row"><div class="col-xs-12"></div></div>
+      </div>
+    </footer>
+  </body>
+</html>

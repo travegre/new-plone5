@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Dynamic vocabularies used by the migrated editing forms."""
+from .browser.common.helpers import slovenian_sort_key
+
 from zope.component.hooks import getSite
 from zope.interface import provider
 from zope.schema.interfaces import IVocabularyFactory
@@ -51,7 +53,7 @@ def duty_staff_vocabulary(context):
             token=employee_id,
             title=title,
         ))
-    return SimpleVocabulary(terms)
+    return SimpleVocabulary(sorted(terms, key=lambda term: slovenian_sort_key(term.title)))
 
 
 @provider(IVocabularyFactory)
@@ -80,3 +82,9 @@ def form_staff_email_vocabulary(context):
         seen_tokens.add(token)
         terms.append(SimpleTerm(value=value, token=token, title=title))
     return SimpleVocabulary(terms)
+
+
+@provider(IVocabularyFactory)
+def replacements_staff_vocabulary(context):
+    """Employee ids/titles for Nadomeščanja laboratory and day editors."""
+    return duty_staff_vocabulary(context)
