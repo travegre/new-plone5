@@ -42,6 +42,23 @@
         img.alt = 'IMI';
       });
     </script>
+    <script>
+      // Plone toolbar may replace the content area via AJAX when Edit is clicked.
+      // Kiestra uses a custom editor with its own assets: force a complete page load.
+      document.addEventListener("click", function (event) {
+        var link = event.target.closest && event.target.closest("a[href]");
+        if (!link || event.defaultPrevented || event.button !== 0 ||
+            event.ctrlKey || event.metaKey || event.shiftKey || event.altKey ||
+            link.target === "_blank") return;
+        var url;
+        try { url = new URL(link.href, window.location.href); } catch (e) { return; }
+        if (url.origin !== window.location.origin ||
+            !/^\/kiestra\/.*\/(?:edit|@@edit|@@kiestra-edit)\/?$/.test(url.pathname)) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        window.location.assign(url.href);
+      }, true);
+    </script>
     <link rel="shortcut icon" type="image/x-icon"
           href="/++theme++barceloneta/barceloneta-favicon.ico" />
     <link rel="apple-touch-icon"
